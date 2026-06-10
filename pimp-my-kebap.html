@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pimp My Kebap – Online bestellen | Zentrum Döner Freiberg</title>
+<style>
+:root{
+  --board:#1c201c;
+  --board-light:#262b26;
+  --chalk:#f2efe4;
+  --chalk-dim:#b3afa0;
+  --gold:#f0b431;
+  --gold-bright:#ffd24d;
+  --flame:#d4502e;
+  --frame:#5a3d24;
+  --line:rgba(242,239,228,.16);
+  --wa:#25D366;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:#141714;
+  background-image:radial-gradient(ellipse at 50% 0%, #232823 0%, #141714 70%);
+  color:var(--chalk);
+  font-family:'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  padding-bottom:108px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 14px;}
+.display{
+  font-family:'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-weight:800;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+/* ---------- Header ---------- */
+header{
+  text-align:center;
+  padding:22px 12px 14px;
+  border-bottom:3px double var(--frame);
+  background:linear-gradient(180deg, rgba(90,61,36,.25), transparent);
+}
+header h1{
+  font-size:1.7rem;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+header h1 .hl{color:var(--gold-bright);}
+header .tag{
+  color:var(--gold);
+  font-size:.9rem;
+  font-weight:600;
+  margin-top:2px;
+}
+header .addr{color:var(--chalk-dim);font-size:.75rem;margin-top:6px;}
+
+/* ---------- Tabs ---------- */
+nav{
+  position:sticky;top:0;z-index:40;
+  background:#101310;
+  border-bottom:1px solid var(--line);
+  display:flex;
+}
+nav button{
+  flex:1;
+  background:transparent;
+  border:none;
+  border-bottom:3px solid transparent;
+  color:var(--chalk-dim);
+  font-family:inherit;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+  padding:12px 4px 10px;
+  cursor:pointer;
+  position:relative;
+}
+nav button.active{color:var(--gold-bright);border-bottom-color:var(--gold);}
+nav button .count{
+  display:inline-block;
+  min-width:18px;
+  background:var(--flame);
+  color:#fff;
+  border-radius:9px;
+  font-size:.68rem;
+  padding:1px 5px;
+  margin-left:4px;
+}
+nav button .count:empty{display:none;}
+
+/* ---------- Panels ---------- */
+.panel{display:none;animation:fade .2s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+section{margin-top:22px;}
+h2{
+  font-size:1.05rem;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--gold-bright);
+  display:flex;align-items:center;gap:10px;
+}
+h2::after{content:"";flex:1;height:1px;background:var(--line);}
+.step-label{
+  display:inline-block;
+  background:var(--gold);
+  color:#1c201c;
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:1.5px;
+  padding:3px 10px;
+  border-radius:3px;
+  text-transform:uppercase;
+}
+.hint{color:var(--chalk-dim);font-size:.8rem;margin:4px 0 10px;}
+
+/* ---------- Option cards ---------- */
+.opt-grid{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+.opt-grid.cols{flex-direction:row;flex-wrap:wrap;}
+.opt-grid.cols .opt{flex:1 1 calc(50% - 4px);min-width:140px;}
+.opt{
+  display:flex;align-items:center;gap:11px;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 13px;
+  cursor:pointer;
+  user-select:none;
+  transition:border-color .15s, background .15s;
+}
+.opt:active{transform:scale(.99);}
+.opt.sel{border-color:var(--gold);background:#2c3022;}
+.opt .box{
+  width:19px;height:19px;flex:none;
+  border:2px solid var(--chalk-dim);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;color:#1c201c;
+}
+.opt.check .box{border-radius:5px;}
+.opt.sel .box{background:var(--gold);border-color:var(--gold);}
+.opt.sel .box::after{content:"✓";font-weight:bold;}
+.opt .nm{flex:1;font-size:.92rem;}
+.opt .sub{display:block;color:var(--chalk-dim);font-size:.72rem;}
+.opt .pr{color:var(--gold-bright);font-size:.82rem;white-space:nowrap;}
+
+/* ---------- Basic banner ---------- */
+.basic-banner{
+  margin-top:10px;
+  background:var(--board-light);
+  border:1px dashed var(--gold);
+  border-radius:8px;
+  padding:12px 14px;
+  display:flex;align-items:center;gap:14px;
+}
+.basic-banner .price{
+  font-size:1.5rem;
+  font-weight:800;
+  color:var(--gold-bright);
+  white-space:nowrap;
+}
+.basic-banner ul{list-style:none;flex:1;}
+.basic-banner li{font-size:.8rem;color:var(--chalk);padding-left:16px;position:relative;}
+.basic-banner li::before{content:"+";position:absolute;left:0;color:var(--gold);font-weight:bold;}
+
+/* ---------- Stepper ---------- */
+.stepper{
+  display:flex;align-items:center;gap:12px;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 13px;margin-top:8px;
+}
+.stepper .nm{flex:1;font-size:.92rem;}
+.stepper .sub{display:block;color:var(--chalk-dim);font-size:.72rem;}
+.stepper button{
+  width:36px;height:36px;flex:none;
+  border:1px solid var(--gold);
+  background:transparent;color:var(--gold-bright);
+  font-size:1.25rem;border-radius:7px;cursor:pointer;
+}
+.stepper button:disabled{opacity:.3;}
+.stepper .qty{min-width:22px;text-align:center;font-weight:800;font-size:1.05rem;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:block;width:100%;
+  margin-top:12px;
+  background:var(--gold);
+  color:#1c201c;
+  border:none;border-radius:8px;
+  padding:13px;
+  font-family:inherit;
+  font-size:.95rem;font-weight:800;
+  letter-spacing:.3px;
+  cursor:pointer;
+  transition:filter .15s;
+}
+.btn:active{filter:brightness(.9);}
+.btn.wa{background:var(--wa);color:#fff;}
+.btn:disabled{opacity:.45;cursor:default;}
+
+/* ---------- Quick items ---------- */
+.quick{
+  display:flex;align-items:center;gap:12px;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:11px 14px;margin-top:8px;
+}
+.quick .nm{flex:1;font-size:.92rem;}
+.quick .sub{display:block;color:var(--chalk-dim);font-size:.72rem;}
+.quick .pr{color:var(--gold-bright);font-weight:700;margin-right:2px;white-space:nowrap;}
+.add-btn{
+  width:36px;height:36px;flex:none;
+  border:1px solid var(--gold);background:transparent;
+  color:var(--gold-bright);font-size:1.25rem;
+  border-radius:7px;cursor:pointer;
+}
+.add-btn:disabled{opacity:.25;cursor:default;}
+
+/* ---------- Angebote ---------- */
+.angebot{
+  display:flex;align-items:center;gap:10px;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:11px 14px;margin-top:8px;
+}
+.angebot .day{
+  flex:none;width:72px;
+  font-weight:800;font-size:.78rem;
+  letter-spacing:.5px;text-transform:uppercase;
+  color:var(--chalk-dim);
+}
+.angebot.today{border-color:var(--flame);background:#322620;}
+.angebot.today .day{color:var(--flame);}
+.angebot .nm{flex:1;font-size:.9rem;}
+.angebot .badge{
+  flex:none;font-size:.6rem;font-weight:800;letter-spacing:.5px;
+  background:var(--flame);color:#fff;
+  padding:2px 7px;border-radius:3px;
+}
+.angebot .pr{color:var(--gold-bright);font-weight:700;white-space:nowrap;}
+
+/* ---------- Cart ---------- */
+#cart-list{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+.cart-item{
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:11px 14px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.cart-item .info{flex:1;font-size:.92rem;}
+.cart-item .det{color:var(--chalk-dim);font-size:.75rem;}
+.cart-item .pr{color:var(--gold-bright);font-weight:700;white-space:nowrap;}
+.cart-item .rm{
+  flex:none;border:none;background:transparent;
+  color:var(--chalk-dim);font-size:1.1rem;cursor:pointer;padding:0 2px;
+}
+.empty{color:var(--chalk-dim);font-size:.85rem;font-style:italic;margin-top:10px;}
+
+/* ---------- Checkout ---------- */
+.field{margin-top:10px;}
+.field label{display:block;font-size:.76rem;font-weight:600;color:var(--chalk-dim);margin-bottom:4px;}
+.field input,.field select,.field textarea{
+  width:100%;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:var(--chalk);
+  padding:11px 12px;
+  font-size:.95rem;
+  font-family:inherit;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold);border-color:var(--gold);}
+.toggle{display:flex;gap:8px;margin-top:10px;}
+.toggle button{
+  flex:1;padding:10px;border-radius:8px;
+  border:1px solid var(--line);
+  background:var(--board-light);color:var(--chalk);
+  cursor:pointer;font-size:.9rem;font-family:inherit;
+}
+.toggle button.sel{border-color:var(--gold);background:#2c3022;color:var(--gold-bright);font-weight:700;}
+
+/* ---------- "Mit allem" preset toggle ---------- */
+.preset{
+  display:inline-flex;align-items:center;gap:6px;
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:20px;
+  color:var(--chalk-dim);
+  font-family:inherit;
+  font-size:.85rem;
+  font-weight:700;
+  padding:8px 16px;
+  margin-bottom:4px;
+  cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.preset.on{
+  border-color:var(--flame);
+  background:#322620;
+  color:var(--gold-bright);
+}
+
+/* ---------- Sticky bar (live price, always visible) ---------- */
+#bar{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#101310;
+  border-top:2px solid var(--gold);
+  padding:9px 14px calc(9px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:10px;
+  z-index:50;
+}
+#bar .block{line-height:1.15;}
+#bar .block .lbl{font-size:.62rem;font-weight:700;color:var(--chalk-dim);text-transform:uppercase;letter-spacing:.8px;}
+#bar .block .val{font-size:1.3rem;font-weight:800;color:var(--gold-bright);}
+#bar .block.total .val{color:var(--gold-bright);font-size:1.3rem;}
+
+/* ---------- Live price pill = Add button (pimp tab only) ---------- */
+#live-pill{
+  position:fixed;
+  left:50%;transform:translateX(-50%);
+  bottom:76px;
+  background:#2c3022;
+  border:2px solid var(--gold);
+  border-radius:24px;
+  padding:6px 6px 6px 18px;
+  display:flex;align-items:center;gap:12px;
+  z-index:49;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+  cursor:pointer;
+  font-family:inherit;
+  color:var(--chalk);
+  white-space:nowrap;
+}
+#live-pill:active{transform:translateX(-50%) scale(.97);}
+#live-pill .grp{display:flex;align-items:baseline;gap:8px;}
+#live-pill .lbl{font-size:.66rem;font-weight:700;color:var(--chalk-dim);text-transform:uppercase;letter-spacing:.8px;}
+#live-pill .val{font-size:1.2rem;font-weight:800;color:var(--gold-bright);}
+#live-pill .addlbl{
+  background:var(--gold);
+  color:#1c201c;
+  font-size:.82rem;
+  font-weight:800;
+  border-radius:18px;
+  padding:9px 14px;
+}
+#live-pill.hidden{display:none;}
+
+/* ---------- Quick item note ---------- */
+.quick-wrap{margin-top:8px;}
+.quick-wrap .quick{margin-top:0;}
+.note-toggle{
+  width:36px;height:36px;flex:none;
+  border:1px solid var(--line);background:transparent;
+  color:var(--chalk-dim);font-size:1rem;
+  border-radius:7px;cursor:pointer;
+}
+.note-toggle.on{border-color:var(--gold);color:var(--gold-bright);}
+.quick-note{
+  display:none;
+  margin-top:6px;
+}
+.quick-note.open{display:block;}
+.quick-note input{
+  width:100%;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:var(--chalk);
+  padding:9px 12px;
+  font-size:.88rem;
+  font-family:inherit;
+}
+.quick-note input:focus{outline:2px solid var(--gold);border-color:var(--gold);}
+
+/* ---------- WhatsApp message preview ---------- */
+.preview-box{
+  margin-top:16px;
+  background:#0e1410;
+  border:1px solid var(--wa);
+  border-radius:10px;
+  padding:12px 14px;
+}
+.preview-box .ph{
+  font-size:.7rem;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--wa);
+  margin-bottom:6px;
+}
+.preview-box pre{
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-family:'Consolas','Menlo',monospace;
+  font-size:.8rem;
+  line-height:1.45;
+  color:var(--chalk);
+}
+#bar .spacer{flex:1;}
+#bar .go{
+  border:none;border-radius:8px;
+  padding:12px 16px;
+  font-family:inherit;
+  font-size:.88rem;font-weight:800;
+  letter-spacing:.3px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+#bar .go.add{background:var(--gold);color:#1c201c;}
+#bar .go.wa{background:var(--wa);color:#fff;}
+#bar .go:disabled{opacity:.4;}
+
+footer{
+  margin-top:34px;text-align:center;
+  color:var(--chalk-dim);font-size:.72rem;
+  padding:0 14px;
+}
+footer .demo{
+  display:inline-block;margin-top:8px;
+  border:1px dashed var(--chalk-dim);
+  border-radius:5px;padding:3px 10px;
+}
+.toast{
+  position:fixed;left:50%;bottom:100px;transform:translateX(-50%);
+  background:var(--gold);color:#1c201c;
+  padding:9px 18px;border-radius:20px;
+  font-weight:700;font-size:.85rem;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s;
+  z-index:60;
+  white-space:nowrap;
+}
+.toast.show{opacity:1;}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto;}
+  *{transition:none !important;animation:none !important;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PIMP <span class="hl">MY</span> KEBAP</h1>
+  <div class="tag">Create your Kebap. Pay your Style.</div>
+  <div class="addr">Zentrum Döner · Marktplatz 18 · 71691 Freiberg a.N.</div>
+</header>
+
+<nav>
+  <button data-tab="pimp" class="active">Pimp my Kebap</button>
+  <button data-tab="direkt">Direkt bestellen</button>
+  <button data-tab="angebot">Angebote</button>
+  <button data-tab="order">Bestellung<span class="count" id="cart-count"></span></button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ TAB: KONFIGURATOR ============ -->
+  <div class="panel active" id="panel-pimp">
+
+    <section>
+      <div><span class="step-label">Step 1 · Brot</span></div>
+      <p class="hint">Frisch gebacken – ohne Aufpreis.</p>
+      <div class="opt-grid" id="bread-grid"></div>
+    </section>
+
+    <section>
+      <div><span class="step-label">Step 2 · Basic</span></div>
+      <div class="basic-banner">
+        <div class="price">6,50&nbsp;€</div>
+        <ul>
+          <li>100 g Fleisch, frisch abgewogen</li>
+          <li>Salat (Kraut, Zwiebel, Tomate)</li>
+          <li>2 Soßen nach Wahl</li>
+        </ul>
+      </div>
+
+      <p class="hint" style="margin-top:14px;">Dein Fleisch – inklusive:</p>
+      <div class="opt-grid" id="meat-grid"></div>
+
+      <p class="hint" style="margin-top:14px;">Dein Salat – inklusive:</p>
+      <button type="button" class="preset" id="mit-allem">🔥 Mit allem</button>
+      <div class="opt-grid" id="salad-grid"></div>
+
+      <p class="hint" style="margin-top:14px;">Deine 2 Soßen – jede weitere +0,50&nbsp;€:</p>
+      <div class="opt-grid" id="sauce-grid"></div>
+    </section>
+
+    <section>
+      <div><span class="step-label">Step 3 · Pimp it</span></div>
+      <p class="hint">Du bestimmst den Preis – der Live-Preis unten zählt mit.</p>
+
+      <div class="stepper">
+        <div class="nm">Mehr Fleisch
+          <span class="sub">je +50 g · 1,50 €</span>
+        </div>
+        <button type="button" id="meat-minus" aria-label="Weniger Fleisch">−</button>
+        <span class="qty" id="meat-qty">0</span>
+        <button type="button" id="meat-plus" aria-label="Mehr Fleisch">+</button>
+      </div>
+
+      <div class="opt-grid" id="extras-grid"></div>
+      <p class="hint" id="config-summary" style="margin-top:12px;"></p>
+    </section>
+  </div>
+
+  <!-- ============ TAB: DIREKT ============ -->
+  <div class="panel" id="panel-direkt">
+    <section>
+      <h2>Direkt bestellen</h2>
+      <p class="hint">Klassiker ohne Konfigurieren – einfach hinzufügen.</p>
+      <div id="quick-grid"></div>
+    </section>
+  </div>
+
+  <!-- ============ TAB: ANGEBOTE ============ -->
+  <div class="panel" id="panel-angebot">
+    <section>
+      <h2>Wochen-Angebote</h2>
+      <p class="hint">Nur am jeweiligen Tag bestellbar.</p>
+      <div id="angebot-grid"></div>
+    </section>
+  </div>
+
+  <!-- ============ TAB: BESTELLUNG ============ -->
+  <div class="panel" id="panel-order">
+    <section>
+      <h2>Deine Bestellung</h2>
+      <div id="cart-list"></div>
+      <p class="empty" id="cart-empty">Noch nichts ausgewählt – pimp dir deinen Kebap!</p>
+
+      <div class="field">
+        <label for="name">Dein Name</label>
+        <input type="text" id="name" placeholder="z. B. Mihai" autocomplete="name">
+      </div>
+      <div class="toggle" id="mode-toggle">
+        <button type="button" data-mode="Abholung" class="sel">🏃 Abholung</button>
+        <button type="button" data-mode="Lieferung">🛵 Lieferung</button>
+      </div>
+      <div class="field" id="addr-field" style="display:none;">
+        <label for="addr">Lieferadresse</label>
+        <input type="text" id="addr" placeholder="Straße, Hausnummer, Ort">
+      </div>
+      <div class="field">
+        <label for="time">Wunschzeit</label>
+        <select id="time">
+          <option>So schnell wie möglich</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="note">Anmerkung zur Bestellung (optional)</label>
+        <textarea id="note" rows="2" placeholder="z. B. bitte klingeln, Geld passend …"></textarea>
+      </div>
+
+      <div class="preview-box">
+        <div class="ph">So kommt deine Bestellung per WhatsApp an</div>
+        <pre id="msg-preview"></pre>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div>Pimp My Kebap · Zentrum Döner · Marktplatz 18, 71691 Freiberg am Neckar</div>
+    <div>Instagram @zentrumdoner</div>
+    <div class="demo">DEMO von 321tadaa.com – Preise &amp; Zutaten ohne Gewähr</div>
+  </footer>
+</div>
+
+<!-- Live price = Add button: only on "Pimp my Kebap" tab, floats above the bar -->
+<button id="live-pill" type="button" aria-live="polite">
+  <span class="grp">
+    <span class="lbl">Dein Kebap</span>
+    <span class="val" id="live-price">6,50 €</span>
+  </span>
+  <span class="addlbl">+ In die Bestellung</span>
+</button>
+
+<!-- Sticky bar: basket total + WhatsApp, always the same -->
+<div id="bar">
+  <div class="block total">
+    <div class="lbl">Bestellung</div>
+    <div class="val" id="bar-total">0,00 €</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="go wa" id="bar-action" type="button" disabled>Per WhatsApp senden</button>
+</div>
+
+<div class="toast" id="toast">Zur Bestellung hinzugefügt ✓</div>
+
+<script>
+/* =====================================================
+   PIMP MY KEBAP – WhatsApp Bestell-Demo v2
+   321tadaa.com
+   -----------------------------------------------------
+   >>> VOR GO-LIVE EINTRAGEN: WhatsApp-Nummer des Ladens
+   Format: Ländercode ohne "+" und ohne führende 0
+   Beispiel: 0176 1234567  ->  "491761234567"
+===================================================== */
+const WHATSAPP_NUMBER = "491742116095"; // +49 174 2116095
+
+/* ---- Stammdaten (mit Betreiber abstimmen!) ---- */
+const BREADS = [
+  {id:"klassik", name:"Klassik-Dönerbrot", sub:"mit Kümmel & Sesam"},
+  {id:"sesam",   name:"Sesambrot", sub:"fluffig & frisch"},
+  {id:"knobi",   name:"Knoblauchbrot", sub:"für Knobi-Fans"},
+  {id:"yufka",   name:"Yufka", sub:"dünnes Fladenbrot, gerollt"}
+];
+const MEATS = [
+  {id:"doener",  name:"Dönerfleisch", sub:"vom Spieß"},
+  {id:"scheibe", name:"Scheibenfleisch", sub:"saftige Scheiben"},
+  {id:"haehnchen", name:"Hähnchen", sub:"zart & mager"},
+  {id:"falafel", name:"Falafel", sub:"vegetarisch 🌱"}
+];
+const SAUCES = [
+  "Kräuter-Knoblauch-Joghurt","Scharfe Soße","Cocktailsoße",
+  "Mango-Avocado-Soße","Barbecue-Soße","Naturjoghurt"
+];
+/* Standard-Salat im Basic – Komponenten mit Betreiber bestätigen */
+const SALAD = ["Kraut","Zwiebel","Tomate"];
+const EXTRA_SAUCE_PRICE = 0.50;
+/* Beispiel-Auswahl aus den "18 frischen Zutaten" –
+   finale Liste mit dem Betreiber abstimmen */
+const EXTRAS = [
+  {name:"Schmelzkäse", price:1.00, star:true},
+  {name:"Schafskäse", price:0.50},
+  {name:"Jalapeños", price:0.50},
+  {name:"Mais", price:0.50},
+  {name:"Gurke", price:0.50},
+  {name:"Rotkohl", price:0.50},
+  {name:"Peperoni", price:0.50},
+  {name:"Röstzwiebeln", price:0.50},
+  {name:"Oliven", price:0.50}
+];
+const QUICK = [
+  {name:"Schüler-Döner", sub:"nur an Schultagen bis 15 Uhr", price:6.00},
+  {name:"Dürüm Kebap", sub:"im dünnen Fladenbrot gerollt", price:6.00},
+  {name:"Yufka Salat", sub:"mit Weichkäse", price:5.50},
+  {name:"Standard-Burger-Kebap", sub:"Kebap trifft Burger", price:4.00},
+  {name:"Cheeseburger-Kebap", sub:"mit Käse", price:5.00},
+  {name:"Chili-Cheeseburger-Kebap", sub:"mit Käse & Chili", price:6.00},
+  /* Beilagen – Preise mit Betreiber bestätigen! */
+  {name:"Pommes", sub:"Portion", price:3.00},
+  {name:"Pommes mit Schmelzkäse", sub:"unser Highlight ⭐", price:4.00}
+];
+const ANGEBOTE = [
+  {day:1, label:"Montag", name:"Dönerteller mit Pommes", price:8.50},
+  {day:2, label:"Dienstag", name:"Jede Pide mit zwei Zutaten", price:6.50},
+  {day:3, label:"Mittwoch", name:"Jede Pizza vom Speiseplan", price:6.50}
+];
+const BASIC_PRICE = 6.50;
+const MEAT_STEP = 1.50;
+
+/* ---- State ---- */
+let bread = BREADS[0].id;
+let meat = MEATS[0].id;
+let salad = [...SALAD];   // Standard: mit allem
+let sauces = [];
+let extras = [];
+let meatQty = 0;
+let mode = "Abholung";
+let cart = [];
+let activeTab = "pimp";
+
+/* ---- Helpers ---- */
+const $ = id => document.getElementById(id);
+const eur = v => v.toFixed(2).replace(".", ",") + " €";
+
+function kebapPrice(){
+  let p = BASIC_PRICE + meatQty * MEAT_STEP;
+  extras.forEach(n => { p += EXTRAS.find(e => e.name === n).price; });
+  if (sauces.length > 2) p += (sauces.length - 2) * EXTRA_SAUCE_PRICE;
+  return p;
+}
+
+/* ---- Generic radio/checkbox renderer ---- */
+function renderRadio(containerId, items, current, onPick, cols){
+  const grid = $(containerId);
+  if (cols) grid.classList.add("cols");
+  grid.innerHTML = items.map(it => `
+    <div class="opt ${current===it.id?'sel':''}" data-id="${it.id}" role="radio" aria-checked="${current===it.id}" tabindex="0">
+      <span class="box"></span>
+      <span class="nm">${it.name}<span class="sub">${it.sub||""}</span></span>
+      <span class="pr">inkl.</span>
+    </div>`).join("");
+  [...grid.children].forEach(el => {
+    const pick = () => onPick(el.dataset.id);
+    el.onclick = pick;
+    el.onkeydown = e => { if (e.key==="Enter"||e.key===" "){e.preventDefault();pick();} };
+  });
+}
+
+function renderBreads(){ renderRadio("bread-grid", BREADS, bread, id => { bread=id; renderBreads(); updateLive(); }); }
+function renderMeats(){ renderRadio("meat-grid", MEATS, meat, id => { meat=id; renderMeats(); updateLive(); }); }
+
+/* ---- Salat + "Mit allem" ---- */
+function renderSalad(){
+  $("salad-grid").innerHTML = SALAD.map(s => {
+    const sel = salad.includes(s);
+    return `
+    <div class="opt check ${sel?'sel':''}" data-s="${s}" role="checkbox" aria-checked="${sel}" tabindex="0">
+      <span class="box"></span>
+      <span class="nm">${s}</span>
+      <span class="pr">inkl.</span>
+    </div>`;
+  }).join("");
+  [...$("salad-grid").children].forEach(el => {
+    const pick = () => {
+      const s = el.dataset.s;
+      salad.includes(s) ? salad = salad.filter(x=>x!==s) : salad.push(s);
+      renderSalad(); updateLive();
+    };
+    el.onclick = pick;
+    el.onkeydown = e => { if (e.key==="Enter"||e.key===" "){e.preventDefault();pick();} };
+  });
+  /* Button spiegelt den Zustand: an = alles gewählt */
+  $("mit-allem").classList.toggle("on", salad.length === SALAD.length);
+}
+
+$("mit-allem").onclick = () => {
+  salad = (salad.length === SALAD.length) ? [] : [...SALAD];
+  renderSalad(); updateLive();
+};
+
+/* Kurztext für Zusammenfassung & WhatsApp */
+function saladText(){
+  if (salad.length === SALAD.length) return "mit allem";
+  if (salad.length === 0) return "ohne Salat";
+  const missing = SALAD.filter(s => !salad.includes(s));
+  return "ohne " + missing.join(", ");
+}
+
+function renderSauces(){
+  $("sauce-grid").innerHTML = SAUCES.map(s => {
+    const sel = sauces.includes(s);
+    const extra = sel && sauces.indexOf(s) >= 2;
+    return `
+    <div class="opt check ${sel?'sel':''}" data-s="${s}" role="checkbox" aria-checked="${sel}" tabindex="0">
+      <span class="box"></span>
+      <span class="nm">${s}</span>
+      <span class="pr">${extra ? "+0,50 €" : (sel || sauces.length<2 ? "inkl." : "+0,50 €")}</span>
+    </div>`;
+  }).join("");
+  [...$("sauce-grid").children].forEach(el => {
+    const pick = () => {
+      const s = el.dataset.s;
+      sauces.includes(s) ? sauces = sauces.filter(x=>x!==s) : sauces.push(s);
+      renderSauces(); updateLive();
+    };
+    el.onclick = pick;
+    el.onkeydown = e => { if (e.key==="Enter"||e.key===" "){e.preventDefault();pick();} };
+  });
+}
+
+function renderExtras(){
+  $("extras-grid").innerHTML = EXTRAS.map(x => {
+    const sel = extras.includes(x.name);
+    return `
+    <div class="opt check ${sel?'sel':''}" data-x="${x.name}" role="checkbox" aria-checked="${sel}" tabindex="0">
+      <span class="box"></span>
+      <span class="nm">${x.star?'⭐ ':''}${x.name}${x.star?'<span class="sub">Unser Highlight!</span>':''}</span>
+      <span class="pr">+${x.price.toFixed(2).replace(".",",")} €</span>
+    </div>`;
+  }).join("");
+  [...$("extras-grid").children].forEach(el => {
+    const pick = () => {
+      const n = el.dataset.x;
+      extras.includes(n) ? extras = extras.filter(e=>e!==n) : extras.push(n);
+      renderExtras(); updateLive();
+    };
+    el.onclick = pick;
+    el.onkeydown = e => { if (e.key==="Enter"||e.key===" "){e.preventDefault();pick();} };
+  });
+}
+
+/* ---- Live price (sticky bar, always visible) ---- */
+function updateLive(){
+  $("live-price").textContent = eur(kebapPrice());
+  const b = BREADS.find(x=>x.id===bread).name;
+  const m = MEATS.find(x=>x.id===meat).name;
+  const parts = [b, m, saladText()];
+  if (meatQty) parts.push(`+${meatQty*50} g Fleisch`);
+  if (extras.length) parts.push(extras.join(", "));
+  parts.push(sauces.length ? `Soßen: ${sauces.join(", ")}` : "Soßen: noch wählen");
+  $("config-summary").textContent = "Dein Kebap: " + parts.join(" · ");
+  $("meat-qty").textContent = meatQty;
+  $("meat-minus").disabled = meatQty === 0;
+}
+
+/* ---- Quick & Angebote ---- */
+function renderQuick(){
+  $("quick-grid").innerHTML = QUICK.map((q,i) => `
+    <div class="quick-wrap">
+      <div class="quick">
+        <span class="nm">${q.name}<span class="sub">${q.sub}</span></span>
+        <span class="pr">${eur(q.price)}</span>
+        <button class="note-toggle" data-i="${i}" aria-label="Anmerkung zu ${q.name}" title="Anmerkung">💬</button>
+        <button class="add-btn" data-i="${i}" aria-label="${q.name} hinzufügen">+</button>
+      </div>
+      <div class="quick-note" id="qnote-${i}">
+        <input type="text" id="qnote-input-${i}" placeholder="z. B. ohne Zwiebeln, scharf …">
+      </div>
+    </div>`).join("");
+  document.querySelectorAll("#quick-grid .note-toggle").forEach(btn => {
+    btn.onclick = () => {
+      const box = $("qnote-" + btn.dataset.i);
+      const open = box.classList.toggle("open");
+      btn.classList.toggle("on", open);
+      if (open) $("qnote-input-" + btn.dataset.i).focus();
+    };
+  });
+  document.querySelectorAll("#quick-grid .add-btn").forEach(btn => {
+    btn.onclick = () => {
+      const i = btn.dataset.i;
+      const q = QUICK[i];
+      const note = $("qnote-input-" + i).value.trim();
+      cart.push({title:q.name, sub:q.sub, detail:"", note:note, price:q.price});
+      $("qnote-input-" + i).value = "";
+      $("qnote-" + i).classList.remove("open");
+      document.querySelector(`#quick-grid .note-toggle[data-i="${i}"]`).classList.remove("on");
+      renderCart(); toast();
+    };
+  });
+}
+
+function renderAngebote(){
+  const today = new Date().getDay(); // 1=Mo
+  $("angebot-grid").innerHTML = ANGEBOTE.map((a,i) => {
+    const isToday = a.day === today;
+    return `
+    <div class="angebot ${isToday?'today':''}">
+      <span class="day">${a.label}</span>
+      <span class="nm">${a.name}${isToday?' <span class="badge">HEUTE</span>':''}</span>
+      <span class="pr">${eur(a.price)}</span>
+      <button class="add-btn" data-i="${i}" aria-label="${a.name} hinzufügen" ${isToday?'':'disabled'}>+</button>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("#angebot-grid .add-btn").forEach(btn => {
+    btn.onclick = () => {
+      const a = ANGEBOTE[btn.dataset.i];
+      cart.push({title:`${a.label}s-Angebot: ${a.name}`, sub:"Tagesangebot", detail:"", note:"", price:a.price});
+      renderCart(); toast();
+    };
+  });
+}
+
+/* ---- Cart ---- */
+function renderCart(){
+  $("cart-empty").style.display = cart.length ? "none" : "block";
+  $("cart-list").innerHTML = cart.map((c,i) => `
+    <div class="cart-item">
+      <div class="info">${c.title}
+        ${c.detail ? `<div class="det">${c.detail}</div>` : (c.sub ? `<div class="det">${c.sub}</div>` : "")}
+        ${c.note ? `<div class="det" style="color:var(--gold-bright);">💬 ${c.note}</div>` : ""}
+      </div>
+      <span class="pr">${eur(c.price)}</span>
+      <button class="rm" data-i="${i}" aria-label="Entfernen">✕</button>
+    </div>`).join("");
+  document.querySelectorAll(".cart-item .rm").forEach(btn => {
+    btn.onclick = () => { cart.splice(btn.dataset.i,1); renderCart(); };
+  });
+  const total = cart.reduce((s,c)=>s+c.price,0);
+  $("bar-total").textContent = eur(total);
+  $("cart-count").textContent = cart.length || "";
+  updateBar();
+  updatePreview();
+}
+
+/* ---- Tabs ---- */
+function switchTab(tab){
+  activeTab = tab;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab===tab));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id==="panel-"+tab));
+  $("live-pill").classList.toggle("hidden", tab !== "pimp");
+  window.scrollTo({top:0, behavior:"smooth"});
+  updateBar();
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+/* ---- Sticky bar: one constant action ---- */
+function updateBar(){
+  $("bar-action").disabled = cart.length === 0;
+}
+
+/* Bar: review first, then send */
+$("bar-action").onclick = () => {
+  if (activeTab !== "order"){
+    switchTab("order");   // erst prüfen, dann senden
+  } else {
+    sendWhatsApp();
+  }
+};
+
+/* Pill: live price = add to basket */
+$("live-pill").onclick = () => addKebap();
+
+/* ---- Add configured kebap ---- */
+function addKebap(){
+  if (sauces.length === 0){
+    toast("Bitte erst Soßen wählen 😉");
+    $("sauce-grid").scrollIntoView({behavior:"smooth", block:"center"});
+    return;
+  }
+  const b = BREADS.find(x=>x.id===bread).name;
+  let m = MEATS.find(x=>x.id===meat).name;
+  if (meatQty) m += ` (+${meatQty*50} g)`;
+  const segments = [b, m, saladText(), sauces.join(", ")];
+  if (extras.length) segments.push(extras.join(", "));
+  cart.push({title:"Pimp Kebap", sub:"", detail:segments.join(" // "), note:"", price:kebapPrice()});
+  /* Reset für den nächsten */
+  salad = [...SALAD]; sauces = []; extras = []; meatQty = 0; bread = BREADS[0].id; meat = MEATS[0].id;
+  renderBreads(); renderMeats(); renderSalad(); renderSauces(); renderExtras(); updateLive(); renderCart();
+  toast();
+}
+
+/* ---- Meat stepper ---- */
+$("meat-plus").onclick = () => { if (meatQty < 6){ meatQty++; updateLive(); } };
+$("meat-minus").onclick = () => { if (meatQty > 0){ meatQty--; updateLive(); } };
+
+/* ---- Mode toggle ---- */
+document.querySelectorAll("#mode-toggle button").forEach(btn => {
+  btn.onclick = () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll("#mode-toggle button").forEach(b=>b.classList.toggle("sel", b===btn));
+    $("addr-field").style.display = mode === "Lieferung" ? "block" : "none";
+    updatePreview();
+  };
+});
+
+/* ---- Time slots ---- */
+(function fillTimes(){
+  const sel = $("time");
+  const now = new Date();
+  let t = new Date(now.getTime() + 20*60000);
+  t.setMinutes(Math.ceil(t.getMinutes()/15)*15, 0, 0);
+  for (let i=0; i<12; i++){
+    const hh = String(t.getHours()).padStart(2,"0");
+    const mm = String(t.getMinutes()).padStart(2,"0");
+    const o = document.createElement("option");
+    o.textContent = `${hh}:${mm} Uhr`;
+    sel.appendChild(o);
+    t = new Date(t.getTime() + 15*60000);
+  }
+})();
+
+/* ---- WhatsApp message ---- */
+function buildMessage(){
+  const total = cart.reduce((s,c)=>s+c.price,0);
+  const name = $("name").value.trim();
+  const lines = [];
+  lines.push("🥙 *NEUE BESTELLUNG – Pimp My Kebap*");
+  lines.push("");
+  if (cart.length === 0){
+    lines.push("(noch keine Artikel ausgewählt)");
+  }
+  cart.forEach(c => {
+    let line = `▪ ${c.title}`;
+    if (c.detail) line += `: ${c.detail}`;
+    line += ` - ${eur(c.price)}`;
+    lines.push(line);
+    if (c.note) lines.push(`   💬 ${c.note}`);
+  });
+  lines.push("");
+  lines.push(`*Gesamt: ${eur(total)}*`);
+  lines.push("");
+  lines.push(`👤 Name: ${name || "…"}`);
+  lines.push(`📦 ${mode}${mode==="Lieferung" ? " – " + ($("addr").value.trim() || "…") : ""}`);
+  lines.push(`🕒 Zeit: ${$("time").value}`);
+  const note = $("note").value.trim();
+  if (note) lines.push(`📝 ${note}`);
+  return lines.join("\n");
+}
+
+function updatePreview(){
+  $("msg-preview").textContent = buildMessage();
+}
+
+function sendWhatsApp(){
+  const name = $("name").value.trim();
+  if (!name){ toast("Bitte Namen eintragen 🙂"); $("name").focus(); return; }
+  if (mode === "Lieferung" && !$("addr").value.trim()){
+    toast("Bitte Lieferadresse eintragen"); $("addr").focus(); return;
+  }
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildMessage())}`;
+  window.open(url, "_blank");
+}
+
+/* Preview follows every input live */
+["name","addr","note"].forEach(id => $(id).addEventListener("input", updatePreview));
+$("time").addEventListener("change", updatePreview);
+
+/* ---- Toast ---- */
+let toastTimer;
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg || "Zur Bestellung hinzugefügt ✓";
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+/* ---- Init ---- */
+renderBreads(); renderMeats(); renderSalad(); renderSauces(); renderExtras(); updateLive();
+renderQuick(); renderAngebote(); renderCart(); updateBar();
+</script>
+</body>
+</html>
