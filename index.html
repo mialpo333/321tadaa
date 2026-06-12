@@ -313,6 +313,15 @@
   .project-desc { font-size: 0.85rem; color: rgba(240,248,255,0.38); line-height: 1.75; margin-bottom: 1.5rem; }
   .project-langs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
   .project-lang { font-family: 'Space Mono', monospace; font-size: 0.6rem; padding: 0.2rem 0.55rem; border: 1px solid rgba(200,216,232,0.1); color: rgba(200,216,232,0.35); border-radius: 0.25rem; }
+  .project-link-row { display: flex; align-items: center; gap: 0.9rem; margin-top: 1.1rem; }
+  .project-link {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem;
+    color: var(--teal); text-decoration: none; letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(14,124,107,0.4); padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .project-link:hover { color: #22c55e; border-color: #22c55e; }
+  .project-qr { width: 64px; height: 64px; border-radius: 6px; background: #fff; padding: 3px; flex-shrink: 0; }
 
   /* ─── BANNER ─── */
   .logo-banner-wrap {
@@ -466,7 +475,7 @@
     <a href="#contact" class="btn-secondary" data-de>Kontakt aufnehmen</a>
   </div>
   <div class="hero-stats">
-    <div><div class="stat-num">3+</div><div class="stat-label" data-en>Live apps</div><div class="stat-label" data-de>Live-Apps</div></div>
+    <div><div class="stat-num">4+</div><div class="stat-label" data-en>Live apps</div><div class="stat-label" data-de>Live-Apps</div></div>
     <div><div class="stat-num">DE·EN·IT</div><div class="stat-label" data-en>App languages</div><div class="stat-label" data-de>App-Sprachen</div></div>
     <div><div class="stat-num">EU</div><div class="stat-label" data-en>Stuttgart & Europe</div><div class="stat-label" data-de>Stuttgart & Europa</div></div>
   </div>
@@ -525,8 +534,8 @@
         <span class="project-tag">⚡ Web App</span>
         <h3 class="project-title" data-en>TCF Tennis Club Booking</h3>
         <h3 class="project-title" data-de>TCF Tennisclub Buchungssystem</h3>
-        <p class="project-desc" data-en>Full booking management for TCF tennis club. Court reservations, member management and scheduling — integrated with Google Sheets, optimised for mobile.</p>
-        <p class="project-desc" data-de>Vollständiges Buchungssystem für den TCF Tennisclub. Platzbuchungen, Mitgliederverwaltung und Terminplanung — Google Sheets integriert, mobile-optimiert.</p>
+        <p class="project-desc" data-en>Full booking management for TCF tennis club. Member management and scheduling — integrated with Google Sheets, optimised for mobile.</p>
+        <p class="project-desc" data-de>Vollständiges Buchungssystem für den TCF Tennisclub. Mitgliederverwaltung und Terminplanung — Google Sheets integriert, mobile-optimiert.</p>
         <div class="project-langs">
           <span class="project-lang">DE / EN</span>
           <span class="project-lang">Google Sheets API</span>
@@ -535,13 +544,55 @@
       </div>
       <div class="project-card">
         <span class="project-tag">🍽️ Menu System</span>
-        <h3 class="project-title" data-en>Schwaben Stuben</h3>
-        <h3 class="project-title" data-de>Schwaben Stuben</h3>
-        <p class="project-desc" data-en>Trilingual digital menu & ordering for a Südtirol restaurant. WhatsApp integration included.</p>
-        <p class="project-desc" data-de>Dreisprachige Speisekarte & Bestellung für ein Südtiroler Restaurant. WhatsApp-Integration inklusive.</p>
+        <h3 class="project-title" data-en>Daily Menu — Schwaben Stuben & Schillers Blick</h3>
+        <h3 class="project-title" data-de>Tagesmenü — Schwaben Stuben & Schillers Blick</h3>
+        <p class="project-desc" data-en>Daily lunch menu with WhatsApp ordering for two restaurants — guests browse the menu and place their order in seconds.</p>
+        <p class="project-desc" data-de>Tagesmenü mit WhatsApp-Bestellung für zwei Restaurants — Gäste sehen die Karte und bestellen in Sekunden.</p>
+        <div class="project-langs">
+          <span class="project-lang">DE</span>
+          <span class="project-lang">WhatsApp</span>
+          <span class="project-lang">Mobile-first</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">🥙 WhatsApp Ordering</span>
+        <h3 class="project-title" data-en>Pimp My Kebap</h3>
+        <h3 class="project-title" data-de>Pimp My Kebap</h3>
+        <p class="project-desc" data-en>Build-your-own kebab configurator with WhatsApp ordering for Zentrum Döner in Freiberg am Neckar — pick bread, meat, sauces and extras, send the order in one tap. No app, no account.</p>
+        <p class="project-desc" data-de>Kebap-Konfigurator mit WhatsApp-Bestellung für den Zentrum Döner in Freiberg am Neckar — Brot, Fleisch, Soßen und Extras wählen, Bestellung mit einem Tipp senden. Ohne App, ohne Konto.</p>
+        <div class="project-langs">
+          <span class="project-lang">DE</span>
+          <span class="project-lang">WhatsApp</span>
+          <span class="project-lang">LIVE</span>
+        </div>
+        <div class="project-link-row">
+          <img class="project-qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIQAAACECAIAAADeJhTwAAADIUlEQVR4nO2dQW7cMAwAs0Hu+Wi/0FO/kI/mBdtjBRRCSZCUx9uZY2LL3h3QWokS/Xg+n2/C4P3qG5A/KAOEMkAoA4QyQCgDhDJAfOz+8fnzR/vFvn99/fNa6zGRv0eulf0slXOz7a8YGSCUAUIZILZ9xsruGRch+8zd9ROV60b6oQjT34ORAUIZIJQBItRnrGR/42fb6RpP7O6h8txf6foeVowMEMoAoQwQ6T5jmkhfEjl+d0x2fuwkRgYIZYBQBghcn7EbN+ye6ZHjVybyE10YGSCUAUIZINJ9xsRv8EibXcfsqOTJuzAyQCgDhDJAhPqMk7/NK2uoKn/P3tsERgYIZYBQBohtn3HVnP7Jda4TeewKRgYIZYBQBojHbh94ZW/Ejux6qok1Ttkxx/TnXTEyQCgDhDJApOemKvM8ledvJd8wPQfV1RcaGSCUAUIZINrmprLjkuzv+q6xzvR97oh8n0YGCGWAUAaIUO2Q7LP15H6IifxHtp/oGocZGSCUAUIZILb5jCwnxxmR47NU5pey97zDyAChDBDKAJHOgUfoqi1Y4eT6YPMZL4gyQCgDRKjPWJmuO3tyjLI792QOY8XIAKEMEMoAMbLWtlLzPNLOrs2ucyPtTORsjAwQygChDBCldVNda5+mc+Bd9W7NZ/xHKAOEMkCk101Vjs/WDZxYj1upXViZTzOfcTOUAUIZIEbq2na9R2+i34qcu9L1Hg7npm6GMkAoA8R4XduunHbX/M+u/a61Ye7PeBGUAUIZIErjjJP1mib2GE7sB3Ru6kVQBghlgGjb05flZK3DyLkna2fZZ9wAZYBQBohQDryLq37jV65Vmb9y3dSNUQYIZYAIzU1NvP9uIk8eYWJfetceQyMDhDJAKANEOp9x1XuKIuuXunIeEzXbzYHfDGWAUAaIkbW2Fbry2xP5hsq1zIHfDGWAUAYIXJ+xMl2DpLLH0PdnvDjKAKEMEOP7M7LtZOt8dOWoJ+qdZPsVIwOEMkAoA0S6rm2FiTml6f3hkTZ3uG7qxigDhDJAXLY/Q/7GyAChDBDKAKEMEMoAoQwQygDxGy9eHV8dm38zAAAAAElFTkSuQmCC" alt="QR Code Pimp My Kebap" loading="lazy">
+          <a class="project-link" href="https://321tadaa.com/pimp-my-kebap" target="_blank" rel="noopener" data-en>Open live app →</a>
+          <a class="project-link" href="https://321tadaa.com/pimp-my-kebap" target="_blank" rel="noopener" data-de>App öffnen →</a>
+        </div>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">📱 QR Menu</span>
+        <h3 class="project-title" data-en>Trilingual Digital Menu</h3>
+        <h3 class="project-title" data-de>Dreisprachige digitale Speisekarte</h3>
+        <p class="project-desc" data-en>QR-code menu for a Südtirol restaurant — available in German, Italian, and English.</p>
+        <p class="project-desc" data-de>QR-Code-Speisekarte für ein Südtiroler Restaurant — verfügbar auf Deutsch, Italienisch und Englisch.</p>
         <div class="project-langs">
           <span class="project-lang">DE / IT / EN</span>
+          <span class="project-lang">QR-Code</span>
           <span class="project-lang">Südtirol</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">🗺️ Interactive Map</span>
+        <h3 class="project-title" data-en>Albarella Interactive Map</h3>
+        <h3 class="project-title" data-de>Albarella Interaktive Karte</h3>
+        <p class="project-desc" data-en>Interactive island map with 36 points of interest, category filtering and full road network — built for Isola di Albarella.</p>
+        <p class="project-desc" data-de>Interaktive Inselkarte mit 36 Points of Interest, Kategoriefilter und vollständigem Straßennetz — entwickelt für die Isola di Albarella.</p>
+        <div class="project-langs">
+          <span class="project-lang">Leaflet.js</span>
+          <span class="project-lang">GeoJSON</span>
+          <span class="project-lang">IT</span>
         </div>
       </div>
       <div class="project-card">
