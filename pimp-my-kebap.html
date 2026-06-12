@@ -242,6 +242,7 @@ h2::after{content:"";flex:1;height:1px;background:var(--line);}
 .angebot.today{border-color:var(--flame);background:#322620;}
 .angebot.today .day{color:var(--flame);}
 .angebot .nm{flex:1;font-size:.9rem;}
+.angebot .nm .sub{display:block;color:var(--chalk-dim);font-size:.72rem;}
 .angebot .badge{
   flex:none;font-size:.6rem;font-weight:800;letter-spacing:.5px;
   background:var(--flame);color:#fff;
@@ -356,6 +357,47 @@ h2::after{content:"";flex:1;height:1px;background:var(--line);}
 }
 #live-pill.hidden{display:none;}
 
+/* ---------- Kategorie-Akkordeon ---------- */
+.cat{margin-top:10px;}
+.cat-head{
+  width:100%;
+  display:flex;align-items:center;gap:10px;
+  background:#1f231f;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:12px 14px;
+  color:var(--chalk);
+  font-family:inherit;
+  cursor:pointer;
+  text-align:left;
+}
+.cat-head.open{border-color:var(--gold);}
+.cat-head .cat-name{font-weight:800;font-size:.92rem;letter-spacing:.5px;text-transform:uppercase;}
+.cat-head .cat-note{flex:1;color:var(--chalk-dim);font-size:.7rem;}
+.cat-head .cat-name + .cat-count{margin-left:auto;}
+.cat-head .cat-count{
+  flex:none;min-width:24px;text-align:center;
+  background:var(--board-light);
+  border:1px solid var(--line);
+  border-radius:11px;
+  color:var(--chalk-dim);
+  font-size:.7rem;font-weight:700;
+  padding:2px 7px;
+}
+.cat-head .chev{flex:none;color:var(--gold-bright);font-size:.9rem;}
+.cat-body{padding-top:2px;}
+.quick .num{
+  flex:none;min-width:26px;text-align:right;
+  color:var(--chalk-dim);
+  font-size:.78rem;font-weight:700;
+}
+.quick .all{
+  margin-left:6px;
+  color:var(--chalk-dim);
+  font-size:.62rem;
+  vertical-align:super;
+}
+
 /* ---------- Quick item note ---------- */
 .quick-wrap{margin-top:8px;}
 .quick-wrap .quick{margin-top:0;}
@@ -428,6 +470,13 @@ footer .demo{
   border:1px dashed var(--chalk-dim);
   border-radius:5px;padding:3px 10px;
 }
+footer .flink{
+  display:inline-block;
+  color:var(--gold);
+  text-decoration:none;
+  padding:6px 4px;   /* Tap-Fläche */
+}
+footer .flink:active{color:var(--gold-bright);}
 .toast{
   position:fixed;left:50%;bottom:100px;transform:translateX(-50%);
   background:var(--gold);color:#1c201c;
@@ -455,7 +504,7 @@ footer .demo{
 
 <nav>
   <button data-tab="pimp" class="active">Pimp my Kebap</button>
-  <button data-tab="direkt">Direkt bestellen</button>
+  <button data-tab="direkt">Speisekarte</button>
   <button data-tab="angebot">Angebote</button>
   <button data-tab="order">Bestellung<span class="count" id="cart-count"></span></button>
 </nav>
@@ -474,10 +523,10 @@ footer .demo{
     <section>
       <div><span class="step-label">Step 2 · Basic</span></div>
       <div class="basic-banner">
-        <div class="price">6,50&nbsp;€</div>
+        <div class="price">ab 6,50&nbsp;€</div>
         <ul>
           <li>100 g Fleisch, frisch abgewogen</li>
-          <li>Salat (Kraut, Zwiebel, Tomate)</li>
+          <li>Salat komplett (mit allem)</li>
           <li>2 Soßen nach Wahl</li>
         </ul>
       </div>
@@ -514,9 +563,13 @@ footer .demo{
   <!-- ============ TAB: DIREKT ============ -->
   <div class="panel" id="panel-direkt">
     <section>
-      <h2>Direkt bestellen</h2>
-      <p class="hint">Klassiker ohne Konfigurieren – einfach hinzufügen.</p>
+      <h2>Speisekarte</h2>
+      <p class="hint">🥙 Döner, Yufka &amp; Co. stellst du dir im Tab „Pimp my Kebap" zusammen — alles andere findest du hier.</p>
+      <div class="field" style="margin-top:4px;">
+        <input type="search" id="menu-search" placeholder="🔍 Suchen … (Name oder Nr.)" autocomplete="off">
+      </div>
       <div id="quick-grid"></div>
+      <p class="hint" id="legend" style="margin-top:16px;font-size:.68rem;line-height:1.5;"></p>
     </section>
   </div>
 
@@ -567,9 +620,10 @@ footer .demo{
   </div>
 
   <footer>
-    <div>Pimp My Kebap · Zentrum Döner · Marktplatz 18, 71691 Freiberg am Neckar</div>
-    <div>Instagram @zentrumdoner</div>
-    <div class="demo">DEMO von 321tadaa.com – Preise &amp; Zutaten ohne Gewähr</div>
+    <div>Pimp My Kebap · Zentrum Döner</div>
+    <div><a class="flink" href="https://www.google.com/maps/search/?api=1&query=Zentrum+D%C3%B6ner+Marktplatz+18+71691+Freiberg+am+Neckar" target="_blank" rel="noopener">📍 Marktplatz 18, 71691 Freiberg am Neckar</a></div>
+    <div><a class="flink" href="https://www.instagram.com/pimp_my_kebap_zentrum/" target="_blank" rel="noopener">📷 @pimp_my_kebap_zentrum</a></div>
+    <div class="demo" id="status-badge"></div>
   </footer>
 </div>
 
@@ -605,56 +659,156 @@ footer .demo{
 ===================================================== */
 const WHATSAPP_NUMBER = "491742116095"; // +49 174 2116095
 
+/* >>> GO-LIVE-SCHALTER: auf false setzen, wenn offiziell <<< */
+const IS_DEMO = true;
+const STAND   = "12.06.2026";   // bei jeder Karten-Änderung aktualisieren
+
 /* ---- Stammdaten (mit Betreiber abstimmen!) ---- */
+/* Basis-Preis je Brot/Wrap (bestätigt vom Betreiber 06/2026) */
 const BREADS = [
-  {id:"klassik", name:"Klassik-Dönerbrot", sub:"mit Kümmel & Sesam"},
-  {id:"sesam",   name:"Sesambrot", sub:"fluffig & frisch"},
-  {id:"knobi",   name:"Knoblauchbrot", sub:"für Knobi-Fans"},
-  {id:"yufka",   name:"Yufka", sub:"dünnes Fladenbrot, gerollt"}
+  {id:"klassik", name:"Klassik-Dönerbrot", sub:"mit Kümmel & Sesam", base:6.50},
+  {id:"sesam",   name:"Sesambrot", sub:"fluffig & frisch", base:6.50},
+  {id:"knobi",   name:"Knoblauchbrot", sub:"für Knobi-Fans", base:6.50},
+  {id:"vital",   name:"Vital Brot", sub:"die Vollkorn-Variante", base:6.50},
+  {id:"yufka",   name:"Yufka", sub:"dünnes Fladenbrot, gerollt", base:7.50}
 ];
+/* Aufpreis je Fleisch (bestätigt vom Betreiber 06/2026) */
 const MEATS = [
-  {id:"doener",  name:"Dönerfleisch", sub:"vom Spieß"},
-  {id:"scheibe", name:"Scheibenfleisch", sub:"saftige Scheiben"},
-  {id:"haehnchen", name:"Hähnchen", sub:"zart & mager"},
-  {id:"falafel", name:"Falafel", sub:"vegetarisch 🌱"}
+  {id:"doener",  name:"Dönerfleisch", sub:"vom Spieß", sur:0},
+  {id:"haehnchen", name:"Hähnchen", sub:"zart & mager", sur:0},
+  {id:"scheibe", name:"Scheibenfleisch", sub:"saftige Scheiben", sur:1.00},
+  {id:"falafel", name:"Falafel", sub:"vegetarisch 🌱", sur:1.50}
 ];
 const SAUCES = [
   "Kräuter-Knoblauch-Joghurt","Scharfe Soße","Cocktailsoße",
   "Mango-Avocado-Soße","Barbecue-Soße","Naturjoghurt"
 ];
-/* Standard-Salat im Basic – Komponenten mit Betreiber bestätigen */
-const SALAD = ["Kraut","Zwiebel","Tomate"];
+/* "Mit allem" – Standard-Salat (bestätigt vom Betreiber 06/2026) */
+const SALAD = ["Salat","Weißkraut","Rotkraut","Zwiebel","Tomaten"];
 const EXTRA_SAUCE_PRICE = 0.50;
-/* Beispiel-Auswahl aus den "18 frischen Zutaten" –
-   finale Liste mit dem Betreiber abstimmen */
+/* Extras & Toppings (bestätigt vom Betreiber 06/2026) */
 const EXTRAS = [
   {name:"Schmelzkäse", price:1.00, star:true},
   {name:"Schafskäse", price:0.50},
   {name:"Jalapeños", price:0.50},
   {name:"Mais", price:0.50},
-  {name:"Gurke", price:0.50},
-  {name:"Rotkohl", price:0.50},
   {name:"Peperoni", price:0.50},
-  {name:"Röstzwiebeln", price:0.50},
-  {name:"Oliven", price:0.50}
+  {name:"Oliven", price:0.50},
+  {name:"Granatapfel", price:0.50},
+  {name:"Feldsalat", price:0.50},
+  {name:"Rucola", price:0.50},
+  {name:"Karotten", price:0.50},
+  {name:"Saure Gurken", price:0.50},
+  {name:"Spinat", price:0.50},
+  {name:"Grillgemüse", price:0.50}
 ];
-const QUICK = [
-  {name:"Schüler-Döner", sub:"nur an Schultagen bis 15 Uhr", price:6.00},
-  {name:"Dürüm Kebap", sub:"im dünnen Fladenbrot gerollt", price:6.00},
-  {name:"Yufka Salat", sub:"mit Weichkäse", price:5.50},
-  {name:"Standard-Burger-Kebap", sub:"Kebap trifft Burger", price:4.00},
-  {name:"Cheeseburger-Kebap", sub:"mit Käse", price:5.00},
-  {name:"Chili-Cheeseburger-Kebap", sub:"mit Käse & Chili", price:6.00},
-  /* Beilagen – Preise mit Betreiber bestätigen! */
-  {name:"Pommes", sub:"Portion", price:3.00},
-  {name:"Pommes mit Schmelzkäse", sub:"unser Highlight ⭐", price:4.00}
+/* =====================================================
+   KOMPLETTE SPEISEKARTE (Stand 06/2026, lt. Karte)
+   Nr. 1–3 fehlen auf dem Foto (vermutl. Döner-Klassiker,
+   die der Konfigurator abdeckt) – mit Betreiber klären.
+   all = Zusatzstoffe (1–8) / Allergene (a–g)
+===================================================== */
+const MENU = [
+  {cat:"Vom Drehspieß", note:"Hähnchen- & Hackfleischdrehspieß", items:[
+    {nr:4,  name:"Dönerteller", sub:"mit Salat und Pommes/Reis", price:13.00},
+    {nr:0,  name:"Dönerteller Scheibenfleisch", sub:"mit Salat und Pommes/Reis", price:15.00}
+  ]},
+  {cat:"Schülerangebote", note:"Nur an Schultagen bis 16:00 Uhr", school:true, items:[
+    {nr:5, name:"Schüler-Box", sub:"mit einer Beilage: Pommes/Reis/Salat", price:6.00},
+    {nr:6, name:"Schüler-Yufka", sub:"", price:7.00},
+    {nr:7, name:"Schüler-Fladenbrot (Döner)", sub:"", price:6.00},
+    {nr:8, name:"Schülerpizza", sub:"mit einer Zutat", price:5.00},
+    {nr:9, name:"Schüler-Pommes", sub:"", price:4.00}
+  ]},
+  {cat:"Lahmacun", items:[
+    {nr:10, name:"Lahmacun", sub:"", all:"3,4,a,b,d", price:6.00},
+    {nr:11, name:"Lahmacun mit Salat", sub:"", all:"3,4,a,b,d", price:8.00},
+    {nr:12, name:"Lahmacun mit Fleisch und Salat", sub:"", price:9.50},
+    {nr:13, name:"Lahmacun Teller", sub:"mit Fleisch und Salat", price:13.00}
+  ]},
+  {cat:"Salate", note:"Extras je 0,50 €", items:[
+    {nr:14, name:"Gemischter Salat", sub:"", all:"c", price:5.50},
+    {nr:15, name:"Gemischter Salat", sub:"mit Weichkäse und Oliven", price:8.00},
+    {nr:16, name:"Thunfischsalat", sub:"", price:9.00}
+  ]},
+  {cat:"Vegetarisch", items:[
+    {nr:17, name:"Fladenbrot", sub:"mit Salat und Weichkäse", price:7.00},
+    {nr:18, name:"Yufka", sub:"mit Salat und Weichkäse", price:8.00},
+    {nr:19, name:"Reisbox", sub:"mit Soße", price:6.00},
+    {nr:20, name:"Halloumi Brot", sub:"mit Salat", price:8.00},
+    {nr:21, name:"Halloumi Yufka", sub:"mit Salat", price:9.00},
+    {nr:22, name:"Halloumi Box", sub:"mit Salat/Pommes/Reis", price:8.00},
+    {nr:23, name:"Halloumi Teller", sub:"mit Salat und Pommes/Reis", price:13.00},
+    {nr:24, name:"Halloumi 6 Stück", sub:"", price:5.50},
+    {nr:25, name:"Halloumi 12 Stück", sub:"", price:9.00},
+    {nr:26, name:"Falafel Brot", sub:"mit Salat", all:"a,b,d,e,f,g", price:8.00},
+    {nr:27, name:"Falafel Yufka", sub:"mit Salat", all:"a,b,d,e,f,g", price:9.00},
+    {nr:28, name:"Falafel Box", sub:"mit Salat/Pommes/Reis", all:"a,b,d,e,f,g", price:8.00},
+    {nr:29, name:"Falafel Teller", sub:"mit Salat und Pommes/Reis", all:"a,b,d,e,f,g", price:13.00},
+    {nr:30, name:"Falafel 6 Stück", sub:"", all:"a,b,d,e,f,g", price:5.50},
+    {nr:31, name:"Falafel 12 Stück", sub:"", all:"a,b,d,e,f,g", price:9.00}
+  ]},
+  {cat:"Chicken Nuggets & Pommes", items:[
+    {nr:32, name:"Pommes", sub:"Portion", price:5.00},
+    {nr:33, name:"Chicken Nuggets 5 Stück Box", sub:"mit Pommes/Salat/Reis", price:8.00},
+    {nr:34, name:"Chicken Nuggets Teller 8 Stück", sub:"mit zwei Beilagen: Pommes/Salat/Reis", price:13.00},
+    {nr:35, name:"Chicken Nuggets 6 Stück", sub:"", price:5.50},
+    {nr:36, name:"Chicken Nuggets 12 Stück", sub:"", price:9.00}
+  ]},
+  {cat:"Pizza", items:[
+    {nr:37, name:"Pizzabrot", sub:"", price:7.00},
+    {nr:38, name:"Margherita", sub:"", all:"4,a,b,d", price:8.00},
+    {nr:39, name:"Salami", sub:"", all:"4,a,b,d", price:9.00},
+    {nr:40, name:"Schinken", sub:"", all:"4,a,b,d", price:9.00},
+    {nr:41, name:"Funghi", sub:"", all:"4,a,b,d", price:9.00},
+    {nr:42, name:"Broccoli", sub:"", price:9.00},
+    {nr:43, name:"Prosciutto", sub:"mit Salami und Schinken", all:"4,a,b,d", price:10.00},
+    {nr:44, name:"Sucuk", sub:"", all:"4,a,b,d", price:10.00},
+    {nr:45, name:"Hackfleischdrehspieß", sub:"", all:"2,4,6,a,b,d", price:10.00},
+    {nr:46, name:"Hähnchendrehspieß", sub:"", all:"2,4,6,a,b,d", price:10.00},
+    {nr:47, name:"Hawaii", sub:"mit Schinken und Ananas", all:"4,a,b,d", price:10.00},
+    {nr:48, name:"Artischocken", sub:"", price:9.00},
+    {nr:49, name:"Zentrum", sub:"mit Salami, Schinken und Pilze", all:"4,a,b,d", price:10.50},
+    {nr:50, name:"Thunfisch", sub:"", price:9.00},
+    {nr:51, name:"Thunfisch Zwiebel", sub:"", price:9.50},
+    {nr:52, name:"Gemischt", sub:"mit Salami, Schinken, Peperoni, Paprika", price:11.00},
+    {nr:53, name:"Vierjahreszeiten", sub:"mit Salami, Schinken, Paprika, Champignons", all:"4,a,b,d", price:11.00},
+    {nr:54, name:"Meeresfrüchte", sub:"", price:9.00},
+    {nr:55, name:"Vegetarisch", sub:"mit Spinat, Paprika, Oliven, Pilze und Peperoni", all:"4,a,b,d", price:11.00},
+    {nr:56, name:"Vier Käse", sub:"mit Edamer, Mozzarella, Weichkäse und Gorgonzola", price:11.00}
+  ]},
+  {cat:"Pide", items:[
+    {nr:57, name:"Weichkäse", sub:"", all:"1,4,a,b,d", price:8.50},
+    {nr:58, name:"Hackfleisch", sub:"", all:"3,6,a,b,d", price:9.50},
+    {nr:59, name:"Hackfleisch und Weichkäse", sub:"", all:"3,6,a,b,d", price:10.00},
+    {nr:60, name:"Kebap", sub:"", price:11.00},
+    {nr:61, name:"Sucuk", sub:"", price:11.00},
+    {nr:62, name:"Spinat und Weichkäse", sub:"", all:"1,4,a,b,d", price:9.00},
+    {nr:63, name:"Spinat, Weichkäse und Ei", sub:"", all:"1,4,a,b,d", price:10.00},
+    {nr:64, name:"Sucuk und Ei", sub:"", all:"3,6,a,b,d", price:12.00},
+    {nr:65, name:"Vegetarisch", sub:"mit Spinat, Käse, Paprika, Pilz, Ei", price:11.00}
+  ]},
+  {cat:"Seele", items:[
+    {nr:66, name:"Weichkäse", sub:"", all:"1,4,a,b,d", price:9.00},
+    {nr:67, name:"Spinat und Weichkäse", sub:"", all:"1,4,a,b,d", price:10.00},
+    {nr:68, name:"Spinat, Weichkäse und Ei", sub:"", all:"1,4,a,b,d", price:10.00},
+    {nr:69, name:"Kebap, Tomaten und Zwiebel", sub:"", all:"3,6,a,b,d", price:12.00}
+  ]},
+  {cat:"Burger Kebap", items:[
+    {nr:70, name:"Burger Kebap", sub:"Kebapfleisch im Burgerbrot, Salat, Tomaten, Zwiebeln, Soße", price:4.00},
+    {nr:71, name:"Cheese Burger Kebap", sub:"wie Nr. 70, mit Schmelzkäse", price:5.00},
+    {nr:72, name:"Chilli Cheese Burger Kebap", sub:"wie Nr. 70, mit Schmelzkäse, Jalapeños", price:6.00},
+    {nr:73, name:"Chilli Cheese", sub:"mit Pommes, Schmelzkäse, Jalapeños", price:6.50}
+  ]}
 ];
+const FOOTNOTES = "Zusatzstoffe: 1 Farbstoff · 2 Koffein · 3 Geschmacksverstärker · 4 Konservierungsmittel · 5 Süßungsmittel · 6 Phosphat · 7 geschwärzt · 8 Antioxid-Mittel — Allergene: a Glutenhaltiges Getreide · b Hefe · c Fische · d Milch (Laktose) · e Sesamsamen · f Eier · g Lupinen";
+/* Wochen-Angebote (bestätigt vom Betreiber 06/2026) */
 const ANGEBOTE = [
-  {day:1, label:"Montag", name:"Dönerteller mit Pommes", price:8.50},
-  {day:2, label:"Dienstag", name:"Jede Pide mit zwei Zutaten", price:6.50},
-  {day:3, label:"Mittwoch", name:"Jede Pizza vom Speiseplan", price:6.50}
+  {day:1, label:"Montag", name:"Dönerteller mit Pommes (ohne Scheibenfleisch)", price:11.00},
+  {day:2, label:"Dienstag", name:"Jede Pide mit zwei Zutaten", price:9.00},
+  {day:3, label:"Mittwoch", name:"Jede Pizza vom Speiseplan", price:9.00},
+  {day:6, label:"Samstag", name:"Seele / Calzone", price:9.00}
 ];
-const BASIC_PRICE = 6.50;
 const MEAT_STEP = 1.50;
 
 /* ---- State ---- */
@@ -673,7 +827,9 @@ const $ = id => document.getElementById(id);
 const eur = v => v.toFixed(2).replace(".", ",") + " €";
 
 function kebapPrice(){
-  let p = BASIC_PRICE + meatQty * MEAT_STEP;
+  let p = BREADS.find(b => b.id === bread).base
+        + MEATS.find(m => m.id === meat).sur
+        + meatQty * MEAT_STEP;
   extras.forEach(n => { p += EXTRAS.find(e => e.name === n).price; });
   if (sauces.length > 2) p += (sauces.length - 2) * EXTRA_SAUCE_PRICE;
   return p;
@@ -683,12 +839,17 @@ function kebapPrice(){
 function renderRadio(containerId, items, current, onPick, cols){
   const grid = $(containerId);
   if (cols) grid.classList.add("cols");
-  grid.innerHTML = items.map(it => `
+  grid.innerHTML = items.map(it => {
+    let pr = "inkl.";
+    if (it.base !== undefined) pr = eur(it.base);
+    else if (it.sur) pr = "+" + it.sur.toFixed(2).replace(".",",") + " €";
+    return `
     <div class="opt ${current===it.id?'sel':''}" data-id="${it.id}" role="radio" aria-checked="${current===it.id}" tabindex="0">
       <span class="box"></span>
       <span class="nm">${it.name}<span class="sub">${it.sub||""}</span></span>
-      <span class="pr">inkl.</span>
-    </div>`).join("");
+      <span class="pr">${pr}</span>
+    </div>`;
+  }).join("");
   [...grid.children].forEach(el => {
     const pick = () => onPick(el.dataset.id);
     el.onclick = pick;
@@ -794,57 +955,127 @@ function updateLive(){
 }
 
 /* ---- Quick & Angebote ---- */
-function renderQuick(){
-  $("quick-grid").innerHTML = QUICK.map((q,i) => `
-    <div class="quick-wrap">
-      <div class="quick">
-        <span class="nm">${q.name}<span class="sub">${q.sub}</span></span>
-        <span class="pr">${eur(q.price)}</span>
-        <button class="note-toggle" data-i="${i}" aria-label="Anmerkung zu ${q.name}" title="Anmerkung">💬</button>
-        <button class="add-btn" data-i="${i}" aria-label="${q.name} hinzufügen">+</button>
-      </div>
-      <div class="quick-note" id="qnote-${i}">
-        <input type="text" id="qnote-input-${i}" placeholder="z. B. ohne Zwiebeln, scharf …">
-      </div>
-    </div>`).join("");
+/* ---- Komplette Karte: Kategorien-Akkordeon mit Suche ---- */
+let openCats = new Set();
+
+function schoolActive(){
+  const d = new Date();
+  return d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() < 16;
+}
+
+function renderMenu(){
+  const q = $("menu-search").value.trim().toLowerCase();
+  const searching = q.length > 0;
+  $("quick-grid").innerHTML = MENU.map((c, ci) => {
+    const schoolOk = !c.school || schoolActive();
+    const items = c.items
+      .map((it, ii) => ({it, ii}))
+      .filter(({it}) => !searching ||
+        it.name.toLowerCase().includes(q) ||
+        (it.sub||"").toLowerCase().includes(q) ||
+        String(it.nr) === q);
+    if (searching && items.length === 0) return "";
+    const open = searching || openCats.has(c.cat);
+    const rows = items.map(({it, ii}) => {
+      const key = `m-${ci}-${ii}`;
+      const num = it.nr ? `<span class="num">${it.nr}</span>` : `<span class="num">·</span>`;
+      const all = it.all ? `<span class="all">${it.all}</span>` : "";
+      return `
+      <div class="quick-wrap">
+        <div class="quick">
+          ${num}
+          <span class="nm">${it.name}${all}${it.sub?`<span class="sub">${it.sub}</span>`:""}</span>
+          <span class="pr">${eur(it.price)}</span>
+          <button class="note-toggle" data-k="${key}" aria-label="Anmerkung" title="Anmerkung" ${schoolOk?'':'disabled'}>💬</button>
+          <button class="add-btn" data-ci="${ci}" data-ii="${ii}" data-k="${key}" aria-label="${it.name} hinzufügen" ${schoolOk?'':'disabled'}>+</button>
+        </div>
+        <div class="quick-note" id="qn-${key}">
+          <input type="text" id="qni-${key}" placeholder="z. B. ohne Zwiebeln, scharf …">
+        </div>
+      </div>`;
+    }).join("");
+    return `
+    <div class="cat">
+      <button class="cat-head ${open?'open':''}" data-cat="${c.cat}">
+        <span class="cat-name">${c.cat}</span>
+        ${c.note?`<span class="cat-note">${c.note}${c.school && !schoolOk ? ' · jetzt nicht verfügbar':''}</span>`:""}
+        <span class="cat-count">${c.items.length}</span>
+        <span class="chev">${open?'▾':'▸'}</span>
+      </button>
+      <div class="cat-body" style="display:${open?'block':'none'};">${rows}</div>
+    </div>`;
+  }).join("") || `<p class="empty">Nichts gefunden – anders suchen?</p>`;
+
+  document.querySelectorAll("#quick-grid .cat-head").forEach(h => {
+    h.onclick = () => {
+      const cat = h.dataset.cat;
+      openCats.has(cat) ? openCats.delete(cat) : openCats.add(cat);
+      renderMenu();
+    };
+  });
   document.querySelectorAll("#quick-grid .note-toggle").forEach(btn => {
     btn.onclick = () => {
-      const box = $("qnote-" + btn.dataset.i);
+      const box = $("qn-" + btn.dataset.k);
       const open = box.classList.toggle("open");
       btn.classList.toggle("on", open);
-      if (open) $("qnote-input-" + btn.dataset.i).focus();
+      if (open) $("qni-" + btn.dataset.k).focus();
     };
   });
   document.querySelectorAll("#quick-grid .add-btn").forEach(btn => {
     btn.onclick = () => {
-      const i = btn.dataset.i;
-      const q = QUICK[i];
-      const note = $("qnote-input-" + i).value.trim();
-      cart.push({title:q.name, sub:q.sub, detail:"", note:note, price:q.price});
-      $("qnote-input-" + i).value = "";
-      $("qnote-" + i).classList.remove("open");
-      document.querySelector(`#quick-grid .note-toggle[data-i="${i}"]`).classList.remove("on");
+      const it = MENU[btn.dataset.ci].items[btn.dataset.ii];
+      const noteEl = $("qni-" + btn.dataset.k);
+      const note = noteEl ? noteEl.value.trim() : "";
+      const title = (it.nr ? `Nr. ${it.nr} ` : "") + it.name;
+      cart.push({title:title, sub:it.sub||"", detail:"", note:note, price:it.price});
+      if (noteEl){ noteEl.value=""; $("qn-"+btn.dataset.k).classList.remove("open");
+        btn.parentElement.querySelector(".note-toggle").classList.remove("on"); }
       renderCart(); toast();
     };
   });
 }
 
 function renderAngebote(){
-  const today = new Date().getDay(); // 1=Mo
+  const today = new Date().getDay(); // 0=So, 1=Mo …
   $("angebot-grid").innerHTML = ANGEBOTE.map((a,i) => {
     const isToday = a.day === today;
     return `
-    <div class="angebot ${isToday?'today':''}">
-      <span class="day">${a.label}</span>
-      <span class="nm">${a.name}${isToday?' <span class="badge">HEUTE</span>':''}</span>
-      <span class="pr">${eur(a.price)}</span>
-      <button class="add-btn" data-i="${i}" aria-label="${a.name} hinzufügen" ${isToday?'':'disabled'}>+</button>
+    <div class="quick-wrap">
+      <div class="angebot ${isToday?'today':''}">
+        <span class="day">${a.label}</span>
+        <span class="nm">${a.name}${isToday?' <span class="badge">HEUTE</span>':''}
+          ${isToday?'':'<span class="sub">nur ' + a.label.toLowerCase() + 's bestellbar</span>'}
+        </span>
+        <span class="pr">${eur(a.price)}</span>
+        ${isToday?`<button class="note-toggle" data-i="${i}" aria-label="Anmerkung zu ${a.name}" title="Anmerkung">💬</button>`:''}
+        <button class="add-btn" data-i="${i}" aria-label="${a.name} hinzufügen" ${isToday?'':'disabled'}>+</button>
+      </div>
+      ${isToday?`<div class="quick-note" id="anote-${i}">
+        <input type="text" id="anote-input-${i}" placeholder="z. B. ohne Zwiebeln, mit Reis statt Pommes …">
+      </div>`:''}
     </div>`;
   }).join("");
+  document.querySelectorAll("#angebot-grid .note-toggle").forEach(btn => {
+    btn.onclick = () => {
+      const box = $("anote-" + btn.dataset.i);
+      const open = box.classList.toggle("open");
+      btn.classList.toggle("on", open);
+      if (open) $("anote-input-" + btn.dataset.i).focus();
+    };
+  });
   document.querySelectorAll("#angebot-grid .add-btn").forEach(btn => {
     btn.onclick = () => {
-      const a = ANGEBOTE[btn.dataset.i];
-      cart.push({title:`${a.label}s-Angebot: ${a.name}`, sub:"Tagesangebot", detail:"", note:"", price:a.price});
+      const i = btn.dataset.i;
+      const a = ANGEBOTE[i];
+      const noteEl = $("anote-input-" + i);
+      const note = noteEl ? noteEl.value.trim() : "";
+      cart.push({title:`${a.label}s-Angebot: ${a.name}`, sub:"Tagesangebot", detail:"", note:note, price:a.price});
+      if (noteEl){
+        noteEl.value = "";
+        $("anote-" + i).classList.remove("open");
+        const t = document.querySelector(`#angebot-grid .note-toggle[data-i="${i}"]`);
+        if (t) t.classList.remove("on");
+      }
       renderCart(); toast();
     };
   });
@@ -1006,8 +1237,14 @@ function toast(msg){
 }
 
 /* ---- Init ---- */
+$("status-badge").textContent = IS_DEMO
+  ? "DEMO von 321tadaa.com – Preise & Zutaten ohne Gewähr"
+  : "Speisekarte Stand: " + STAND + " · powered by 321tadaa.com";
 renderBreads(); renderMeats(); renderSalad(); renderSauces(); renderExtras(); updateLive();
-renderQuick(); renderAngebote(); renderCart(); updateBar();
+openCats.add(MENU[0].cat);            // erste Kategorie offen
+$("menu-search").addEventListener("input", renderMenu);
+$("legend").textContent = FOOTNOTES;
+renderMenu(); renderAngebote(); renderCart(); updateBar();
 </script>
 </body>
 </html>
