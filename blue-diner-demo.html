@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue · Döner Konfigurator (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#0a2a66;
+    --blue2:#143b8f;
+    --accent:#1e6fff;
+    --ink:#0b1220;
+    --paper:#eef2f9;
+    --line:#d6deee;
+    --gold:#e9b949;
+    --ok:#25d366;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink);line-height:1.45}
+
+  header{background:linear-gradient(135deg,var(--blue),var(--blue2));padding:16px;position:sticky;top:0;z-index:20;box-shadow:0 2px 16px rgba(10,42,102,.3)}
+  header .wrap{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  header img.logo{height:46px;width:auto;display:block}
+  .demo-badge{margin-left:auto;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+
+  main{max-width:680px;margin:0 auto;padding:14px 14px 130px}
+
+  .tabs{display:flex;gap:6px;margin:4px 0 16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:5px}
+  .tab{flex:1;text-align:center;padding:11px 6px;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;color:#5a6478}
+  .tab.active{background:var(--blue);color:#fff}
+
+  /* ===== Konfigurator ===== */
+  .builder{background:linear-gradient(165deg,#0a1326,#15264c);color:#eaf0fb;border-radius:18px;padding:20px 18px;border:1px solid #25345e}
+  .magic{display:flex;align-items:center;gap:8px;margin:0 0 2px}
+  .magic h3{margin:0;font-size:21px;color:#fff;font-weight:800;letter-spacing:.3px}
+  .wand{font-size:20px}
+  .builder p.sub{margin:2px 0 18px;font-size:13px;color:#a6b6db}
+  .step{display:flex;align-items:center;gap:9px;margin:20px 0 10px}
+  .step .num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .step .lbl{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:#9fb0d6;font-weight:600}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opt{border:1.5px solid #2c3f6e;background:#0e1830;color:#cfdaf3;padding:9px 13px;border-radius:11px;font-size:14px;cursor:pointer;transition:.12s;user-select:none;display:flex;align-items:center;gap:6px}
+  .opt:active{transform:scale(.96)}
+  .opt.sel{background:var(--accent);border-color:#4d8bff;color:#fff;font-weight:600;box-shadow:0 2px 10px rgba(30,111,255,.4)}
+  .opt .px{font-size:12px;opacity:.85}
+  .opt .em{font-size:15px}
+  .hint{font-size:12px;color:#8398c6;margin-top:7px}
+  textarea{width:100%;margin-top:8px;background:#0e1830;border:1.5px solid #2c3f6e;color:#fff;border-radius:11px;padding:11px;font-size:14px;font-family:inherit;resize:vertical}
+  textarea::placeholder{color:#6f84b5}
+
+  .combo-hint{margin-top:18px;background:rgba(233,185,73,.12);border:1px solid rgba(233,185,73,.35);border-radius:12px;padding:11px 13px;font-size:12.5px;color:#f0d99a}
+
+  /* cart preview card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px;box-shadow:0 1px 4px rgba(10,42,102,.06)}
+  .card h2{font-size:16px;margin:0 0 10px;color:var(--blue)}
+  .cart-line{font-size:13px;color:#3a465e;padding:6px 0;border-bottom:1px dashed #e3e8f3;display:flex;justify-content:space-between;gap:10px}
+  .cart-line:last-child{border-bottom:none}
+  .cart-line .rm{color:#c0392b;cursor:pointer;font-weight:700;margin-left:8px}
+  .empty{color:#8893ad;font-size:13px;text-align:center;padding:8px}
+
+  /* ===== Menu ===== */
+  .menu-cat{font-weight:700;color:var(--blue);margin:20px 0 6px;font-size:15px;border-bottom:2px solid var(--line);padding-bottom:6px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #eef1f8;gap:10px}
+  .row:last-child{border-bottom:none}
+  .row .nm{font-size:14px;flex:1}
+  .row .nm .all{font-size:11px;color:#8893ad;display:block}
+  .row .pr{font-weight:700;color:var(--blue);white-space:nowrap;font-size:14px}
+  .add{background:var(--blue);color:#fff;border:none;border-radius:9px;width:34px;height:34px;font-size:20px;font-weight:600;cursor:pointer;line-height:1;flex-shrink:0}
+  .add:active{filter:brightness(1.3)}
+  .legend{font-size:12px;color:#566;background:#e6ecf7;border-radius:12px;padding:13px;margin-top:16px;line-height:1.8}
+  .legend b{color:var(--blue)}
+
+  /* ===== Summary bar ===== */
+  .summary{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:11px 14px;z-index:25;box-shadow:0 -4px 18px rgba(10,42,102,.14)}
+  .summary .wrap{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .total{font-weight:800;font-size:21px;color:var(--blue);line-height:1.1}
+  .total small{font-weight:500;font-size:11.5px;color:#7a85a0;display:block}
+  .wa{margin-left:auto;background:var(--ok);color:#fff;border:none;padding:13px 18px;border-radius:13px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s}
+  .wa:active{filter:brightness(.94)}
+  .wa:disabled{background:#b9c2d4;cursor:not-allowed}
+
+  .pitchnote{font-size:12px;color:#8893ad;text-align:center;margin-top:18px;padding:0 10px}
+
+  .fld-label{display:block;font-size:12px;color:#5a6478;font-weight:600;margin:10px 0 4px}
+  .fld{width:100%;padding:11px;border:1.5px solid var(--line);border-radius:11px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink)}
+  .fld:focus{outline:none;border-color:var(--accent)}
+
+  /* selectable menu rows */
+  .row{cursor:pointer}
+  .row.sel{background:#eaf1ff;border-radius:10px;padding-left:8px;padding-right:8px;border-bottom-color:transparent}
+  .row.sel .add{background:var(--accent)}
+  .row .cmt{width:100%;margin-top:6px;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit}
+  .menu-item-wrap{border-bottom:1px solid #eef1f8}
+  .menu-item-wrap:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <img class="logo" src="https://blue-freiberg.de/wp-content/uploads/2025/12/LogoMavibeyaz-300x118.png" alt="Blue Döner Freiberg" onerror="this.style.display='none'">
+    <span class="demo-badge">Demo · 321tadaa</span>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <div class="tab active" data-tab="build" onclick="switchTab('build')">✨ Konfigurator</div>
+    <div class="tab" data-tab="menu" onclick="switchTab('menu')">Speisekarte</div>
+  </div>
+
+  <!-- ===== KONFIGURATOR ===== -->
+  <section id="build">
+    <div class="builder">
+      <div class="magic"><span class="wand">🪄</span><h3>Döner Konfigurator</h3></div>
+      <p class="sub">Zaubere deinen perfekten Döner – Schritt für Schritt.</p>
+
+      <div class="step"><span class="num">1</span><span class="lbl">Fleisch &amp; Basis</span></div>
+      <div class="opts" id="meat"></div>
+
+      <div class="step"><span class="num">2</span><span class="lbl">Brot &amp; Form</span></div>
+      <div class="opts" id="bread"></div>
+
+      <div class="step"><span class="num">3</span><span class="lbl">Soße (mehrere möglich)</span></div>
+      <div class="opts" id="sauce"></div>
+
+      <div class="step"><span class="num">4</span><span class="lbl">Salat &amp; Gemüse</span></div>
+      <div class="opts" id="salad"></div>
+      <div class="hint">Antippen zum Ab-/Anwählen · Standard = alles drin</div>
+
+      <div class="step"><span class="num">5</span><span class="lbl">Schärfe</span></div>
+      <div class="opts" id="spice"></div>
+
+      <div class="step"><span class="num">+</span><span class="lbl">Extras</span></div>
+      <div class="opts" id="extra"></div>
+
+      <div class="step"><span class="num">✎</span><span class="lbl">Sonderwunsch</span></div>
+      <textarea id="wish" rows="2" placeholder="z. B. extra knusprig, getrennt verpacken, gut durchgebraten…"></textarea>
+
+      <div class="combo-hint" id="comboHint">🪄 Über <b>2.000</b> mögliche Kombinationen – wähle deine.</div>
+    </div>
+
+    <div class="card" id="cartBox" style="display:none">
+      <h2>Deine Bestellung</h2>
+      <div id="cartLines"></div>
+    </div>
+
+    <div class="card" id="orderInfo" style="display:none">
+      <h2>Abholung</h2>
+      <label class="fld-label">Name</label>
+      <input id="custName" class="fld" type="text" placeholder="Dein Name" autocomplete="name">
+      <label class="fld-label">Abholzeit</label>
+      <select id="pickupTime" class="fld"></select>
+    </div>
+
+    <p class="pitchnote">Demo · Preise live von blue-freiberg.de · gebaut von 321tadaa.com</p>
+  </section>
+
+  <!-- ===== SPEISEKARTE ===== -->
+  <section id="menu" style="display:none">
+    <div class="card" style="padding:14px">
+      <div id="menuList"></div>
+      <div class="legend">
+        <b>Allergene &amp; Zusatzstoffe (LMIV):</b><br>
+        <b>A</b> Gluten · <b>C</b> Eier · <b>D</b> Fisch · <b>F</b> Soja · <b>G</b> Milch/Laktose · <b>H</b> Schalenfrüchte · <b>L</b> Sellerie · <b>M</b> Senf · <b>N</b> Sesam<br>
+        <span style="color:#99a">Beispielhafte Zuordnung – im echten System pro Artikel hinterlegt &amp; mit dem Wirt abgestimmt.</span>
+      </div>
+    </div>
+    <p class="pitchnote">Vollständige Speisekarte mit Allergenen &amp; Direktauswahl – im aktuellen Shop nicht vorhanden.</p>
+  </section>
+</main>
+
+<div class="summary">
+  <div class="wrap">
+    <div class="total"><span id="totalEur">0,00 €</span><small id="totalDesc">Warenkorb leer</small></div>
+    <button class="wa" id="waBtn" onclick="sendWhatsApp()" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zM6.597 20.13c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.978-1.207z"/></svg>
+      Bestellen
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+/* Step 1: Meat / base protein (drives base price) */
+const MEATS = [
+  {n:"Drehspieß (Kalb/Pute)",p:8.50,em:"🥙",a:"G,M"},
+  {n:"Hähnchen Drehspieß",p:8.50,em:"🍗",a:"G,M"},
+  {n:"Falafel (vegan)",p:8.00,em:"🧆",a:"M,N"},
+  {n:"Sucuk",p:9.00,em:"🌭",a:"G,M"},
+  {n:"Hamburger Patty 125g",p:8.50,em:"🍔",a:"A,C,G,M"},
+  {n:"Cheeseburger Patty 125g",p:9.00,em:"🍔",a:"A,C,G,M"},
+  {n:"Chicken Nuggets",p:8.50,em:"🐔",a:"A,C"},
+  {n:"Nur Gemüse (vegetarisch)",p:7.50,em:"🥗",a:"M"}
+];
+/* Step 2: Bread / format (price modifier) */
+const BREADS = [
+  {n:"Fladenbrot",p:0,em:"🫓"},
+  {n:"Yufka (gerollt)",p:1.00,em:"🌯"},
+  {n:"Box (ohne Brot)",p:0,em:"📦"},
+  {n:"Teller",p:5.00,em:"🍽"},
+  {n:"Burger-Bun",p:0,em:"🍞"}
+];
+const SAUCES = ["Kräuter","Knoblauch","Scharf","Cocktail","Joghurt","Ohne Soße"];
+const SALADS = ["Salat","Tomaten","Zwiebeln","Rotkohl","Gurken","Mais"];
+const SPICES = ["Mild","Mittel","Scharf","Extra scharf"];
+const EXTRAS = [
+  {n:"Extra Fleisch",p:3.00,em:"➕"},
+  {n:"Käse",p:1.00,em:"🧀"},
+  {n:"Extra Soße",p:0.50,em:"🥣"},
+  {n:"Pommes dazu",p:3.00,em:"🍟"},
+  {n:"Jalapeños",p:0.50,em:"🌶"}
+];
+
+/* Full 61-item live menu */
+const FULLMENU = {
+  "Drehspieß / Döner":[
+    ["1 · Drehspieß im Fladenbrot",8.50,"A,G,M"],["2 · Drehspieß klein",7.50,"A,G,M"],
+    ["3 · Yufka Drehspieß",9.50,"A,G,M"],["4 · Drehspieß Teller",14.50,"A,G,M"],
+    ["5 · Blue Teller",18.90,"A,G,M"],["6 · Box",8.50,"A,G"],
+    ["7 · Box mit nur Fleisch",9.90,"G"],["8 · Box mit Salat",9.00,"A,G"]
+  ],
+  "Lahmacun":[
+    ["9 · Lahmacun Pur gerollt",7.50,"A"],["10 · Lahmacun mit Salat",9.00,"A,M"],
+    ["11 · Lahmacun Spezial gerollt",10.50,"A,G,M"],["12 · Lahmacun Spezial Teller",13.90,"A,G,M"]
+  ],
+  "Vegetarisch / Falafel":[
+    ["13 · Falafel im Fladenbrot",8.50,"A,M,N"],["14 · Falafel im Yufka",9.50,"A,M,N"],
+    ["15 · Falafel Box",8.50,"M,N"],["16 · Falafel Teller",12.90,"A,M,N"],
+    ["17 · Falafel 6 Stück",7.00,"M,N"],["18 · Falafel 12 Stück",10.00,"M,N"],
+    ["19 · Fladenbrot vegetarisch",7.50,"A,M"],["20 · Yufka Vegetarisch",8.50,"A,M"],
+    ["21 · Vegetarisch Teller",14.50,"A,M"]
+  ],
+  "Burger & Snacks":[
+    ["22 · Hamburger 125 gr",8.50,"A,C,G,M"],["23 · Hamburger 250 gr",12.00,"A,C,G,M"],
+    ["24 · Cheeseburger 125 gr",9.00,"A,C,G,M"],["25 · Cheeseburger 250 gr",12.50,"A,C,G,M"],
+    ["26 · Chicken Nuggets Box X4",8.50,"A,C"],["27 · Chicken Nuggets Teller X6",12.50,"A,C"],
+    ["28 · Chicken Nuggets 6 Stk.",6.50,"A,C"],["29 · Chicken Nuggets 12 Stk.",10.00,"A,C"],
+    ["30 · Gefüllte Bulgurbällchen (İçli Köfte)",8.50,"A,C,H"],
+    ["31 · Frühlingsrolle (Börek) 6 Stk.",7.50,"A,G"]
+  ],
+  "Salate":[
+    ["32 · Gemischter Salat klein",7.50,"M"],["33 · Gemischter Salat groß",9.50,"M"],
+    ["34 · Bauernsalat klein",8.50,"G,M"],["35 · Bauernsalat groß",10.50,"G,M"],
+    ["36 · Thunfischsalat groß",12.00,"D,M"]
+  ],
+  "Pizza":[
+    ["37 · Pizzabrot",7.50,"A,G"],["38 · Pizzabrot",8.50,"A,G"],
+    ["39 · Pizza Margherita",9.00,"A,G"],["40 · Pizza Rindersalami",9.50,"A,G"],
+    ["41 · Pizza Funghi",9.50,"A,G"],["42 · Pizza Mais",9.50,"A,G"],
+    ["43 · Pizza Putenschinken",9.50,"A,G"],["44 · Pizza Peperoni",9.50,"A,G"],
+    ["45 · Pizza Ananas",9.50,"A,G"],["46 · Pizza Artischocken",9.50,"A,G"],
+    ["47 · Pizza Oliven",9.50,"A,G"],["48 · Pizza Meeresfrüchte",13.50,"A,D,G"],
+    ["49 · Pizza Thunfisch",11.50,"A,D,G"],["50 · Pizza Milano",11.00,"A,G"],
+    ["51 · Pizza Hawaii",11.00,"A,G"],["52 · Pizza Vegetarisch",12.50,"A,G"],
+    ["53 · Pizza Drehspieß",11.50,"A,G,M"],["54 · Pizza Sucuk",11.50,"A,G"],
+    ["55 · Pizza Gemischt",13.50,"A,G"],["56 · Pizza Blue",13.50,"A,G,M"],
+    ["57 · Pizza Sardellen",12.50,"A,D,G"],["58 · Pizza Vier Jahreszeiten",12.50,"A,G"],
+    ["59 · Pizza Diavolo",11.50,"A,G"],["60 · Pizza Rape",12.50,"A,G"],
+    ["61 · Pizza Grillgemüse",12.00,"A,G"]
+  ]
+};
+
+/* ============ STATE ============ */
+let conf={meat:null,bread:0,sauces:new Set(["Kräuter"]),salads:new Set(SALADS),spice:"Mild",extras:new Set()};
+/* menu selections held in menuSel (see renderMenu) */
+
+function eur(n){return n.toFixed(2).replace('.',',')+" €";}
+
+/* ============ RENDER CONFIGURATOR ============ */
+function renderMeat(){
+  document.getElementById('meat').innerHTML=MEATS.map((m,i)=>
+    `<div class="opt${conf.meat===i?' sel':''}" onclick="pickMeat(${i})"><span class="em">${m.em}</span>${m.n}<span class="px">${eur(m.p)}</span></div>`).join('');
+}
+function renderBread(){
+  document.getElementById('bread').innerHTML=BREADS.map((b,i)=>
+    `<div class="opt${conf.bread===i?' sel':''}" onclick="pickBread(${i})"><span class="em">${b.em}</span>${b.n}${b.p?`<span class="px">+${eur(b.p)}</span>`:''}</div>`).join('');
+}
+function renderSauce(){
+  document.getElementById('sauce').innerHTML=SAUCES.map(s=>
+    `<div class="opt${conf.sauces.has(s)?' sel':''}" onclick="toggleSauce('${s}')">${s}</div>`).join('');
+}
+function renderSalad(){
+  document.getElementById('salad').innerHTML=SALADS.map(s=>
+    `<div class="opt${conf.salads.has(s)?' sel':''}" onclick="toggleSalad('${s}')">${s}</div>`).join('');
+}
+function renderSpice(){
+  document.getElementById('spice').innerHTML=SPICES.map(s=>
+    `<div class="opt${s===conf.spice?' sel':''}" onclick="pickSpice('${s}')">${s}</div>`).join('');
+}
+function renderExtra(){
+  document.getElementById('extra').innerHTML=EXTRAS.map((e,i)=>
+    `<div class="opt${conf.extras.has(i)?' sel':''}" onclick="toggleExtra(${i})"><span class="em">${e.em}</span>${e.n}<span class="px">+${eur(e.p)}</span></div>`).join('');
+}
+function pickMeat(i){conf.meat=i;renderMeat();update();}
+function pickBread(i){conf.bread=i;renderBread();update();}
+function toggleSauce(s){
+  if(s==="Ohne Soße"){ conf.sauces=new Set(["Ohne Soße"]); }
+  else{
+    conf.sauces.delete("Ohne Soße");
+    conf.sauces.has(s)?conf.sauces.delete(s):conf.sauces.add(s);
+    if(conf.sauces.size===0) conf.sauces.add("Kräuter");
+  }
+  renderSauce();update();
+}
+function toggleSalad(s){conf.salads.has(s)?conf.salads.delete(s):conf.salads.add(s);renderSalad();update();}
+function pickSpice(s){conf.spice=s;renderSpice();update();}
+function toggleExtra(i){conf.extras.has(i)?conf.extras.delete(i):conf.extras.add(i);renderExtra();update();}
+
+function confPrice(){
+  if(conf.meat===null) return 0;
+  let t=MEATS[conf.meat].p + BREADS[conf.bread].p;
+  conf.extras.forEach(i=>t+=EXTRAS[i].p);
+  return t;
+}
+function confActive(){return conf.meat!==null;}
+
+/* ============ RENDER MENU (box-selectable + comments) ============ */
+let menuSel={}; // key -> {n,p,qty,cmt}
+function menuKey(n){return n.replace(/[^a-zA-Z0-9]/g,'');}
+function renderMenu(){
+  let html='';
+  for(const cat in FULLMENU){
+    html+=`<div class="menu-cat">${cat}</div>`;
+    FULLMENU[cat].forEach(([n,p,a])=>{
+      const k=menuKey(n), on=!!menuSel[k];
+      html+=`<div class="menu-item-wrap">
+        <div class="row${on?' sel':''}" onclick="toggleMenu('${n.replace(/'/g,"\\'")}',${p})">
+          <div class="nm">${n}<span class="all">Allergene: ${a}</span></div>
+          <div class="pr">${eur(p)}</div>
+          <button class="add">${on?'✓':'＋'}</button>
+        </div>
+        ${on?`<input class="cmt" type="text" placeholder="Kommentar (z. B. ohne Soße, gut durch)…" value="${(menuSel[k].cmt||'').replace(/"/g,'&quot;')}" oninput="menuComment('${k}',this.value)" onclick="event.stopPropagation()">`:''}
+      </div>`;
+    });
+  }
+  document.getElementById('menuList').innerHTML=html;
+}
+function toggleMenu(n,p){
+  const k=menuKey(n);
+  if(menuSel[k]) delete menuSel[k];
+  else menuSel[k]={n,p,cmt:''};
+  renderMenu();update();flash();
+}
+function menuComment(k,v){ if(menuSel[k]) menuSel[k].cmt=v; }
+
+/* ============ TOTALS + PREVIEW ============ */
+function flash(){
+  const b=document.getElementById('waBtn');
+  b.style.transform='scale(1.06)';setTimeout(()=>b.style.transform='',150);
+}
+function menuItems(){return Object.values(menuSel);}
+function grandTotal(){
+  let t=confPrice();
+  menuItems().forEach(it=>t+=it.p);
+  return t;
+}
+function update(){
+  const t=grandTotal();
+  document.getElementById('totalEur').textContent=eur(t);
+  const mItems=menuItems();
+  const items=(confActive()?1:0)+mItems.length;
+  document.getElementById('totalDesc').textContent= items===0?"Warenkorb leer":(items+" Artikel");
+  document.getElementById('waBtn').disabled= items===0;
+
+  // combo counter (fun, dynamic)
+  const combos = MEATS.length*BREADS.length*SAUCES.length*SPICES.length*Math.pow(2,EXTRAS.length);
+  document.getElementById('comboHint').innerHTML=`🪄 Über <b>${combos.toLocaleString('de-DE')}</b> mögliche Kombinationen – wähle deine.`;
+
+  // cart preview + order info
+  const box=document.getElementById('cartBox'), lines=document.getElementById('cartLines');
+  const info=document.getElementById('orderInfo');
+  if(items===0){box.style.display='none';info.style.display='none';return;}
+  box.style.display='block';info.style.display='block';
+  let h='';
+  if(confActive()){
+    const removed=SALADS.filter(s=>!conf.salads.has(s));
+    const sauceTxt=[...conf.sauces].join(', ');
+    h+=`<div class="cart-line"><span><b>${MEATS[conf.meat].n}</b> · ${BREADS[conf.bread].n}</span><span>${eur(MEATS[conf.meat].p+BREADS[conf.bread].p)}</span></div>`;
+    h+=`<div class="cart-line"><span style="color:#667">Soße: ${sauceTxt} · Schärfe: ${conf.spice}</span><span></span></div>`;
+    if(removed.length) h+=`<div class="cart-line"><span style="color:#667">Ohne: ${removed.join(', ')}</span><span></span></div>`;
+    conf.extras.forEach(i=>h+=`<div class="cart-line"><span style="color:#667">+ ${EXTRAS[i].n}</span><span>${eur(EXTRAS[i].p)}</span></div>`);
+    const w=document.getElementById('wish').value.trim();
+    if(w) h+=`<div class="cart-line"><span style="color:#667">📝 ${w}</span><span></span></div>`;
+  }
+  mItems.forEach(it=>{
+    const c=it.cmt&&it.cmt.trim()?` <span style="color:#888">(${it.cmt.trim()})</span>`:'';
+    h+=`<div class="cart-line"><span>${it.n}${c}</span><span>${eur(it.p)}</span></div>`;
+  });
+  lines.innerHTML=h;
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  document.getElementById('build').style.display=t==='build'?'block':'none';
+  document.getElementById('menu').style.display=t==='menu'?'block':'none';
+  window.scrollTo(0,0);
+}
+
+/* iOS-safe direct wa.me link */
+function sendWhatsApp(){
+  if(grandTotal()===0) return;
+  const name=document.getElementById('custName').value.trim();
+  const time=document.getElementById('pickupTime').value;
+
+  let msg=`*Bestellung – Blue Döner Freiberg*`;
+  if(name) msg+=`%0AName: ${name}`;
+  if(time) msg+=`%0AAbholung: ${time}`;
+
+  if(confActive()){
+    const removed=SALADS.filter(s=>!conf.salads.has(s));
+    const sauceTxt=[...conf.sauces].join(', ');
+    msg+=`%0A%0A*Dein Döner*`;
+    msg+=`%0A- ${MEATS[conf.meat].n}`;
+    msg+=`%0A- ${BREADS[conf.bread].n}`;
+    msg+=`%0A- Soße: ${sauceTxt}`;
+    msg+=`%0A- Schärfe: ${conf.spice}`;
+    if(removed.length) msg+=`%0A- Ohne: ${removed.join(', ')}`;
+    conf.extras.forEach(i=>msg+=`%0A- ${EXTRAS[i].n} (+${eur(EXTRAS[i].p)})`);
+    const w=document.getElementById('wish').value.trim();
+    if(w) msg+=`%0A- Wunsch: ${w}`;
+    msg+=`%0A  = ${eur(confPrice())}`;
+  }
+  const mItems=menuItems();
+  if(mItems.length){
+    msg+=`%0A%0A*Aus der Karte*`;
+    mItems.forEach(it=>{
+      const c=it.cmt&&it.cmt.trim()?` (${it.cmt.trim()})`:'';
+      msg+=`%0A- ${it.n}${c} – ${eur(it.p)}`;
+    });
+  }
+  msg+=`%0A%0A*Gesamt: ${eur(grandTotal())}*`;
+  // Demo number – replace with Blue Döner's real WhatsApp
+  window.open(`https://wa.me/4915112345678?text=${msg}`,'_blank');
+}
+
+/* Build pickup-time options: now+20min rounded, every 15min until close */
+function buildTimes(){
+  const sel=document.getElementById('pickupTime');
+  const now=new Date();
+  let start=new Date(now.getTime()+20*60000);
+  const m=start.getMinutes();
+  start.setMinutes(m+(15-(m%15))%15,0,0);
+  let opts='<option value="So bald wie möglich">So bald wie möglich</option>';
+  for(let i=0;i<24;i++){
+    const tt=new Date(start.getTime()+i*15*60000);
+    const hh=String(tt.getHours()).padStart(2,'0');
+    const mm=String(tt.getMinutes()).padStart(2,'0');
+    opts+=`<option value="${hh}:${mm} Uhr">${hh}:${mm} Uhr</option>`;
+  }
+  sel.innerHTML=opts;
+}
+
+/* init */
+renderMeat();renderBread();renderSauce();renderSalad();renderSpice();renderExtra();renderMenu();buildTimes();
+document.getElementById('wish').addEventListener('input',update);
+update();
+</script>
+</body>
+</html>
