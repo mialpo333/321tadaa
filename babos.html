@@ -746,7 +746,7 @@ function goCheckout(){
       <div id="addrBox" style="display:${order.mode==='Lieferung'?'block':'none'}">
         <label>Lieferadresse *</label><input id="f-addr" value="${order.addr}" placeholder="Straße, Nr., PLZ Ort">
       </div>
-      <label>Anmerkung</label><textarea id="f-note" rows="2" placeholder="z.B. ohne Zwiebeln, klingeln bei …">${order.note}</textarea>
+      <label>Anmerkung</label><textarea id="f-note" rows="2" placeholder="z. B. extra knusprig, getrennt verpacken, ohne Zwiebeln …">${order.note}</textarea>
     </div>`;
   $("cartFoot").innerHTML=`
     <div class="summary"><span>Artikel (${cartCount()})</span><span>${eur(cartTotal())}</span></div>
