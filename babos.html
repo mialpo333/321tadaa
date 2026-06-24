@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BABO'S Freiberg · Online bestellen</title>
+<style>
+  :root{
+    --bg:#13110f;
+    --bg2:#1c1916;
+    --card:#211d19;
+    --card2:#272219;
+    --line:#352e26;
+    --red:#e8412b;
+    --red-d:#c4321f;
+    --orange:#f7941d;
+    --gold:#f6b32b;
+    --text:#f4ece2;
+    --muted:#a89a89;
+    --green:#25d366;
+    --green-d:#128c7e;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:120px;
+  }
+  .wrap{max-width:680px;margin:0 auto;}
+
+  /* HEADER */
+  header{
+    position:relative;
+    background:
+      linear-gradient(180deg,rgba(19,17,15,.15) 0%,rgba(19,17,15,.92) 100%),
+      radial-gradient(120% 90% at 50% 0%,#3a1d12 0%,#13110f 70%);
+    padding:26px 18px 20px;
+    text-align:center;
+    border-bottom:3px solid var(--red);
+  }
+  .brand{
+    font-weight:900;
+    font-size:40px;
+    letter-spacing:1px;
+    line-height:1;
+    color:#fff;
+    text-shadow:0 2px 0 rgba(0,0,0,.4);
+  }
+  .brand span{color:var(--red);}
+  .tag{
+    font-size:13px;
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:3px;
+    margin-top:6px;
+    font-weight:700;
+  }
+  .meta{
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--muted);
+    display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
+  }
+  .meta b{color:var(--text);font-weight:600;}
+  .open-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:10px;
+    font-size:12.5px;font-weight:700;
+    padding:5px 12px;border-radius:99px;
+  }
+  .open-yes{background:rgba(37,211,102,.14);color:#7ee6a4;border:1px solid rgba(37,211,102,.35);}
+  .open-no{background:rgba(232,65,43,.14);color:#ffa191;border:1px solid rgba(232,65,43,.35);}
+
+  /* DELIVERY BANNER */
+  .deliv{
+    margin:14px 12px 0;
+    background:var(--card2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .deliv h4{margin:0 0 8px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);}
+  .deliv table{width:100%;border-collapse:collapse;}
+  .deliv td{padding:3px 0;vertical-align:top;}
+  .deliv td:first-child{color:var(--text);}
+  .deliv td:last-child{text-align:right;white-space:nowrap;color:var(--gold);font-weight:600;}
+
+  /* SEARCH + TABS */
+  .sticky{
+    position:sticky;top:0;z-index:30;
+    background:rgba(19,17,15,.96);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:10px 12px 8px;
+  }
+  .search{
+    width:100%;padding:11px 14px;font-size:15px;
+    background:var(--bg2);border:1px solid var(--line);
+    border-radius:12px;color:var(--text);outline:none;
+  }
+  .search::placeholder{color:#6f655a;}
+  .tabs{
+    display:flex;gap:7px;overflow-x:auto;margin-top:9px;
+    scrollbar-width:none;-ms-overflow-style:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex:0 0 auto;padding:7px 13px;font-size:13px;font-weight:600;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:99px;color:var(--muted);white-space:nowrap;cursor:pointer;
+  }
+  .tab.active{background:var(--red);border-color:var(--red);color:#fff;}
+
+  /* SECTIONS */
+  main{padding:6px 12px 0;}
+  .sec{margin-top:22px;scroll-margin-top:120px;}
+  .sec-h{
+    display:flex;align-items:center;gap:10px;margin-bottom:8px;
+  }
+  .sec-h h2{
+    margin:0;font-size:17px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:var(--gold);
+  }
+  .sec-h .bar{height:2px;flex:1;background:linear-gradient(90deg,var(--red),transparent);border-radius:2px;}
+
+  .item{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:11px 12px;margin-bottom:8px;
+  }
+  .item .info{flex:1;min-width:0;}
+  .item .name{font-size:15px;font-weight:600;color:var(--text);}
+  .item .name .nr{color:#6f655a;font-size:12px;font-weight:600;margin-right:5px;}
+  .item .desc{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .item .price{font-size:14.5px;font-weight:700;color:var(--gold);white-space:nowrap;}
+  .add{
+    flex:0 0 auto;width:38px;height:38px;border-radius:11px;
+    background:var(--red);color:#fff;border:none;font-size:24px;line-height:1;
+    font-weight:400;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:transform .08s;
+  }
+  .add:active{transform:scale(.88);}
+  .add.config{width:auto;padding:0 13px;font-size:13px;font-weight:700;gap:5px;}
+
+  .qbadge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:20px;height:20px;padding:0 5px;border-radius:99px;
+    background:var(--green);color:#04150c;font-size:12px;font-weight:800;margin-left:8px;
+  }
+
+  /* CART BAR */
+  .cartbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    padding:12px;
+    background:linear-gradient(180deg,transparent,var(--bg) 22%);
+    pointer-events:none;
+  }
+  .cartbar .inner{
+    max-width:680px;margin:0 auto;pointer-events:auto;
+    background:var(--green);
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 18px;cursor:pointer;
+    transform:translateY(140%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .cartbar.show .inner{transform:translateY(0);}
+  .cartbar .ci-left{display:flex;align-items:center;gap:11px;color:#04150c;font-weight:800;}
+  .cart-cnt{
+    background:#04150c;color:var(--green);width:26px;height:26px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .cartbar .ci-right{color:#04150c;font-weight:900;font-size:16px;display:flex;align-items:center;gap:7px;}
+
+  /* MODAL / SHEET */
+  .overlay{
+    position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .overlay.show{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:70;
+    max-width:680px;margin:0 auto;
+    background:var(--bg2);
+    border-radius:22px 22px 0 0;
+    border-top:1px solid var(--line);
+    max-height:88vh;display:flex;flex-direction:column;
+    transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .sheet.show{transform:translateY(0);}
+  .sheet-h{
+    padding:16px 18px 12px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .sheet-h h3{margin:0;font-size:18px;font-weight:800;}
+  .sheet-x{background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;}
+  .sheet-body{overflow-y:auto;padding:14px 18px;-webkit-overflow-scrolling:touch;}
+  .sheet-foot{padding:12px 18px 18px;border-top:1px solid var(--line);background:var(--bg2);}
+
+  /* CONFIG */
+  .cfg-img{
+    height:64px;width:64px;border-radius:13px;flex:0 0 auto;
+    background:linear-gradient(135deg,#3a1d12,#211d19);
+    display:flex;align-items:center;justify-content:center;font-size:30px;
+  }
+  .opt-grp{margin-bottom:18px;}
+  .opt-grp h4{margin:0 0 4px;font-size:14px;font-weight:800;color:var(--text);}
+  .opt-grp .sub{font-size:11.5px;color:var(--muted);margin:0 0 9px;}
+  .opt{
+    display:flex;align-items:center;gap:11px;
+    padding:11px 13px;margin-bottom:7px;border-radius:12px;
+    background:var(--card);border:1.5px solid var(--line);cursor:pointer;
+  }
+  .opt.sel{border-color:var(--green);background:rgba(37,211,102,.07);}
+  .opt .dot{
+    width:21px;height:21px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .opt.sel .dot{border-color:var(--green);background:var(--green);}
+  .opt.sel .dot::after{content:"✓";font-size:13px;color:#04150c;font-weight:900;}
+  .opt.multi .dot{border-radius:6px;}
+  .opt .o-name{flex:1;font-size:14px;}
+  .opt .o-price{font-size:13px;color:var(--gold);font-weight:700;}
+
+  .qty{display:flex;align-items:center;gap:0;background:var(--card);border-radius:12px;border:1px solid var(--line);overflow:hidden;}
+  .qty button{width:42px;height:42px;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;}
+  .qty span{min-width:34px;text-align:center;font-size:16px;font-weight:800;}
+
+  .btn-add{
+    width:100%;padding:15px;border:none;border-radius:14px;
+    background:var(--green);color:#04150c;font-size:16px;font-weight:800;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-add:active{filter:brightness(.93);}
+
+  /* CART LINES */
+  .cline{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);}
+  .cline .ct{flex:1;}
+  .cline .cn{font-size:14.5px;font-weight:600;}
+  .cline .cx{font-size:12px;color:var(--muted);margin-top:2px;}
+  .cline .cp{font-size:14px;font-weight:700;color:var(--gold);white-space:nowrap;}
+  .cline .cq{display:flex;align-items:center;gap:0;margin-top:6px;background:var(--card);border-radius:9px;border:1px solid var(--line);width:fit-content;}
+  .cline .cq button{width:30px;height:30px;background:none;border:none;color:var(--text);font-size:17px;cursor:pointer;}
+  .cline .cq span{min-width:26px;text-align:center;font-size:14px;font-weight:700;}
+
+  .mode-row{display:flex;gap:8px;margin-bottom:14px;}
+  .mode-btn{
+    flex:1;padding:11px;text-align:center;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;
+    background:var(--card);border:1.5px solid var(--line);color:var(--muted);
+  }
+  .mode-btn.sel{border-color:var(--red);background:rgba(232,65,43,.1);color:var(--text);}
+
+  .fields input,.fields textarea{
+    width:100%;padding:12px 14px;margin-bottom:9px;font-size:15px;
+    background:var(--card);border:1px solid var(--line);border-radius:11px;color:var(--text);outline:none;
+    font-family:inherit;
+  }
+  .fields input:focus,.fields textarea:focus{border-color:var(--orange);}
+  .fields label{font-size:12px;color:var(--muted);display:block;margin:2px 0 5px 2px;font-weight:600;}
+
+  .summary{font-size:13.5px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;}
+  .summary b{color:var(--text);}
+  .summary.total{font-size:17px;color:var(--text);font-weight:800;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);}
+  .summary.total b{color:var(--gold);}
+  .mbw-warn{
+    background:rgba(247,148,29,.12);border:1px solid rgba(247,148,29,.4);
+    color:var(--gold);font-size:12.5px;padding:9px 12px;border-radius:10px;margin:8px 0;
+  }
+  .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px;}
+
+  footer{text-align:center;padding:26px 18px 10px;color:#5c5246;font-size:11.5px;}
+  footer a{color:var(--orange);text-decoration:none;}
+  .demo-flag{
+    margin:14px 12px 0;text-align:center;font-size:11px;color:#7a6e60;
+    background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:7px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">BABO<span>'</span>S</div>
+    <div class="tag">food &amp; drinks · Freiberg</div>
+    <div class="meta">
+      <span>📍 <b>Gründelbachstr. 17</b></span>
+      <span>📞 <b>07141 95 65 971</b></span>
+    </div>
+    <div id="openPill"></div>
+  </header>
+
+  <div class="deliv">
+    <h4>🚚 Lieferung · tägl. 11:30–20:00 Uhr</h4>
+    <table>
+      <tr><td>Freiberg am Neckar</td><td>MBW 25€ · 4€</td></tr>
+      <tr><td>Benningen, Eglosheim, Bth. Buch, Großingersheim, Hoheneck &amp; Pleidelsheim</td><td>MBW 35€ · 6€</td></tr>
+      <tr><td>Marbach, Bietigheim, Ludwigsburg, Murr &amp; Asperg, Kleiningersheim &amp; Tamm</td><td>MBW 50€ · 7€</td></tr>
+    </table>
+  </div>
+
+  <div class="sticky">
+    <input class="search" id="search" placeholder="🔍 Suchen … Döner, Pide, Pizza, Tantuni …" autocomplete="off">
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <main id="menu"></main>
+
+  <div class="demo-flag">
+    🛠️ Demo von <b>321tadaa</b> · Bestellungen gehen per WhatsApp an Babo's (0175 12 79 406). Preise lt. Speisekarte 03/2025.
+  </div>
+
+  <footer>
+    BABO'S Freiberg · Gründelbachstr. 17, 71691 Freiberg a.N.<br>
+    Demo erstellt von <a href="https://321tadaa.com" target="_blank">321tadaa.com</a>
+  </footer>
+</div>
+
+<!-- CART BAR -->
+<div class="cartbar" id="cartbar">
+  <div class="inner" id="cartOpen">
+    <div class="ci-left"><span class="cart-cnt" id="cartCnt">0</span><span>Warenkorb ansehen</span></div>
+    <div class="ci-right"><span id="cartSum">0,00 €</span><span>→</span></div>
+  </div>
+</div>
+
+<!-- OVERLAY + SHEETS -->
+<div class="overlay" id="overlay"></div>
+
+<!-- CONFIG SHEET -->
+<div class="sheet" id="cfgSheet">
+  <div class="sheet-h">
+    <h3 id="cfgTitle">Döner Konfigurator</h3>
+    <button class="sheet-x" onclick="closeSheets()">×</button>
+  </div>
+  <div class="sheet-body" id="cfgBody"></div>
+  <div class="sheet-foot">
+    <button class="btn-add" id="cfgAdd"></button>
+  </div>
+</div>
+
+<!-- CART SHEET -->
+<div class="sheet" id="cartSheet">
+  <div class="sheet-h">
+    <h3>Dein Warenkorb</h3>
+    <button class="sheet-x" onclick="closeSheets()">×</button>
+  </div>
+  <div class="sheet-body" id="cartBody"></div>
+  <div class="sheet-foot" id="cartFoot"></div>
+</div>
+
+<script>
+/* ============ MENU DATA ============ */
+const MENU = {
+  "Menüs (mit Pommes + Softdrink)": [
+    {nr:"M1", n:"Menü 1 · Döner im Fladenbrot", d:"mit Steakhouse Pommes & Softdrink", p:15.00},
+    {nr:"M2", n:"Menü 2 · Tantuni", d:"mit Steakhouse Pommes & Softdrink", p:15.50},
+    {nr:"M3", n:"Menü 3 · Lahmacun Spezial", d:"mit Steakhouse Pommes & Softdrink", p:16.00},
+    {nr:"", n:"Mo · Dönerteller", d:"NUR MONTAGS · Pommes oder Reis & Softdrink", p:16.00},
+    {nr:"", n:"Di · Pizza mit 2 Zutaten", d:"NUR DIENSTAGS · & Softdrink", p:12.50},
+    {nr:"", n:"Mi · Pide mit 2 Zutaten", d:"NUR MITTWOCHS · & Softdrink", p:12.50},
+  ],
+  "Döner Spezialitäten": [
+    {nr:"330", n:"Döner im Fladenbrot", p:9.00, cfg:"doner"},
+    {nr:"340", n:"Döner im Yufka", p:10.00, cfg:"doner"},
+    {nr:"350", n:"Dönerteller", d:"mit Salat & Pommes oder Reis", p:14.90, cfg:"doner"},
+    {nr:"360", n:"Dönerbox mit einer Beilage", p:9.00},
+    {nr:"370", n:"Dönerbox mit zwei Beilagen", p:10.00},
+    {nr:"380", n:"Dönerbox nur mit Fleisch", p:11.00},
+    {nr:"390", n:"Dönerteller nur mit Fleisch", p:21.00},
+    {nr:"400", n:"Iskender Kebap", d:"knusprig gebackene Brotstücke · Dönerfleisch, Joghurt, Tomatensoße & geschmolzene Butter", p:16.50},
+  ],
+  "Babo's Specials": [
+    {nr:"1220", n:"Tepsi Kebap", p:16.90},
+    {nr:"1600", n:"Saç Tava Rindfleisch", p:19.90},
+    {nr:"1700", n:"Saç Tava Hähnchenfleisch", p:18.90},
+    {nr:"1900", n:"Saç Tava Vegetarisch", p:14.90},
+    {nr:"1270", n:"İçli Köfte", d:"Teigbällchen mit Hackfleisch, hausgemacht · 3 Stk.", p:3.50},
+    {nr:"1280", n:"Sarma", d:"gefüllte Weinblätter, hausgemacht · Portion 10 Stk.", p:6.50},
+    {nr:"1170", n:"Köfte", d:"Frikadellen türk. Art · im Brot", p:9.50},
+    {nr:"1180", n:"Köfte Teller", d:"mit Reis und Salat · 7 Stk.", p:16.50},
+    {nr:"1210", n:"Çiğ Köfte Vegan · im Yufka", d:"mit Salat, Granatapfelsirup, Zitrone", p:9.00},
+    {nr:"1210b", n:"Çiğ Köfte Vegan · im Teller", d:"mit Salat, Granatapfelsirup, Zitrone", p:10.90},
+  ],
+  "Tantuni": [
+    {nr:"040", n:"Tantuni Rind · im Fladenbrot", p:10.00},
+    {nr:"050", n:"Tantuni Rind · im Yufka", p:11.00},
+    {nr:"060", n:"Tantuni Rind · Teller mit Joghurt", d:"im Yufka eingerollt", p:15.50},
+    {nr:"070", n:"Tantuni Rind · Teller", d:"mit Salat & Steakhouse Pommes oder Reis", p:16.50},
+    {nr:"090", n:"Tantuni Hähnchen · im Fladenbrot", p:10.00},
+    {nr:"100", n:"Tantuni Hähnchen · im Yufka", p:11.00},
+    {nr:"110", n:"Tantuni Hähnchen · Teller mit Joghurt", d:"im Yufka eingerollt", p:15.50},
+    {nr:"120", n:"Tantuni Hähnchen · Teller", d:"mit Salat & Steakhouse Pommes oder Reis", p:16.50},
+  ],
+  "Pide": [
+    {nr:"740", n:"Pide Weichkäse", p:10.00},
+    {nr:"750", n:"Pide Hackfleisch", p:11.00},
+    {nr:"760", n:"Pide Hackfleisch mit Weichkäse", p:11.00},
+    {nr:"770", n:"Pide Frischer Spinat und Weichkäse", p:11.50},
+    {nr:"780", n:"Pide Frischer Spinat, Weichkäse und Ei", p:11.50},
+    {nr:"790", n:"Pide Döner", p:11.50},
+    {nr:"800", n:"Pide Sucuk", p:11.50},
+    {nr:"810", n:"Pide Sucuk und Ei", p:11.50},
+    {nr:"820", n:"Pide Vegetarisch", d:"frischer Spinat, Käse, Paprika, Pilze und Ei", p:12.50},
+    {nr:"821", n:"Pide Kusbasi", d:"Rindergeschnetzeltem und frischem Gemüse", p:14.50},
+  ],
+  "Calzone": [
+    {nr:"850", n:"Calzone Weichkäse", p:10.00},
+    {nr:"860", n:"Calzone Frischer Spinat und Weichkäse", p:11.00},
+    {nr:"870", n:"Calzone Frischer Spinat, Weichkäse und Ei", p:12.00},
+    {nr:"880", n:"Calzone Dönerfleisch, Tomaten und Zwiebeln", p:12.90},
+  ],
+  "Pizza": [
+    {nr:"470", n:"Pizzabrot", p:7.00},
+    {nr:"480", n:"Margherita", p:8.50},
+    {nr:"490", n:"Salami (Rindersalami)", p:9.50},
+    {nr:"500", n:"Schinken (Putenschinken)", p:9.50},
+    {nr:"510", n:"Mais", p:9.50},
+    {nr:"520", n:"Funghi", p:9.50},
+    {nr:"550", n:"Frischer Spinat", p:9.50},
+    {nr:"560", n:"Brokkoli", p:10.00},
+    {nr:"570", n:"Salami und Schinken", p:10.50},
+    {nr:"590", n:"Gorgonzola", p:10.50},
+    {nr:"600", n:"Hawaii", d:"mit Schinken und Ananas", p:10.50},
+    {nr:"610", n:"Artischocken", p:10.50},
+    {nr:"610b", n:"Salami, Schinken und Pilze", p:11.00},
+    {nr:"620", n:"Thunfisch", p:11.00},
+    {nr:"640", n:"Sucuk", p:11.00},
+    {nr:"650", n:"Döner", p:11.00},
+    {nr:"660", n:"Vier Jahreszeiten", d:"Salami, Schinken, Paprika und Pilze", p:11.50},
+    {nr:"670", n:"Gemischt", d:"Salami, Schinken, Pilze und Paprika", p:11.50},
+    {nr:"680", n:"Meeresfrüchte", p:12.50},
+    {nr:"690", n:"Vegetarisch", d:"Spinat, Paprika, Oliven, Pilze und Peperoni", p:12.50},
+    {nr:"700", n:"Vier Käse", d:"mit Käse, Mozzarella, Weichkäse und Gorgonzola", p:12.50},
+    {nr:"710", n:"Pizza Babo's", d:"Dönerfleisch, Weichkäse, Zwiebeln, Tomaten und Peperoni", p:13.50},
+  ],
+  "Lahmacun": [
+    {nr:"410", n:"Lahmacun", p:6.00},
+    {nr:"420", n:"Lahmacun mit Salat und Soße", p:8.00},
+    {nr:"430", n:"Lahmacun Spezial", d:"mit Fleisch, Salat und Soße", p:11.00},
+    {nr:"440", n:"Lahmacun Teller mit Salat und Soße", p:10.50},
+    {nr:"450", n:"Lahmacun Spezial Teller", d:"mit Fleisch, Salat und Soße", p:14.90},
+  ],
+  "Vegetarische Spezialitäten": [
+    {nr:"900", n:"Fladenbrot mit Salat und Weichkäse", p:7.00},
+    {nr:"910", n:"Yufka mit Salat und Weichkäse", p:8.00},
+    {nr:"930", n:"Reis Portion", p:5.50},
+    {nr:"940", n:"Halloumi Brot mit Salat und Soße", p:8.00},
+    {nr:"950", n:"Halloumi Yufka mit Salat und Soße", p:9.00},
+    {nr:"960", n:"Halloumi Box mit Salat und Pommes / Reis", p:8.00},
+    {nr:"970", n:"Halloumi Teller mit Salat und Pommes / Reis", p:12.50},
+    {nr:"980", n:"Halloumi 6 Stück", p:8.00},
+    {nr:"990", n:"Halloumi 12 Stück", p:9.50},
+    {nr:"1000", n:"Falafel Brot mit Salat und Soße", p:8.00},
+    {nr:"1010", n:"Falafel Yufka mit Salat und Soße", p:9.00},
+    {nr:"1020", n:"Falafel Box mit Salat und Pommes / Reis", p:8.00},
+    {nr:"1030", n:"Falafel Teller mit Salat und Pommes / Reis", p:12.50},
+    {nr:"1040", n:"Falafel 6 Stück", p:6.00},
+    {nr:"1050", n:"Falafel 12 Stück", p:9.50},
+  ],
+  "Salate": [
+    {nr:"1130", n:"Gemischter Salat", p:8.50},
+    {nr:"1140", n:"Gemischter Salat mit Weichkäse und Oliven", p:9.50},
+    {nr:"1150", n:"Bauernsalat (Coban Salat)", p:10.00},
+    {nr:"1160", n:"Thunfischsalat", p:9.50},
+    {nr:"1161", n:"Babo's Salat", d:"mit angebratenen Tantuni Hähnchen Streifen", p:11.90},
+  ],
+  "Toast": [
+    {nr:"210", n:"Toast Sucuk und Schmelzkäse", p:7.00},
+    {nr:"220", n:"Toast Sucuk, Schmelzkäse und Ei", p:8.00},
+    {nr:"230", n:"Toast Sucuk, Schmelzkäse, Weichkäse und Tomaten", p:8.50},
+    {nr:"240", n:"Toast Salami und Schmelzkäse", p:6.50},
+    {nr:"250", n:"Toast Salami, Schmelzkäse und Ei", p:7.50},
+    {nr:"260", n:"Toast Salami, Schmelzkäse, Weichkäse und Tomaten", p:8.50},
+    {nr:"270", n:"Toast Schinken und Schmelzkäse", p:6.50},
+    {nr:"280", n:"Toast Schinken, Schmelzkäse und Ei", p:7.50},
+    {nr:"290", n:"Toast Schinken, Schmelzkäse, Weichkäse und Tomaten", p:7.50},
+    {nr:"300", n:"Toast Salami, Schinken, Schmelzkäse und Tomaten", p:7.50},
+    {nr:"310", n:"Babo's Toast", d:"Sucuk, Salami, Schmelzkäse, Weichkäse, Paprika und etwas scharf", p:9.00},
+  ],
+  "Fingerfood": [
+    {nr:"1070", n:"Portion Steakhouse Pommes", p:4.50},
+    {nr:"1080", n:"Ger Chicken Nuggets Box", d:"mit Pommes oder Salat", p:8.50},
+    {nr:"1090", n:"Chicken Nuggets Teller", d:"mit 8 Nuggets und zwei Beilagen", p:13.00},
+    {nr:"1000b", n:"Chicken Nuggets 6 Stk.", p:6.00},
+    {nr:"1100", n:"Chicken Nuggets 12 Stk.", p:9.50},
+  ],
+  "Suppen": [
+    {nr:"010", n:"Linsensuppe (Mercimek Çorbası)", p:7.00},
+    {nr:"011", n:"Hühnersuppe (Tavuk Çorbası)", p:7.50},
+    {nr:"012", n:"Lammhalssuppe (Kuzu Gerdan Çorbası)", p:8.00},
+  ],
+  "Getränke (inkl. Pfand)": [
+    {nr:"", n:"Cola / Cola Zero / Fanta / Mezzo Mix / Sprite", d:"0,33 l Glasflasche", p:3.50},
+    {nr:"", n:"Ayran", p:2.50},
+    {nr:"", n:"Durstlöscher versch. Sorten", p:2.50},
+    {nr:"", n:"Redbull", p:3.50},
+    {nr:"", n:"Paulaner Spezi", d:"0,5 l", p:3.50},
+    {nr:"", n:"Vio Wasser Still / Classic", p:2.80},
+    {nr:"", n:"Uludağ", d:"0,5 l", p:3.50},
+    {nr:"", n:"Uludağ Nigde Gazoz", d:"0,2 l", p:2.80},
+    {nr:"", n:"Beypazarı Soda", d:"0,2 l", p:2.80},
+    {nr:"", n:"Didi Eistee", d:"0,2 l", p:2.80},
+    {nr:"", n:"Babo's Energy Drink", d:"0,5 l", p:3.00},
+    {nr:"", n:"Stuttgarter Hofbräu", d:"0,5 l", p:3.50},
+    {nr:"", n:"Efes Bier", d:"0,33 l", p:3.50},
+    {nr:"", n:"Wulle Hell", d:"0,5 l", p:3.50},
+    {nr:"", n:"Hefe / Kristall", d:"0,5 l", p:4.00},
+  ],
+};
+
+/* ============ CONFIGURATORS ============ */
+const CONFIGS = {
+  doner: {
+    title:"Döner Konfigurator",
+    icon:"🥙",
+    groups:[
+      {key:"sauce", label:"Soße", sub:"Bitte wählen", type:"single", req:true, options:[
+        {n:"Cocktail", p:0},{n:"Knoblauch", p:0},{n:"Scharf", p:0},
+        {n:"Kräuter", p:0},{n:"Alle drei (Cocktail+Knobi+Scharf)", p:0},{n:"Ohne Soße", p:0},
+      ]},
+      {key:"salat", label:"Salat", sub:"Mehrfachauswahl – was soll rein?", type:"multi", options:[
+        {n:"Eisbergsalat", p:0},{n:"Tomaten", p:0},{n:"Zwiebeln", p:0},
+        {n:"Rotkraut", p:0},{n:"Gurken", p:0},{n:"Mais", p:0},
+      ]},
+      {key:"scharf", label:"Schärfegrad", sub:"", type:"single", req:true, options:[
+        {n:"Nicht scharf", p:0},{n:"Mild", p:0},{n:"Scharf", p:0},{n:"Extra scharf", p:0},
+      ]},
+      {key:"extra", label:"Extra Zutaten", sub:"optional", type:"multi", options:[
+        {n:"Extra Käse", p:1.00},{n:"Gebratenes Gemüse", p:1.00},{n:"Extra Fleisch", p:1.50},
+      ]},
+    ]
+  }
+};
+
+/* ============ STATE ============ */
+const WA_NUMBER = "491751279406";
+let cart = [];
+let cfgState = null;
+
+const eur = n => n.toFixed(2).replace(".",",") + " €";
+const $ = id => document.getElementById(id);
+
+/* ============ BUILD MENU ============ */
+const cats = Object.keys(MENU);
+function buildTabs(){
+  const t = $("tabs");
+  t.innerHTML = cats.map((c,i)=>
+    `<div class="tab${i===0?' active':''}" data-cat="${i}" onclick="scrollToCat(${i})">${c.split(" (")[0]}</div>`
+  ).join("");
+}
+function buildMenu(){
+  const m = $("menu");
+  m.innerHTML = cats.map((c,i)=>{
+    const items = MENU[c].map((it,j)=>itemHTML(c,i,j,it)).join("");
+    return `<section class="sec" id="sec${i}" data-cat="${c}">
+      <div class="sec-h"><h2>${c}</h2><div class="bar"></div></div>${items}</section>`;
+  }).join("");
+}
+function itemHTML(cat,ci,ii,it){
+  const id = `${ci}-${ii}`;
+  const btn = it.cfg
+    ? `<button class="add config" onclick="openConfig('${it.cfg}','${id}')">Wählen ＋</button>`
+    : `<button class="add" onclick="quickAdd('${id}')">＋</button>`;
+  const nr = it.nr ? `<span class="nr">${it.nr}</span>` : "";
+  const desc = it.d ? `<div class="desc">${it.d}</div>` : "";
+  return `<div class="item" data-name="${(it.n+' '+(it.d||'')).toLowerCase()}">
+    <div class="info"><div class="name">${nr}${it.n}<span class="qbadge" id="qb-${id}" style="display:none"></span></div>${desc}</div>
+    <div class="price">${eur(it.p)}</div>${btn}</div>`;
+}
+function getItem(id){const[ci,ii]=id.split("-").map(Number);return MENU[cats[ci]][ii];}
+
+/* ============ SCROLL SPY ============ */
+function scrollToCat(i){
+  const el=$("sec"+i);
+  window.scrollTo({top:el.offsetTop-118,behavior:"smooth"});
+}
+function spy(){
+  const secs=cats.map((_,i)=>$("sec"+i));
+  let cur=0;
+  secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<140)cur=i;});
+  document.querySelectorAll(".tab").forEach((t,i)=>{
+    t.classList.toggle("active",i===cur);
+    if(i===cur)t.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
+  });
+}
+
+/* ============ SEARCH ============ */
+$("search").addEventListener("input",e=>{
+  const q=e.target.value.toLowerCase().trim();
+  document.querySelectorAll(".item").forEach(it=>{
+    it.style.display=(!q||it.dataset.name.includes(q))?"":"none";
+  });
+  document.querySelectorAll(".sec").forEach(s=>{
+    const any=[...s.querySelectorAll(".item")].some(i=>i.style.display!=="none");
+    s.style.display=any?"":"none";
+  });
+});
+
+/* ============ QUICK ADD ============ */
+function quickAdd(id){
+  const it=getItem(id);
+  const line=cart.find(l=>l.id===id&&!l.opts);
+  if(line)line.q++;
+  else cart.push({id,name:(it.nr?it.nr+" ":"")+it.n,price:it.p,q:1,opts:null});
+  bump(id);renderCart();
+}
+function bump(id){
+  const b=$("qb-"+id);if(!b)return;
+  const tot=cart.filter(l=>l.id===id).reduce((s,l)=>s+l.q,0);
+  if(tot>0){b.style.display="";b.textContent=tot;}else b.style.display="none";
+}
+function refreshBadges(){document.querySelectorAll(".qbadge").forEach(b=>{const id=b.id.slice(3);bump(id);});}
+
+/* ============ CONFIG ============ */
+function openConfig(type,id){
+  const cfg=CONFIGS[type], it=getItem(id);
+  cfgState={type,id,base:it,qty:1,sel:{}};
+  cfg.groups.forEach(g=>cfgState.sel[g.key]=g.type==="multi"?[]:null);
+  $("cfgTitle").textContent=it.n;
+  let html=`<div class="item" style="margin-bottom:16px">
+      <div class="cfg-img">${cfg.icon}</div>
+      <div class="info"><div class="name">${it.n}</div>${it.d?`<div class="desc">${it.d}</div>`:""}<div class="price" style="margin-top:3px">ab ${eur(it.p)}</div></div>
+    </div>`;
+  cfg.groups.forEach(g=>{
+    html+=`<div class="opt-grp"><h4>${g.label}${g.req?' *':''}</h4>${g.sub?`<p class="sub">${g.sub}</p>`:""}`;
+    g.options.forEach((o,oi)=>{
+      const pr=o.p>0?`<span class="o-price">+${eur(o.p)}</span>`:"";
+      html+=`<div class="opt ${g.type==='multi'?'multi':''}" data-g="${g.key}" data-i="${oi}" onclick="pick('${g.key}','${g.type}',${oi},${o.p})">
+        <span class="dot"></span><span class="o-name">${o.n}</span>${pr}</div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="opt-grp"><h4>Anzahl</h4><div class="qty">
+      <button onclick="cfgQty(-1)">−</button><span id="cfgQ">1</span><button onclick="cfgQty(1)">＋</button>
+    </div></div>`;
+  $("cfgBody").innerHTML=html;
+  updCfgBtn();
+  openSheet("cfgSheet");
+}
+function pick(gk,type,oi,price){
+  const cfg=CONFIGS[cfgState.type];
+  const grp=cfg.groups.find(g=>g.key===gk);
+  if(type==="single"){
+    cfgState.sel[gk]=cfgState.sel[gk]===oi?null:oi;
+  }else{
+    const arr=cfgState.sel[gk];
+    const k=arr.indexOf(oi);
+    if(k>=0)arr.splice(k,1);else arr.push(oi);
+  }
+  document.querySelectorAll(`.opt[data-g="${gk}"]`).forEach(el=>{
+    const i=+el.dataset.i;
+    const on=type==="single"?cfgState.sel[gk]===i:cfgState.sel[gk].includes(i);
+    el.classList.toggle("sel",on);
+  });
+  updCfgBtn();
+}
+function cfgQty(d){cfgState.qty=Math.max(1,cfgState.qty+d);$("cfgQ").textContent=cfgState.qty;updCfgBtn();}
+function cfgPrice(){
+  let p=cfgState.base.p;
+  const cfg=CONFIGS[cfgState.type];
+  cfg.groups.forEach(g=>{
+    if(g.type==="multi")cfgState.sel[g.key].forEach(i=>p+=g.options[i].p);
+    else if(cfgState.sel[g.key]!=null)p+=g.options[cfgState.sel[g.key]].p;
+  });
+  return p*cfgState.qty;
+}
+function cfgValid(){
+  const cfg=CONFIGS[cfgState.type];
+  return cfg.groups.every(g=>!g.req||(g.type==="single"?cfgState.sel[g.key]!=null:cfgState.sel[g.key].length>0));
+}
+function updCfgBtn(){
+  const b=$("cfgAdd");
+  if(!cfgValid()){b.style.opacity=".5";b.innerHTML="Bitte Pflichtfelder (*) wählen";b.onclick=null;}
+  else{b.style.opacity="1";b.innerHTML=`In den Warenkorb · ${eur(cfgPrice())}`;b.onclick=cfgAddToCart;}
+}
+function cfgAddToCart(){
+  const cfg=CONFIGS[cfgState.type];
+  let parts=[];
+  cfg.groups.forEach(g=>{
+    if(g.type==="multi"){
+      const v=cfgState.sel[g.key].map(i=>g.options[i].n);
+      if(v.length)parts.push(`${g.label}: ${v.join(", ")}`);
+    }else if(cfgState.sel[g.key]!=null){
+      parts.push(`${g.label}: ${g.options[cfgState.sel[g.key]].n}`);
+    }
+  });
+  cart.push({
+    id:cfgState.id,name:cfgState.base.n,
+    price:cfgPrice()/cfgState.qty,q:cfgState.qty,opts:parts.join(" · ")
+  });
+  bump(cfgState.id);closeSheets();renderCart();
+}
+
+/* ============ CART ============ */
+function cartCount(){return cart.reduce((s,l)=>s+l.q,0);}
+function cartTotal(){return cart.reduce((s,l)=>s+l.price*l.q,0);}
+function renderCart(){
+  const cnt=cartCount();
+  $("cartCnt").textContent=cnt;
+  $("cartSum").textContent=eur(cartTotal());
+  $("cartbar").classList.toggle("show",cnt>0);
+  refreshBadges();
+  renderCartSheet();
+}
+function renderCartSheet(){
+  const b=$("cartBody");
+  if(!cart.length){b.innerHTML='<div class="empty">Dein Warenkorb ist noch leer 🛒</div>';$("cartFoot").innerHTML="";return;}
+  b.innerHTML=cart.map((l,i)=>`
+    <div class="cline">
+      <div class="ct">
+        <div class="cn">${l.name}</div>
+        ${l.opts?`<div class="cx">${l.opts}</div>`:""}
+        <div class="cq">
+          <button onclick="chQ(${i},-1)">−</button><span>${l.q}</span><button onclick="chQ(${i},1)">＋</button>
+        </div>
+      </div>
+      <div class="cp">${eur(l.price*l.q)}</div>
+    </div>`).join("");
+  $("cartFoot").innerHTML=`
+    <div class="summary total"><span>Zwischensumme</span><b>${eur(cartTotal())}</b></div>
+    <div style="font-size:11.5px;color:var(--muted);margin:6px 0 12px">Lieferkosten &amp; MBW je nach Ort – siehe oben. Endpreis bestätigt Babo's per WhatsApp.</div>
+    <button class="btn-add" onclick="goCheckout()">Weiter zur Bestellung →</button>`;
+}
+function chQ(i,d){cart[i].q+=d;if(cart[i].q<=0)cart.splice(i,1);renderCart();}
+
+/* ============ CHECKOUT ============ */
+let order={mode:"Abholung",name:"",addr:"",note:""};
+function goCheckout(){
+  const b=$("cartBody");
+  b.innerHTML=`
+    <div class="mode-row">
+      <div class="mode-btn ${order.mode==='Abholung'?'sel':''}" onclick="setMode('Abholung')">🏠 Abholung</div>
+      <div class="mode-btn ${order.mode==='Lieferung'?'sel':''}" onclick="setMode('Lieferung')">🚚 Lieferung</div>
+    </div>
+    <div class="fields">
+      <label>Name *</label><input id="f-name" value="${order.name}" placeholder="Dein Name">
+      <div id="addrBox" style="display:${order.mode==='Lieferung'?'block':'none'}">
+        <label>Lieferadresse *</label><input id="f-addr" value="${order.addr}" placeholder="Straße, Nr., PLZ Ort">
+      </div>
+      <label>Anmerkung</label><textarea id="f-note" rows="2" placeholder="z.B. ohne Zwiebeln, klingeln bei …">${order.note}</textarea>
+    </div>`;
+  $("cartFoot").innerHTML=`
+    <div class="summary"><span>Artikel (${cartCount()})</span><span>${eur(cartTotal())}</span></div>
+    <div id="mbwLine"></div>
+    <div class="summary total"><span>Gesamt (ohne Lieferung)</span><b>${eur(cartTotal())}</b></div>
+    <button class="btn-add" style="margin-top:10px" onclick="sendWA()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#04150c"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.1-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.3.3c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.4.1.6-.1l.8-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.4.1.1.1.7-.1 1.3z"/></svg>
+      Bestellung per WhatsApp senden
+    </button>
+    <div style="text-align:center;margin-top:8px"><span style="font-size:12.5px;color:var(--muted);cursor:pointer" onclick="renderCartSheet()">← zurück zum Warenkorb</span></div>`;
+  updMBW();
+}
+function setMode(m){
+  order.mode=m;saveFields();goCheckout();
+}
+function saveFields(){
+  if($("f-name"))order.name=$("f-name").value;
+  if($("f-addr"))order.addr=$("f-addr").value;
+  if($("f-note"))order.note=$("f-note").value;
+}
+function updMBW(){
+  const el=$("mbwLine");if(!el)return;
+  if(order.mode==="Lieferung"&&cartTotal()<25){
+    el.innerHTML=`<div class="mbw-warn">⚠️ Mindestbestellwert für Lieferung ab 25€ (Freiberg). Aktuell ${eur(cartTotal())} – ggf. noch etwas hinzufügen.</div>`;
+  }else el.innerHTML="";
+}
+
+/* ============ SEND ============ */
+function sendWA(){
+  saveFields();
+  if(!order.name.trim()){alert("Bitte Name angeben.");return;}
+  if(order.mode==="Lieferung"&&!order.addr.trim()){alert("Bitte Lieferadresse angeben.");return;}
+
+  let t=`*BABO'S – Neue Bestellung*\n`;
+  t+=`(${order.mode})\n\n`;
+  cart.forEach(l=>{
+    t+=`▪️ ${l.q}× ${l.name} – ${eur(l.price*l.q)}\n`;
+    if(l.opts)t+=`    ↳ ${l.opts}\n`;
+  });
+  t+=`\n*Zwischensumme: ${eur(cartTotal())}*\n`;
+  if(order.mode==="Lieferung")t+=`_(zzgl. Lieferkosten je nach Ort)_\n`;
+  t+=`\n👤 ${order.name}\n`;
+  if(order.mode==="Lieferung")t+=`📍 ${order.addr}\n`;
+  if(order.note.trim())t+=`📝 ${order.note}\n`;
+
+  const url=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
+  window.location.href=url; // iOS-safe
+}
+
+/* ============ SHEETS ============ */
+function openSheet(id){$("overlay").classList.add("show");$(id).classList.add("show");document.body.style.overflow="hidden";}
+function closeSheets(){
+  $("overlay").classList.remove("show");
+  document.querySelectorAll(".sheet").forEach(s=>s.classList.remove("show"));
+  document.body.style.overflow="";
+}
+$("overlay").addEventListener("click",closeSheets);
+$("cartOpen").addEventListener("click",()=>{renderCartSheet();openSheet("cartSheet");});
+
+/* ============ OPENING HOURS ============ */
+function checkOpen(){
+  const now=new Date();const d=now.getDay();const hm=now.getHours()*60+now.getMinutes();
+  let o,c;
+  if(d>=1&&d<=4){o=630;c=1290;}        // Mo–Do 10:30–21:30
+  else if(d===5){o=630;c=1350;}        // Fr 10:30–22:30
+  else if(d===6){o=660;c=1350;}        // Sa 11:00–22:30
+  else{o=720;c=1290;}                  // So/Feiertag 12:00–21:30
+  const open=hm>=o&&hm<c;
+  const p=$("openPill");
+  p.className="open-pill "+(open?"open-yes":"open-no");
+  p.innerHTML=open?"🟢 Jetzt geöffnet":"🔴 Aktuell geschlossen";
+}
+
+/* ============ INIT ============ */
+buildTabs();buildMenu();renderCart();checkOpen();
+window.addEventListener("scroll",spy,{passive:true});
+</script>
+</body>
+</html>
