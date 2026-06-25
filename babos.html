@@ -136,7 +136,18 @@
     border:1px solid var(--line);
     border-radius:14px;
     padding:11px 12px;margin-bottom:8px;
+    cursor:pointer;
+    transition:transform .12s, border-color .2s, background .2s;
   }
+  .item:active{transform:scale(.985);}
+  .item.is-cfg{border-color:rgba(247,148,29,.28);}
+  .item.is-cfg:active{transform:scale(.985);}
+  /* satisfying add pulse */
+  @keyframes addpulse{
+    0%{box-shadow:0 0 0 0 rgba(37,211,102,.5);}
+    100%{box-shadow:0 0 0 14px rgba(37,211,102,0);}
+  }
+  .item.pulse{animation:addpulse .5s ease-out; border-color:var(--green);}
   .item .info{flex:1;min-width:0;}
   .item .name{font-size:15px;font-weight:600;color:var(--text);}
   .item .name .nr{color:#6f655a;font-size:12px;font-weight:600;margin-right:5px;}
@@ -149,13 +160,36 @@
     transition:transform .08s;
   }
   .add:active{transform:scale(.88);}
-  .add.config{width:auto;padding:0 13px;font-size:13px;font-weight:700;gap:5px;}
+  .add.config{width:auto;padding:0 13px;font-size:13px;font-weight:700;gap:5px;height:38px;}
 
-  .qbadge{
-    display:inline-flex;align-items:center;justify-content:center;
-    min-width:20px;height:20px;padding:0 5px;border-radius:99px;
-    background:var(--green);color:#04150c;font-size:12px;font-weight:800;margin-left:8px;
+  /* inline stepper on the card */
+  .ctrl{flex:0 0 auto;}
+  .stepper{
+    display:flex;align-items:center;background:var(--green);border-radius:11px;overflow:hidden;
+    box-shadow:0 2px 8px rgba(37,211,102,.3);
+    animation:stepin .22s cubic-bezier(.2,.9,.3,1.2);
   }
+  @keyframes stepin{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .stepper button{
+    width:34px;height:38px;background:none;border:none;color:#04150c;font-size:20px;font-weight:800;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .stepper button:active{background:rgba(0,0,0,.12);}
+  .stepper span{min-width:22px;text-align:center;color:#04150c;font-size:15px;font-weight:800;}
+
+  /* "mit allem" preset */
+  .preset-btn{
+    width:100%;padding:13px;margin-bottom:18px;border:1.5px solid var(--gold);
+    background:rgba(246,179,43,.1);color:var(--gold);
+    border-radius:13px;font-size:15px;font-weight:800;cursor:pointer;
+    transition:transform .1s, background .2s;
+  }
+  .preset-btn:active{transform:scale(.97);}
+  .preset-btn.done{background:rgba(37,211,102,.14);border-color:var(--green);color:#7ee6a4;}
+
+  /* tab tap feedback */
+  .tab{transition:background .15s, border-color .15s, color .15s, transform .1s;}
+  .tab:active{transform:scale(.94);}
 
   /* CART BAR */
   .cartbar{
@@ -275,6 +309,14 @@
     background:rgba(247,148,29,.12);border:1px solid rgba(247,148,29,.4);
     color:var(--gold);font-size:12.5px;padding:9px 12px;border-radius:10px;margin:8px 0;
   }
+  .zone-ok{
+    background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.4);
+    color:#7ee6a4;font-size:12.5px;padding:9px 12px;border-radius:10px;margin:2px 0 9px;
+  }
+  .zone-no{
+    background:rgba(247,148,29,.1);border:1px solid rgba(247,148,29,.4);
+    color:var(--gold);font-size:12.5px;padding:9px 12px;border-radius:10px;margin:2px 0 9px;
+  }
   .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px;}
 
   footer{text-align:center;padding:26px 18px 10px;color:#5c5246;font-size:11.5px;}
@@ -299,7 +341,7 @@
   </header>
 
   <div class="deliv">
-    <h4>🚚 Lieferung · tägl. 11:30–20:00 Uhr</h4>
+    <h4>🚚 Lieferung · tägl. 11:30–20:00 Uhr · Kosten autom. nach PLZ</h4>
     <table>
       <tr><td>Freiberg am Neckar</td><td>MBW 25€ · 4€</td></tr>
       <tr><td>Benningen, Eglosheim, Bth. Buch, Großingersheim, Hoheneck &amp; Pleidelsheim</td><td>MBW 35€ · 6€</td></tr>
@@ -369,13 +411,7 @@ const MENU = {
     {nr:"", n:"Mi · Pide mit 2 Zutaten", d:"NUR MITTWOCHS · & Softdrink", p:12.50},
   ],
   "Döner Spezialitäten": [
-    {nr:"330", n:"Döner im Fladenbrot", p:9.00, cfg:"doner"},
-    {nr:"340", n:"Döner im Yufka", p:10.00, cfg:"doner"},
-    {nr:"350", n:"Dönerteller", d:"mit Salat & Pommes oder Reis", p:14.90, cfg:"doner"},
-    {nr:"360", n:"Dönerbox mit einer Beilage", p:9.00},
-    {nr:"370", n:"Dönerbox mit zwei Beilagen", p:10.00},
-    {nr:"380", n:"Dönerbox nur mit Fleisch", p:11.00},
-    {nr:"390", n:"Dönerteller nur mit Fleisch", p:21.00},
+    {nr:"330", n:"Döner", d:"Fladenbrot · Yufka · Teller · Box – nach Wunsch belegen", p:9.00, cfg:"doner"},
     {nr:"400", n:"Iskender Kebap", d:"knusprig gebackene Brotstücke · Dönerfleisch, Joghurt, Tomatensoße & geschmolzene Butter", p:16.50},
   ],
   "Babo's Specials": [
@@ -391,14 +427,8 @@ const MENU = {
     {nr:"1210b", n:"Çiğ Köfte Vegan · im Teller", d:"mit Salat, Granatapfelsirup, Zitrone", p:10.90},
   ],
   "Tantuni": [
-    {nr:"040", n:"Tantuni Rind · im Fladenbrot", p:10.00},
-    {nr:"050", n:"Tantuni Rind · im Yufka", p:11.00},
-    {nr:"060", n:"Tantuni Rind · Teller mit Joghurt", d:"im Yufka eingerollt", p:15.50},
-    {nr:"070", n:"Tantuni Rind · Teller", d:"mit Salat & Steakhouse Pommes oder Reis", p:16.50},
-    {nr:"090", n:"Tantuni Hähnchen · im Fladenbrot", p:10.00},
-    {nr:"100", n:"Tantuni Hähnchen · im Yufka", p:11.00},
-    {nr:"110", n:"Tantuni Hähnchen · Teller mit Joghurt", d:"im Yufka eingerollt", p:15.50},
-    {nr:"120", n:"Tantuni Hähnchen · Teller", d:"mit Salat & Steakhouse Pommes oder Reis", p:16.50},
+    {nr:"040", n:"Tantuni Rind", d:"Fladenbrot · Yufka · Teller – nach Wunsch", p:10.00, cfg:"tantuni"},
+    {nr:"090", n:"Tantuni Hähnchen", d:"Fladenbrot · Yufka · Teller – nach Wunsch", p:10.00, cfg:"tantuni"},
   ],
   "Pide": [
     {nr:"740", n:"Pide Weichkäse", p:10.00},
@@ -420,27 +450,27 @@ const MENU = {
   ],
   "Pizza": [
     {nr:"470", n:"Pizzabrot", p:7.00},
-    {nr:"480", n:"Margherita", p:8.50},
-    {nr:"490", n:"Salami (Rindersalami)", p:9.50},
-    {nr:"500", n:"Schinken (Putenschinken)", p:9.50},
-    {nr:"510", n:"Mais", p:9.50},
-    {nr:"520", n:"Funghi", p:9.50},
-    {nr:"550", n:"Frischer Spinat", p:9.50},
-    {nr:"560", n:"Brokkoli", p:10.00},
-    {nr:"570", n:"Salami und Schinken", p:10.50},
-    {nr:"590", n:"Gorgonzola", p:10.50},
-    {nr:"600", n:"Hawaii", d:"mit Schinken und Ananas", p:10.50},
-    {nr:"610", n:"Artischocken", p:10.50},
-    {nr:"610b", n:"Salami, Schinken und Pilze", p:11.00},
-    {nr:"620", n:"Thunfisch", p:11.00},
-    {nr:"640", n:"Sucuk", p:11.00},
-    {nr:"650", n:"Döner", p:11.00},
-    {nr:"660", n:"Vier Jahreszeiten", d:"Salami, Schinken, Paprika und Pilze", p:11.50},
-    {nr:"670", n:"Gemischt", d:"Salami, Schinken, Pilze und Paprika", p:11.50},
-    {nr:"680", n:"Meeresfrüchte", p:12.50},
-    {nr:"690", n:"Vegetarisch", d:"Spinat, Paprika, Oliven, Pilze und Peperoni", p:12.50},
-    {nr:"700", n:"Vier Käse", d:"mit Käse, Mozzarella, Weichkäse und Gorgonzola", p:12.50},
-    {nr:"710", n:"Pizza Babo's", d:"Dönerfleisch, Weichkäse, Zwiebeln, Tomaten und Peperoni", p:13.50},
+    {nr:"480", n:"Margherita", p:8.50, cfg:"pizza"},
+    {nr:"490", n:"Salami (Rindersalami)", p:9.50, cfg:"pizza"},
+    {nr:"500", n:"Schinken (Putenschinken)", p:9.50, cfg:"pizza"},
+    {nr:"510", n:"Mais", p:9.50, cfg:"pizza"},
+    {nr:"520", n:"Funghi", p:9.50, cfg:"pizza"},
+    {nr:"550", n:"Frischer Spinat", p:9.50, cfg:"pizza"},
+    {nr:"560", n:"Brokkoli", p:10.00, cfg:"pizza"},
+    {nr:"570", n:"Salami und Schinken", p:10.50, cfg:"pizza"},
+    {nr:"590", n:"Gorgonzola", p:10.50, cfg:"pizza"},
+    {nr:"600", n:"Hawaii", d:"mit Schinken und Ananas", p:10.50, cfg:"pizza"},
+    {nr:"610", n:"Artischocken", p:10.50, cfg:"pizza"},
+    {nr:"610b", n:"Salami, Schinken und Pilze", p:11.00, cfg:"pizza"},
+    {nr:"620", n:"Thunfisch", p:11.00, cfg:"pizza"},
+    {nr:"640", n:"Sucuk", p:11.00, cfg:"pizza"},
+    {nr:"650", n:"Döner", p:11.00, cfg:"pizza"},
+    {nr:"660", n:"Vier Jahreszeiten", d:"Salami, Schinken, Paprika und Pilze", p:11.50, cfg:"pizza"},
+    {nr:"670", n:"Gemischt", d:"Salami, Schinken, Pilze und Paprika", p:11.50, cfg:"pizza"},
+    {nr:"680", n:"Meeresfrüchte", p:12.50, cfg:"pizza"},
+    {nr:"690", n:"Vegetarisch", d:"Spinat, Paprika, Oliven, Pilze und Peperoni", p:12.50, cfg:"pizza"},
+    {nr:"700", n:"Vier Käse", d:"mit Käse, Mozzarella, Weichkäse und Gorgonzola", p:12.50, cfg:"pizza"},
+    {nr:"710", n:"Pizza Babo's", d:"Dönerfleisch, Weichkäse, Zwiebeln, Tomaten und Peperoni", p:13.50, cfg:"pizza"},
   ],
   "Lahmacun": [
     {nr:"410", n:"Lahmacun", p:6.00},
@@ -522,7 +552,15 @@ const CONFIGS = {
   doner: {
     title:"Döner Konfigurator",
     icon:"🥙",
+    preset:{label:"⚡ Döner mit allem", sets:{art:0, sauce:4, salat:[0,1,2,4], scharf:1, extra:[]}},
     groups:[
+      {key:"art", label:"Art", sub:"Wie möchtest du deinen Döner?", type:"single", req:true, price:true, options:[
+        {n:"Im Fladenbrot", p:0},
+        {n:"Im Yufka", p:1.00},
+        {n:"Dönerteller (Salat & Pommes/Reis)", p:5.90},
+        {n:"Dönerbox mit einer Beilage", p:0},
+        {n:"Dönerbox mit zwei Beilagen", p:1.00},
+      ]},
       {key:"sauce", label:"Soße", sub:"Bitte wählen", type:"single", req:true, options:[
         {n:"Cocktail", p:0},{n:"Knoblauch", p:0},{n:"Scharf", p:0},
         {n:"Kräuter", p:0},{n:"Alle drei (Cocktail+Knobi+Scharf)", p:0},{n:"Ohne Soße", p:0},
@@ -538,11 +576,65 @@ const CONFIGS = {
         {n:"Extra Käse", p:1.00},{n:"Gebratenes Gemüse", p:1.00},{n:"Extra Fleisch", p:1.50},
       ]},
     ]
+  },
+  tantuni: {
+    title:"Tantuni Konfigurator",
+    icon:"🌯",
+    preset:{label:"⚡ Tantuni mit allem", sets:{art:0, sauce:0, salat:[0,1,2], scharf:1}},
+    groups:[
+      {key:"art", label:"Art", sub:"Wie möchtest du dein Tantuni?", type:"single", req:true, price:true, options:[
+        {n:"Im Fladenbrot", p:0},
+        {n:"Im Yufka", p:1.00},
+        {n:"Teller mit Joghurt (im Yufka eingerollt)", p:5.50},
+        {n:"Teller mit Salat & Pommes/Reis", p:6.50},
+      ]},
+      {key:"sauce", label:"Soße", sub:"Bitte wählen", type:"single", req:true, options:[
+        {n:"Cocktail", p:0},{n:"Knoblauch", p:0},{n:"Scharf", p:0},{n:"Ohne Soße", p:0},
+      ]},
+      {key:"salat", label:"Salat", sub:"Mehrfachauswahl", type:"multi", options:[
+        {n:"Eisbergsalat", p:0},{n:"Tomaten", p:0},{n:"Zwiebeln", p:0},
+        {n:"Rotkraut", p:0},{n:"Gurken", p:0},
+      ]},
+      {key:"scharf", label:"Schärfegrad", sub:"", type:"single", req:true, options:[
+        {n:"Nicht scharf", p:0},{n:"Mild", p:0},{n:"Scharf", p:0},{n:"Extra scharf", p:0},
+      ]},
+    ]
+  },
+  pizza: {
+    title:"Pizza Konfigurator",
+    icon:"🍕",
+    groups:[
+      {key:"extra", label:"Extra Zutaten", sub:"Belege deine Pizza nach Wunsch – je +1,00 €", type:"multi", options:[
+        {n:"Extra Käse", p:1.00},{n:"Salami", p:1.00},{n:"Schinken", p:1.00},
+        {n:"Sucuk", p:1.00},{n:"Pilze", p:1.00},{n:"Paprika", p:1.00},
+        {n:"Zwiebeln", p:1.00},{n:"Mais", p:1.00},{n:"Oliven", p:1.00},
+        {n:"Peperoni", p:1.00},{n:"Ananas", p:1.00},{n:"Thunfisch", p:1.50},
+        {n:"Gorgonzola", p:1.50},{n:"Dönerfleisch", p:2.00},
+      ]},
+      {key:"wunsch", label:"Sonderwunsch", sub:"optional", type:"single", options:[
+        {n:"Kein Sonderwunsch", p:0},{n:"Ohne Zwiebeln", p:0},{n:"Wenig Käse", p:0},
+        {n:"Gut durchgebacken", p:0},{n:"Glutenarm (soweit möglich)", p:0},
+      ]},
+    ]
   }
 };
 
 /* ============ STATE ============ */
 const WA_NUMBER = "491751279406";
+
+/* PLZ → Lieferzone. fee = Lieferkosten €, mbw = Mindestbestellwert €.
+   Quelle: Speisekarte 03/2025. Überschneidende PLZ (Ludwigsburg/Bietigheim)
+   konservativ in die nähere Zone gelegt – mit Babo's final abklären. */
+const ZONES = {
+  z1: {name:"Freiberg am Neckar",            fee:4, mbw:25, plz:["71691"]},
+  z2: {name:"Benningen / LB-Nähe",           fee:6, mbw:35, plz:["71726","74385","74379","71634","71642"]},
+  z3: {name:"Marbach / Bietigheim / LB",     fee:7, mbw:50, plz:["71672","74321","71636","71638","71640","71711","71679","71732"]},
+};
+function zoneForPLZ(plz){
+  plz=(plz||"").trim();
+  for(const k in ZONES){ if(ZONES[k].plz.includes(plz)) return {key:k,...ZONES[k]}; }
+  return null;
+}
 let cart = [];
 let cfgState = null;
 
@@ -567,26 +659,44 @@ function buildMenu(){
 }
 function itemHTML(cat,ci,ii,it){
   const id = `${ci}-${ii}`;
-  const btn = it.cfg
-    ? `<button class="add config" onclick="openConfig('${it.cfg}','${id}')">Wählen ＋</button>`
-    : `<button class="add" onclick="quickAdd('${id}')">＋</button>`;
   const nr = it.nr ? `<span class="nr">${it.nr}</span>` : "";
   const desc = it.d ? `<div class="desc">${it.d}</div>` : "";
-  return `<div class="item" data-name="${(it.n+' '+(it.d||'')).toLowerCase()}">
-    <div class="info"><div class="name">${nr}${it.n}<span class="qbadge" id="qb-${id}" style="display:none"></span></div>${desc}</div>
-    <div class="price">${eur(it.p)}</div>${btn}</div>`;
+  // configurable items open the sheet on whole-card tap; simple items add directly
+  const tap = it.cfg ? `onclick="openConfig('${it.cfg}','${id}')"` : `onclick="cardAdd(event,'${id}')"`;
+  const ctrl = it.cfg
+    ? `<button class="add config" tabindex="-1">Wählen ＋</button>`
+    : `<div class="ctrl" id="ctrl-${id}">${plusOrStepper(id)}</div>`;
+  return `<div class="item${it.cfg?' is-cfg':''}" data-name="${(it.n+' '+(it.d||'')).toLowerCase()}" ${tap}>
+    <div class="info"><div class="name">${nr}${it.n}</div>${desc}</div>
+    <div class="price">${eur(it.p)}</div>${ctrl}</div>`;
+}
+// returns either a + button or a − N + stepper depending on cart qty (simple items only)
+function plusOrStepper(id){
+  const q=cart.filter(l=>l.id===id&&!l.opts).reduce((s,l)=>s+l.q,0);
+  if(q>0){
+    return `<div class="stepper" onclick="event.stopPropagation()">
+      <button onclick="stepSimple('${id}',-1)">−</button><span>${q}</span><button onclick="stepSimple('${id}',1)">＋</button>
+    </div>`;
+  }
+  return `<button class="add" onclick="cardAdd(event,'${id}')">＋</button>`;
 }
 function getItem(id){const[ci,ii]=id.split("-").map(Number);return MENU[cats[ci]][ii];}
 
-/* ============ SCROLL SPY ============ */
+/* ============ SCROLL SPY + TAB TAP ============ */
+let spyLock=0;
 function scrollToCat(i){
-  const el=$("sec"+i);
-  window.scrollTo({top:el.offsetTop-118,behavior:"smooth"});
+  const el=$("sec"+i); if(!el)return;
+  spyLock=Date.now()+650; // pause spy so the tap-target stays active during smooth scroll
+  // mark active immediately for responsive feel
+  document.querySelectorAll(".tab").forEach((t,k)=>t.classList.toggle("active",k===i));
+  const y=el.getBoundingClientRect().top+window.pageYOffset-116;
+  window.scrollTo({top:y,behavior:"smooth"});
 }
 function spy(){
+  if(Date.now()<spyLock)return;
   const secs=cats.map((_,i)=>$("sec"+i));
   let cur=0;
-  secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<140)cur=i;});
+  secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<140)cur=i;});
   document.querySelectorAll(".tab").forEach((t,i)=>{
     t.classList.toggle("active",i===cur);
     if(i===cur)t.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
@@ -605,20 +715,33 @@ $("search").addEventListener("input",e=>{
   });
 });
 
-/* ============ QUICK ADD ============ */
-function quickAdd(id){
+/* ============ ADD / STEPPER (simple items) ============ */
+function cardAdd(ev,id){
+  if(ev)ev.stopPropagation();
   const it=getItem(id);
   const line=cart.find(l=>l.id===id&&!l.opts);
   if(line)line.q++;
   else cart.push({id,name:(it.nr?it.nr+" ":"")+it.n,price:it.p,q:1,opts:null});
-  bump(id);renderCart();
+  flashItem(id);
+  redrawCtrl(id);renderCart();
 }
-function bump(id){
-  const b=$("qb-"+id);if(!b)return;
-  const tot=cart.filter(l=>l.id===id).reduce((s,l)=>s+l.q,0);
-  if(tot>0){b.style.display="";b.textContent=tot;}else b.style.display="none";
+function stepSimple(id,d){
+  const line=cart.find(l=>l.id===id&&!l.opts);
+  if(line){line.q+=d; if(line.q<=0){cart=cart.filter(l=>l!==line);}}
+  redrawCtrl(id);renderCart();
 }
-function refreshBadges(){document.querySelectorAll(".qbadge").forEach(b=>{const id=b.id.slice(3);bump(id);});}
+function redrawCtrl(id){
+  const c=$("ctrl-"+id); if(c)c.innerHTML=plusOrStepper(id);
+}
+function refreshBadges(){
+  // re-render every simple-item control to reflect cart state
+  document.querySelectorAll(".ctrl").forEach(c=>{const id=c.id.slice(5);c.innerHTML=plusOrStepper(id);});
+}
+function flashItem(id){
+  const c=$("ctrl-"+id); if(!c)return;
+  const card=c.closest(".item"); if(!card)return;
+  card.classList.remove("pulse"); void card.offsetWidth; card.classList.add("pulse");
+}
 
 /* ============ CONFIG ============ */
 function openConfig(type,id){
@@ -626,12 +749,16 @@ function openConfig(type,id){
   cfgState={type,id,base:it,qty:1,sel:{}};
   cfg.groups.forEach(g=>cfgState.sel[g.key]=g.type==="multi"?[]:null);
   $("cfgTitle").textContent=it.n;
-  let html=`<div class="item" style="margin-bottom:16px">
+  let html=`<div class="item" style="margin-bottom:14px">
       <div class="cfg-img">${cfg.icon}</div>
       <div class="info"><div class="name">${it.n}</div>${it.d?`<div class="desc">${it.d}</div>`:""}<div class="price" style="margin-top:3px">ab ${eur(it.p)}</div></div>
     </div>`;
+  // quick preset ("mit allem")
+  if(cfg.preset){
+    html+=`<button class="preset-btn" onclick="applyPreset()">${cfg.preset.label}</button>`;
+  }
   cfg.groups.forEach(g=>{
-    html+=`<div class="opt-grp"><h4>${g.label}${g.req?' *':''}</h4>${g.sub?`<p class="sub">${g.sub}</p>`:""}`;
+    html+=`<div class="opt-grp" data-grp="${g.key}"><h4>${g.label}${g.req?' *':''}</h4>${g.sub?`<p class="sub">${g.sub}</p>`:""}`;
     g.options.forEach((o,oi)=>{
       const pr=o.p>0?`<span class="o-price">+${eur(o.p)}</span>`:"";
       html+=`<div class="opt ${g.type==='multi'?'multi':''}" data-g="${g.key}" data-i="${oi}" onclick="pick('${g.key}','${g.type}',${oi},${o.p})">
@@ -643,8 +770,28 @@ function openConfig(type,id){
       <button onclick="cfgQty(-1)">−</button><span id="cfgQ">1</span><button onclick="cfgQty(1)">＋</button>
     </div></div>`;
   $("cfgBody").innerHTML=html;
+  $("cfgBody").scrollTop=0;
   updCfgBtn();
   openSheet("cfgSheet");
+}
+function applyPreset(){
+  const cfg=CONFIGS[cfgState.type], ps=cfg.preset.sets;
+  cfg.groups.forEach(g=>{
+    if(!(g.key in ps))return;
+    cfgState.sel[g.key]=Array.isArray(ps[g.key])?[...ps[g.key]]:ps[g.key];
+  });
+  // refresh all option visuals
+  cfg.groups.forEach(g=>{
+    document.querySelectorAll(`.opt[data-g="${g.key}"]`).forEach(el=>{
+      const i=+el.dataset.i, sel=cfgState.sel[g.key];
+      const on=Array.isArray(sel)?sel.includes(i):sel===i;
+      el.classList.toggle("sel",on);
+    });
+  });
+  // nudge feedback
+  const pb=document.querySelector(".preset-btn");
+  if(pb){pb.classList.add("done");pb.textContent="✓ "+cfg.preset.label.replace(/^⚡ /,"");}
+  updCfgBtn();
 }
 function pick(gk,type,oi,price){
   const cfg=CONFIGS[cfgState.type];
@@ -685,19 +832,25 @@ function updCfgBtn(){
 function cfgAddToCart(){
   const cfg=CONFIGS[cfgState.type];
   let parts=[];
+  let artName="";
   cfg.groups.forEach(g=>{
     if(g.type==="multi"){
       const v=cfgState.sel[g.key].map(i=>g.options[i].n);
       if(v.length)parts.push(`${g.label}: ${v.join(", ")}`);
     }else if(cfgState.sel[g.key]!=null){
-      parts.push(`${g.label}: ${g.options[cfgState.sel[g.key]].n}`);
+      const chosen=g.options[cfgState.sel[g.key]].n;
+      if(g.key==="art")artName=chosen;
+      parts.push(`${g.label}: ${chosen}`);
     }
   });
+  // for consolidated items, append the Art to the display name (e.g. "Döner · Im Yufka")
+  const dispName=artName?`${cfgState.base.n} · ${artName}`:cfgState.base.n;
   cart.push({
-    id:cfgState.id,name:cfgState.base.n,
+    id:cfgState.id,name:dispName,
     price:cfgPrice()/cfgState.qty,q:cfgState.qty,opts:parts.join(" · ")
   });
-  bump(cfgState.id);closeSheets();renderCart();
+  flashItem(cfgState.id);
+  redrawCtrl(cfgState.id);closeSheets();renderCart();
 }
 
 /* ============ CART ============ */
@@ -733,7 +886,7 @@ function renderCartSheet(){
 function chQ(i,d){cart[i].q+=d;if(cart[i].q<=0)cart.splice(i,1);renderCart();}
 
 /* ============ CHECKOUT ============ */
-let order={mode:"Abholung",name:"",addr:"",note:""};
+let order={mode:"Abholung",name:"",addr:"",plz:"",note:"",zone:null};
 function goCheckout(){
   const b=$("cartBody");
   b.innerHTML=`
@@ -744,20 +897,25 @@ function goCheckout(){
     <div class="fields">
       <label>Name *</label><input id="f-name" value="${order.name}" placeholder="Dein Name">
       <div id="addrBox" style="display:${order.mode==='Lieferung'?'block':'none'}">
-        <label>Lieferadresse *</label><input id="f-addr" value="${order.addr}" placeholder="Straße, Nr., PLZ Ort">
+        <label>PLZ * <span style="color:var(--muted);font-weight:400">(für Liefergebiet & -kosten)</span></label>
+        <input id="f-plz" inputmode="numeric" maxlength="5" value="${order.plz}" placeholder="z. B. 71691" oninput="onPLZ()">
+        <div id="zoneInfo"></div>
+        <label>Lieferadresse *</label><input id="f-addr" value="${order.addr}" placeholder="Straße, Nr., Ort">
       </div>
       <label>Anmerkung</label><textarea id="f-note" rows="2" placeholder="z. B. extra knusprig, getrennt verpacken, ohne Zwiebeln …">${order.note}</textarea>
     </div>`;
   $("cartFoot").innerHTML=`
     <div class="summary"><span>Artikel (${cartCount()})</span><span>${eur(cartTotal())}</span></div>
+    <div id="feeLine"></div>
     <div id="mbwLine"></div>
-    <div class="summary total"><span>Gesamt (ohne Lieferung)</span><b>${eur(cartTotal())}</b></div>
-    <button class="btn-add" style="margin-top:10px" onclick="sendWA()">
+    <div class="summary total"><span id="totLbl">Gesamt</span><b id="totVal">${eur(cartTotal())}</b></div>
+    <button class="btn-add" id="sendBtn" style="margin-top:10px" onclick="sendWA()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="#04150c"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.1-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.3.3c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.4.1.6-.1l.8-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.4.1.1.1.7-.1 1.3z"/></svg>
       Bestellung per WhatsApp senden
     </button>
     <div style="text-align:center;margin-top:8px"><span style="font-size:12.5px;color:var(--muted);cursor:pointer" onclick="renderCartSheet()">← zurück zum Warenkorb</span></div>`;
-  updMBW();
+  if(order.mode==="Lieferung"&&order.plz)onPLZ();
+  updTotals();
 }
 function setMode(m){
   order.mode=m;saveFields();goCheckout();
@@ -765,20 +923,62 @@ function setMode(m){
 function saveFields(){
   if($("f-name"))order.name=$("f-name").value;
   if($("f-addr"))order.addr=$("f-addr").value;
+  if($("f-plz"))order.plz=$("f-plz").value;
   if($("f-note"))order.note=$("f-note").value;
 }
-function updMBW(){
-  const el=$("mbwLine");if(!el)return;
-  if(order.mode==="Lieferung"&&cartTotal()<25){
-    el.innerHTML=`<div class="mbw-warn">⚠️ Mindestbestellwert für Lieferung ab 25€ (Freiberg). Aktuell ${eur(cartTotal())} – ggf. noch etwas hinzufügen.</div>`;
-  }else el.innerHTML="";
+function onPLZ(){
+  order.plz=$("f-plz").value.trim();
+  const z=zoneForPLZ(order.plz);
+  order.zone=z;
+  const info=$("zoneInfo");
+  if(order.plz.length<5){info.innerHTML="";}
+  else if(z){
+    info.innerHTML=`<div class="zone-ok">✅ Liefergebiet: <b>${z.name}</b> · Lieferung ${eur(z.fee)} · MBW ${eur(z.mbw)}</div>`;
+  }else{
+    info.innerHTML=`<div class="zone-no">❓ PLZ ${order.plz} ist nicht im Standard-Liefergebiet. Babo's klärt das per WhatsApp mit dir ab.</div>`;
+  }
+  updTotals();
+}
+function deliveryFee(){
+  if(order.mode!=="Lieferung"||!order.zone)return 0;
+  return order.zone.fee;
+}
+function grandTotal(){return cartTotal()+deliveryFee();}
+function updTotals(){
+  const fl=$("feeLine"), ml=$("mbwLine"), tl=$("totLbl"), tv=$("totVal"), sb=$("sendBtn");
+  if(!tl)return;
+  // delivery fee line
+  if(order.mode==="Lieferung"&&order.zone){
+    fl.innerHTML=`<div class="summary"><span>Lieferung (${order.zone.name})</span><span>${eur(order.zone.fee)}</span></div>`;
+    tl.textContent="Gesamt inkl. Lieferung";
+  }else{
+    fl.innerHTML="";
+    tl.textContent=order.mode==="Lieferung"?"Zwischensumme":"Gesamt";
+  }
+  tv.textContent=eur(grandTotal());
+  // MBW check
+  if(order.mode==="Lieferung"&&order.zone&&cartTotal()<order.zone.mbw){
+    const miss=order.zone.mbw-cartTotal();
+    ml.innerHTML=`<div class="mbw-warn">⚠️ Mindestbestellwert für ${order.zone.name}: <b>${eur(order.zone.mbw)}</b>. Es fehlen noch <b>${eur(miss)}</b>.</div>`;
+    if(sb){sb.style.opacity=".5";sb.dataset.block="1";}
+  }else{
+    ml.innerHTML="";
+    if(sb){sb.style.opacity="1";sb.dataset.block="";}
+  }
 }
 
 /* ============ SEND ============ */
 function sendWA(){
   saveFields();
   if(!order.name.trim()){alert("Bitte Name angeben.");return;}
-  if(order.mode==="Lieferung"&&!order.addr.trim()){alert("Bitte Lieferadresse angeben.");return;}
+  if(order.mode==="Lieferung"){
+    if(!order.plz.trim()){alert("Bitte PLZ angeben.");return;}
+    if(!order.addr.trim()){alert("Bitte Lieferadresse angeben.");return;}
+    if(order.zone&&cartTotal()<order.zone.mbw){
+      alert(`Mindestbestellwert für ${order.zone.name}: ${eur(order.zone.mbw)}. Es fehlen noch ${eur(order.zone.mbw-cartTotal())}.`);
+      return;
+    }
+  }
 
   let t=`*BABO'S – Neue Bestellung*\n`;
   t+=`(${order.mode})\n\n`;
@@ -787,9 +987,18 @@ function sendWA(){
     if(l.opts)t+=`    ↳ ${l.opts}\n`;
   });
   t+=`\n*Zwischensumme: ${eur(cartTotal())}*\n`;
-  if(order.mode==="Lieferung")t+=`_(zzgl. Lieferkosten je nach Ort)_\n`;
+  if(order.mode==="Lieferung"){
+    if(order.zone){
+      t+=`Lieferung (${order.zone.name}): ${eur(order.zone.fee)}\n`;
+      t+=`*Gesamt: ${eur(grandTotal())}*\n`;
+    }else{
+      t+=`_Lieferkosten: PLZ ${order.plz} – bitte abklären_\n`;
+    }
+  }
   t+=`\n👤 ${order.name}\n`;
-  if(order.mode==="Lieferung")t+=`📍 ${order.addr}\n`;
+  if(order.mode==="Lieferung"){
+    t+=`📍 ${order.addr}, ${order.plz}\n`;
+  }
   if(order.note.trim())t+=`📝 ${order.note}\n`;
 
   const url=`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(t)}`;
