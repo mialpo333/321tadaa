@@ -317,6 +317,33 @@
     background:rgba(247,148,29,.1);border:1px solid rgba(247,148,29,.4);
     color:var(--gold);font-size:12.5px;padding:9px 12px;border-radius:10px;margin:2px 0 9px;
   }
+  /* time picker */
+  .time-chips{display:flex;gap:8px;margin:2px 0 10px;}
+  .tchip{
+    flex:1;padding:11px;border-radius:11px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;
+    transition:transform .1s,border-color .2s,background .2s,color .2s;
+  }
+  .tchip:active{transform:scale(.97);}
+  .tchip.on{border-color:var(--red);background:rgba(232,65,43,.1);color:var(--text);}
+  .time-quick{display:flex;gap:8px;margin-bottom:8px;}
+  .tquick{
+    flex:1;padding:9px 4px;border-radius:11px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;
+  }
+  .tquick b{color:var(--text);font-size:14px;}
+  .tquick.on{border-color:var(--green);background:rgba(37,211,102,.1);color:#7ee6a4;}
+  .tquick.on b{color:#7ee6a4;}
+  .time-exact{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .time-exact select{
+    flex:0 0 auto;padding:12px 14px;font-size:17px;font-weight:700;
+    background:var(--card);border:1.5px solid var(--line);border-radius:11px;color:var(--text);
+    -webkit-appearance:none;appearance:none;min-width:74px;text-align:center;
+  }
+  .time-exact .tcolon{font-size:20px;font-weight:800;color:var(--muted);}
+  .time-exact .tuhr{font-size:14px;color:var(--muted);margin-left:2px;}
+  .time-hint{font-size:11.5px;color:var(--muted);margin:0 0 4px 2px;}
+  .time-hint b{color:var(--gold);}
   .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px;}
 
   footer{text-align:center;padding:26px 18px 10px;color:#5c5246;font-size:11.5px;}
@@ -919,7 +946,7 @@ function renderCartSheet(){
 function chQ(i,d){cart[i].q+=d;if(cart[i].q<=0)cart.splice(i,1);renderCart();}
 
 /* ============ CHECKOUT ============ */
-let order={mode:"Abholung",name:"",addr:"",plz:"",note:"",zone:null};
+let order={mode:"Abholung",name:"",addr:"",plz:"",note:"",zone:null,timeMode:"asap",time:""};
 function goCheckout(){
   const b=$("cartBody");
   b.innerHTML=`
@@ -935,6 +962,8 @@ function goCheckout(){
         <div id="zoneInfo"></div>
         <label>Lieferadresse *</label><input id="f-addr" value="${order.addr}" placeholder="Straße, Nr., Ort">
       </div>
+      <label id="timeLbl">${order.mode==='Lieferung'?'Lieferzeit':'Abholzeit'}</label>
+      <div id="timeBox"></div>
       <label>Anmerkung</label><textarea id="f-note" rows="2" placeholder="z. B. extra knusprig, getrennt verpacken, ohne Zwiebeln …">${order.note}</textarea>
     </div>`;
   $("cartFoot").innerHTML=`
@@ -948,10 +977,14 @@ function goCheckout(){
     </button>
     <div style="text-align:center;margin-top:8px"><span style="font-size:12.5px;color:var(--muted);cursor:pointer" onclick="renderCartSheet()">← zurück zum Warenkorb</span></div>`;
   if(order.mode==="Lieferung"&&order.plz)onPLZ();
+  renderTimeBox();
   updTotals();
 }
 function setMode(m){
-  order.mode=m;saveFields();goCheckout();
+  order.mode=m;
+  // a chosen exact time may fall outside the new window; clear to be safe
+  if(order.timeMode==="exact")order.time="";
+  saveFields();goCheckout();
 }
 function saveFields(){
   if($("f-name"))order.name=$("f-name").value;
@@ -971,6 +1004,74 @@ function onPLZ(){
     info.innerHTML=`<div class="zone-no">❓ PLZ ${order.plz} ist nicht im Standard-Liefergebiet. Babo's klärt das per WhatsApp mit dir ab.</div>`;
   }
   updTotals();
+}
+/* ----- TIME PICKER ----- */
+function renderTimeBox(){
+  const box=$("timeBox"); if(!box)return;
+  const lbl=$("timeLbl"); if(lbl)lbl.textContent=order.mode==="Lieferung"?"Lieferzeit":"Abholzeit";
+  const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const win=serviceWindow(order.mode);
+  const closed = nowMin>=win.c; // service window over for today
+  // quick chips relative to now (rounded up later)
+  const asapWord = order.mode==="Lieferung"?"So schnell wie möglich":"So schnell wie möglich";
+  let html=`<div class="time-chips">
+      <button type="button" class="tchip ${order.timeMode==='asap'?'on':''}" onclick="setTimeMode('asap')">${asapWord}</button>
+      <button type="button" class="tchip ${order.timeMode==='exact'?'on':''}" onclick="setTimeMode('exact')">Genaue Uhrzeit</button>
+    </div>`;
+  if(order.timeMode==='asap'){
+    // +15/+30/+45 quick presets (only those still within window)
+    const quick=[15,30,45].map(q=>{
+      const t=ceilQuarter(nowMin+q);
+      const ok=t>=win.o && t<=win.c;
+      return ok?`<button type="button" class="tquick ${order.time===m2hm(t)?'on':''}" onclick="setQuick('${m2hm(t)}')">+${q} Min<br><b>${m2hm(t)}</b></button>`:"";
+    }).join("");
+    if(quick.trim())html+=`<div class="time-quick">${quick}</div>`;
+    html+=`<div class="time-hint">${order.time?`Gewählt: <b>ca. ${order.time} Uhr</b>`:"Babo's bereitet die Bestellung sofort zu."}</div>`;
+  }else{
+    // exact: hour + quarter-minute dropdowns, bounded to window & not in past
+    const minStart=Math.max(win.o, ceilQuarter(nowMin+10)); // min 10 min lead
+    const hours=[];
+    for(let h=Math.floor(minStart/60); h<=Math.floor((win.c)/60); h++)hours.push(h);
+    const selH = order.time? +order.time.split(":")[0] : (hours[0]||Math.floor(win.o/60));
+    const hOpts=hours.map(h=>`<option value="${h}" ${h===selH?'selected':''}>${String(h).padStart(2,"0")}</option>`).join("");
+    // valid minutes for the chosen hour
+    const mins=[0,15,30,45].filter(mm=>{const t=selH*60+mm; return t>=minStart && t<=win.c;});
+    const selM = order.time? +order.time.split(":")[1] : (mins[0]??0);
+    const mOpts=mins.map(mm=>`<option value="${mm}" ${mm===selM?'selected':''}>${String(mm).padStart(2,"0")}</option>`).join("");
+    html+=`<div class="time-exact">
+        <select id="t-h" onchange="onExactTime()">${hOpts}</select>
+        <span class="tcolon">:</span>
+        <select id="t-m" onchange="onExactTime()">${mOpts}</select>
+        <span class="tuhr">Uhr</span>
+      </div>
+      <div class="time-hint">Heute, innerhalb ${m2hm(win.o)}–${m2hm(win.c)} Uhr${order.mode==="Lieferung"?" (Lieferfenster)":""}.</div>`;
+  }
+  if(closed){
+    html+=`<div class="zone-no" style="margin-top:8px">Heute ist die ${order.mode==="Lieferung"?"Liefer":"Abhol"}zeit vorbei. Babo's meldet sich zur nächsten Möglichkeit.</div>`;
+  }
+  box.innerHTML=html;
+  // initialize exact time value if just switched
+  if(order.timeMode==='exact' && !order.time && $("t-h")) onExactTime();
+}
+function ceilQuarter(m){return Math.ceil(m/15)*15;}
+function setTimeMode(mode){
+  order.timeMode=mode;
+  if(mode==='asap'){ /* keep any chosen quick time, or clear */ }
+  else { order.time=""; }
+  renderTimeBox();
+}
+function setQuick(hm){ order.time=(order.time===hm?"":hm); renderTimeBox(); }
+function onExactTime(){
+  const h=$("t-h"), m=$("t-m"); if(!h)return;
+  // re-filter minutes when hour changes
+  order.time=String(h.value).padStart(2,"0")+":"+String(m?m.value:"00").padStart(2,"0");
+  renderTimeBox();
+}
+function timeLabel(){
+  if(order.timeMode==='asap' && !order.time)return "So schnell wie möglich";
+  if(order.time)return "ca. "+order.time+" Uhr";
+  return "So schnell wie möglich";
 }
 function deliveryFee(){
   if(order.mode!=="Lieferung"||!order.zone)return 0;
@@ -1029,6 +1130,7 @@ function sendWA(){
     }
   }
   t+=`\n👤 ${order.name}\n`;
+  t+=`🕒 ${order.mode==="Lieferung"?"Lieferzeit":"Abholzeit"}: ${timeLabel()}\n`;
   if(order.mode==="Lieferung"){
     t+=`📍 ${order.addr}, ${order.plz}\n`;
   }
@@ -1049,13 +1151,25 @@ $("overlay").addEventListener("click",closeSheets);
 $("cartOpen").addEventListener("click",()=>{renderCartSheet();openSheet("cartSheet");});
 
 /* ============ OPENING HOURS ============ */
+/* ============ OPENING HOURS + TIME SLOTS ============ */
+// returns {o,c} open/close minutes-from-midnight for today
+function todayHours(){
+  const d=new Date().getDay();
+  if(d>=1&&d<=4)return {o:630,c:1290}; // Mo–Do 10:30–21:30
+  if(d===5)return {o:630,c:1350};      // Fr 10:30–22:30
+  if(d===6)return {o:660,c:1350};      // Sa 11:00–22:30
+  return {o:720,c:1290};               // So 12:00–21:30
+}
+// delivery window 11:30–20:00; pickup uses full opening hours
+function serviceWindow(mode){
+  const h=todayHours();
+  if(mode==="Lieferung")return {o:Math.max(h.o,690), c:Math.min(h.c,1200)}; // 11:30 / 20:00
+  return h;
+}
+const m2hm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
 function checkOpen(){
-  const now=new Date();const d=now.getDay();const hm=now.getHours()*60+now.getMinutes();
-  let o,c;
-  if(d>=1&&d<=4){o=630;c=1290;}        // Mo–Do 10:30–21:30
-  else if(d===5){o=630;c=1350;}        // Fr 10:30–22:30
-  else if(d===6){o=660;c=1350;}        // Sa 11:00–22:30
-  else{o=720;c=1290;}                  // So/Feiertag 12:00–21:30
+  const now=new Date();const hm=now.getHours()*60+now.getMinutes();
+  const {o,c}=todayHours();
   const open=hm>=o&&hm<c;
   const p=$("openPill");
   p.className="open-pill "+(open?"open-yes":"open-no");
