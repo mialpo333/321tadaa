@@ -411,7 +411,8 @@ const MENU = {
     {nr:"", n:"Mi · Pide mit 2 Zutaten", d:"NUR MITTWOCHS · & Softdrink", p:12.50},
   ],
   "Döner Spezialitäten": [
-    {nr:"330", n:"Döner", d:"Fladenbrot · Yufka · Teller · Box – nach Wunsch belegen", p:9.00, cfg:"doner"},
+    {nr:"330", n:"Döner", d:"Fladenbrot · Yufka · Teller – nach Wunsch belegen", p:9.00, cfg:"doner"},
+    {nr:"360", n:"Dönerbox", d:"mit Pommes oder Reis – nach Wunsch", p:9.00, cfg:"box"},
     {nr:"400", n:"Iskender Kebap", d:"knusprig gebackene Brotstücke · Dönerfleisch, Joghurt, Tomatensoße & geschmolzene Butter", p:16.50},
   ],
   "Babo's Specials": [
@@ -552,18 +553,16 @@ const CONFIGS = {
   doner: {
     title:"Döner Konfigurator",
     icon:"🥙",
-    preset:{label:"⚡ Döner mit allem", sets:{art:0, sauce:4, salat:[0,1,2,4], scharf:1, extra:[]}},
+    preset:{label:"⚡ Döner mit allem", sets:{art:0, sauce:[0,1], salat:[0,1,2,4], scharf:1, extra:[]}},
     groups:[
       {key:"art", label:"Art", sub:"Wie möchtest du deinen Döner?", type:"single", req:true, price:true, options:[
         {n:"Im Fladenbrot", p:0},
         {n:"Im Yufka", p:1.00},
         {n:"Dönerteller (Salat & Pommes/Reis)", p:5.90},
-        {n:"Dönerbox mit einer Beilage", p:0},
-        {n:"Dönerbox mit zwei Beilagen", p:1.00},
       ]},
-      {key:"sauce", label:"Soße", sub:"Bitte wählen", type:"single", req:true, options:[
+      {key:"sauce", label:"Soße", sub:"Bis zu 2 Soßen wählbar", type:"multi2", options:[
         {n:"Cocktail", p:0},{n:"Knoblauch", p:0},{n:"Scharf", p:0},
-        {n:"Kräuter", p:0},{n:"Alle drei (Cocktail+Knobi+Scharf)", p:0},{n:"Ohne Soße", p:0},
+        {n:"Kräuter", p:0},{n:"Ohne Soße", p:0},
       ]},
       {key:"salat", label:"Salat", sub:"Mehrfachauswahl – was soll rein?", type:"multi", options:[
         {n:"Eisbergsalat", p:0},{n:"Tomaten", p:0},{n:"Zwiebeln", p:0},
@@ -573,7 +572,31 @@ const CONFIGS = {
         {n:"Nicht scharf", p:0},{n:"Mild", p:0},{n:"Scharf", p:0},{n:"Extra scharf", p:0},
       ]},
       {key:"extra", label:"Extra Zutaten", sub:"optional", type:"multi", options:[
-        {n:"Extra Käse", p:1.00},{n:"Gebratenes Gemüse", p:1.00},{n:"Extra Fleisch", p:1.50},
+        {n:"Extra Käse", p:1.00},{n:"Gebratenes Gemüse", p:1.00},
+        {n:"Jalapenos", p:1.00},{n:"Extra Fleisch", p:1.50},
+      ]},
+    ]
+  },
+  box: {
+    title:"Dönerbox Konfigurator",
+    icon:"🍟",
+    preset:{label:"⚡ Box mit allem", sets:{beilage:0, sauce:[0,1], scharf:1, extra:[]}},
+    groups:[
+      {key:"beilage", label:"Beilage", sub:"Womit soll die Box gefüllt sein?", type:"single", req:true, price:true, options:[
+        {n:"Mit einer Beilage (Pommes o. Reis)", p:0},
+        {n:"Mit zwei Beilagen (Pommes & Reis)", p:1.00},
+        {n:"Nur mit Fleisch", p:2.00},
+      ]},
+      {key:"sauce", label:"Soße", sub:"Bis zu 2 Soßen wählbar", type:"multi2", options:[
+        {n:"Cocktail", p:0},{n:"Knoblauch", p:0},{n:"Scharf", p:0},
+        {n:"Kräuter", p:0},{n:"Ohne Soße", p:0},
+      ]},
+      {key:"scharf", label:"Schärfegrad", sub:"", type:"single", req:true, options:[
+        {n:"Nicht scharf", p:0},{n:"Mild", p:0},{n:"Scharf", p:0},{n:"Extra scharf", p:0},
+      ]},
+      {key:"extra", label:"Extra Zutaten", sub:"optional", type:"multi", options:[
+        {n:"Extra Käse", p:1.00},{n:"Gebratenes Gemüse", p:1.00},
+        {n:"Jalapenos", p:1.00},{n:"Extra Fleisch", p:1.50},
       ]},
     ]
   },
@@ -608,7 +631,7 @@ const CONFIGS = {
         {n:"Extra Käse", p:1.00},{n:"Salami", p:1.00},{n:"Schinken", p:1.00},
         {n:"Sucuk", p:1.00},{n:"Pilze", p:1.00},{n:"Paprika", p:1.00},
         {n:"Zwiebeln", p:1.00},{n:"Mais", p:1.00},{n:"Oliven", p:1.00},
-        {n:"Peperoni", p:1.00},{n:"Ananas", p:1.00},{n:"Thunfisch", p:1.50},
+        {n:"Peperoni", p:1.00},{n:"Jalapenos", p:1.00},{n:"Ananas", p:1.00},{n:"Thunfisch", p:1.50},
         {n:"Gorgonzola", p:1.50},{n:"Dönerfleisch", p:2.00},
       ]},
       {key:"wunsch", label:"Sonderwunsch", sub:"optional", type:"single", options:[
@@ -706,8 +729,9 @@ function spy(){
 /* ============ SEARCH ============ */
 $("search").addEventListener("input",e=>{
   const q=e.target.value.toLowerCase().trim();
-  document.querySelectorAll(".item").forEach(it=>{
-    it.style.display=(!q||it.dataset.name.includes(q))?"":"none";
+  document.querySelectorAll("#menu .item").forEach(it=>{
+    const nm=it.dataset.name||"";
+    it.style.display=(!q||nm.includes(q))?"":"none";
   });
   document.querySelectorAll(".sec").forEach(s=>{
     const any=[...s.querySelectorAll(".item")].some(i=>i.style.display!=="none");
@@ -747,7 +771,7 @@ function flashItem(id){
 function openConfig(type,id){
   const cfg=CONFIGS[type], it=getItem(id);
   cfgState={type,id,base:it,qty:1,sel:{}};
-  cfg.groups.forEach(g=>cfgState.sel[g.key]=g.type==="multi"?[]:null);
+  cfg.groups.forEach(g=>cfgState.sel[g.key]=(g.type==="multi"||g.type==="multi2")?[]:null);
   $("cfgTitle").textContent=it.n;
   let html=`<div class="item" style="margin-bottom:14px">
       <div class="cfg-img">${cfg.icon}</div>
@@ -761,7 +785,7 @@ function openConfig(type,id){
     html+=`<div class="opt-grp" data-grp="${g.key}"><h4>${g.label}${g.req?' *':''}</h4>${g.sub?`<p class="sub">${g.sub}</p>`:""}`;
     g.options.forEach((o,oi)=>{
       const pr=o.p>0?`<span class="o-price">+${eur(o.p)}</span>`:"";
-      html+=`<div class="opt ${g.type==='multi'?'multi':''}" data-g="${g.key}" data-i="${oi}" onclick="pick('${g.key}','${g.type}',${oi},${o.p})">
+      html+=`<div class="opt ${(g.type==='multi'||g.type==='multi2')?'multi':''}" data-g="${g.key}" data-i="${oi}" onclick="pick('${g.key}','${g.type}',${oi},${o.p})">
         <span class="dot"></span><span class="o-name">${o.n}</span>${pr}</div>`;
     });
     html+=`</div>`;
@@ -782,8 +806,9 @@ function applyPreset(){
   });
   // refresh all option visuals
   cfg.groups.forEach(g=>{
-    document.querySelectorAll(`.opt[data-g="${g.key}"]`).forEach(el=>{
-      const i=+el.dataset.i, sel=cfgState.sel[g.key];
+    const sel=cfgState.sel[g.key];
+    document.querySelectorAll(`#cfgBody .opt[data-g="${g.key}"]`).forEach(el=>{
+      const i=+el.dataset.i;
       const on=Array.isArray(sel)?sel.includes(i):sel===i;
       el.classList.toggle("sel",on);
     });
@@ -795,17 +820,25 @@ function applyPreset(){
 }
 function pick(gk,type,oi,price){
   const cfg=CONFIGS[cfgState.type];
-  const grp=cfg.groups.find(g=>g.key===gk);
   if(type==="single"){
     cfgState.sel[gk]=cfgState.sel[gk]===oi?null:oi;
-  }else{
+  }else if(type==="multi2"){
+    const arr=cfgState.sel[gk];
+    const k=arr.indexOf(oi);
+    if(k>=0){arr.splice(k,1);}
+    else{
+      arr.push(oi);
+      if(arr.length>2)arr.shift(); // FIFO: 3rd replaces oldest
+    }
+  }else{ // multi
     const arr=cfgState.sel[gk];
     const k=arr.indexOf(oi);
     if(k>=0)arr.splice(k,1);else arr.push(oi);
   }
-  document.querySelectorAll(`.opt[data-g="${gk}"]`).forEach(el=>{
+  document.querySelectorAll(`#cfgBody .opt[data-g="${gk}"]`).forEach(el=>{
     const i=+el.dataset.i;
-    const on=type==="single"?cfgState.sel[gk]===i:cfgState.sel[gk].includes(i);
+    const sel=cfgState.sel[gk];
+    const on=Array.isArray(sel)?sel.includes(i):sel===i;
     el.classList.toggle("sel",on);
   });
   updCfgBtn();
@@ -815,7 +848,7 @@ function cfgPrice(){
   let p=cfgState.base.p;
   const cfg=CONFIGS[cfgState.type];
   cfg.groups.forEach(g=>{
-    if(g.type==="multi")cfgState.sel[g.key].forEach(i=>p+=g.options[i].p);
+    if(g.type==="multi"||g.type==="multi2")cfgState.sel[g.key].forEach(i=>p+=g.options[i].p);
     else if(cfgState.sel[g.key]!=null)p+=g.options[cfgState.sel[g.key]].p;
   });
   return p*cfgState.qty;
@@ -834,12 +867,12 @@ function cfgAddToCart(){
   let parts=[];
   let artName="";
   cfg.groups.forEach(g=>{
-    if(g.type==="multi"){
+    if(g.type==="multi"||g.type==="multi2"){
       const v=cfgState.sel[g.key].map(i=>g.options[i].n);
       if(v.length)parts.push(`${g.label}: ${v.join(", ")}`);
     }else if(cfgState.sel[g.key]!=null){
       const chosen=g.options[cfgState.sel[g.key]].n;
-      if(g.key==="art")artName=chosen;
+      if(g.key==="art"||g.key==="beilage")artName=chosen;
       parts.push(`${g.label}: ${chosen}`);
     }
   });
