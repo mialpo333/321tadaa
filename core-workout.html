@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14181D">
+<title>Core Workout</title>
+<style>
+  :root{
+    --bg:#14181D; --panel:#1D232B; --panel2:#252C36; --text:#EDF1F4; --dim:#8A94A0;
+    --work:#E8590C; --rest:#3BA6A0; --done:#69B34C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    display:flex; justify-content:center;
+  }
+  #app{width:100%; max-width:520px; padding:24px 20px; display:flex; flex-direction:column; min-height:100vh;}
+  h1{font-size:38px; font-weight:900; margin:8px 0 4px; line-height:1.05;}
+  h2{text-align:center; font-size:29px; font-weight:900; margin:0 0 2px;}
+  .eyebrow{font-size:13px; letter-spacing:3px; color:var(--work); font-weight:700; text-transform:uppercase;}
+  .dim{color:var(--dim);}
+  .sub{color:var(--dim); font-size:15px; margin-bottom:18px;}
+  button{font-family:inherit; cursor:pointer; border:none; color:#fff;}
+  .btn{background:var(--work); border-radius:14px; padding:18px 36px; font-size:19px; font-weight:700; letter-spacing:.5px; width:100%;}
+  .btn.secondary{background:var(--panel);}
+  .btn.small{padding:12px 20px; font-size:15px; width:auto; flex-grow:1;}
+  .btn.ghost{background:transparent; color:var(--dim); width:auto; padding:12px 16px; font-size:15px;}
+  .toggle{display:flex; gap:8px; background:var(--panel); border-radius:16px; padding:6px; margin-bottom:18px;}
+  .toggle button{flex-grow:1; background:transparent; color:var(--dim); border-radius:12px; padding:12px 8px; font-weight:700; font-size:15px; transition:background .2s;}
+  .toggle button.active{background:var(--work); color:#fff;}
+  .toggle button small{display:block; font-size:12px; font-weight:600; opacity:.85;}
+  .card{display:flex; align-items:center; gap:16px; background:var(--panel); border-radius:16px; padding:12px 16px; margin-bottom:10px;}
+  .card .info{flex-grow:1; min-width:0;}
+  .card .name{font-weight:700; font-size:17px;}
+  .card .dose{color:var(--dim); font-size:13px;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:14px; color:var(--dim); font-weight:600;}
+  .progress{height:6px; background:rgba(255,255,255,.1); border-radius:3px; margin-bottom:24px;}
+  .progress>div{height:100%; background:var(--work); border-radius:3px; transition:width .4s ease;}
+  .phase{text-align:center; font-size:13px; letter-spacing:3px; font-weight:700; text-transform:uppercase; margin-bottom:4px;}
+  .stepsub{text-align:center; color:var(--dim); font-size:14px; margin-bottom:16px;}
+  .ringwrap{display:flex; justify-content:center; margin-bottom:18px; position:relative;}
+  .ringinner{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;}
+  .bigtime{font-size:54px; font-weight:900; font-variant-numeric:tabular-nums; line-height:1;}
+  .bigreps{font-size:32px; font-weight:900;}
+  .target{font-size:13px; color:var(--dim); font-weight:600;}
+  .cues{text-align:center; color:var(--dim); font-size:14px; line-height:1.6; margin-bottom:20px;}
+  .controls{margin-top:auto; display:flex; flex-direction:column; gap:10px;}
+  .controls .row{display:flex; gap:10px;}
+  .center{display:flex; flex-direction:column; align-items:center; justify-content:center; flex-grow:1; text-align:center;}
+  .stats{display:flex; gap:10px; margin-bottom:16px;}
+  .stat{flex:1; background:var(--panel); border-radius:14px; padding:14px 8px; text-align:center;}
+  .stat b{display:block; font-size:24px; font-weight:900; color:var(--work);}
+  .stat span{font-size:12px; color:var(--dim); font-weight:600;}
+  .hist-item{display:flex; justify-content:space-between; align-items:center; background:var(--panel); border-radius:12px; padding:12px 16px; margin-bottom:8px; font-size:14px;}
+  .hist-item .v{font-weight:700;}
+  .hist-item .badge{font-size:11px; font-weight:700; padding:3px 8px; border-radius:8px; background:var(--panel2); color:var(--dim); margin-left:8px;}
+  .warn{background:var(--panel); border-left:4px solid var(--rest); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--dim); margin-bottom:16px;}
+  .chart{background:var(--panel); border-radius:16px; padding:14px; margin-bottom:16px;}
+  .chart .title{font-size:13px; font-weight:700; color:var(--dim); margin-bottom:8px; letter-spacing:1px; text-transform:uppercase;}
+  a.back{color:var(--dim); text-decoration:none; font-size:14px; font-weight:600;}
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+/* ================= Workout definition ================= */
+const VARIANTS = {
+  short:{label:"Kurz", time:"~10 Min", rest:20},
+  full:{label:"Komplett", time:"~20 Min", rest:30},
+};
+const SIDE_SWITCH = 10;
+
+const EXERCISES = [
+  {id:"plank", name:"Plank", mode:"time", pict:"plank",
+   cues:["Körper bildet eine gerade Linie","Gesäß anspannen, Hüfte oben halten"],
+   variants:{full:{sets:3,duration:40}, short:{sets:2,duration:30}}},
+  {id:"deadbug", name:"Dead Bug", mode:"reps", pict:"deadbug",
+   cues:["Gegenarm und -bein langsam strecken","Unterer Rücken bleibt am Boden"],
+   variants:{full:{sets:3,reps:"10 pro Seite"}, short:{sets:2,reps:"8 pro Seite"}}},
+  {id:"bicycle", name:"Bicycle Crunches", mode:"reps", pict:"bicycle",
+   cues:["Ellbogen zum Gegen-Knie","Langsam rotieren, nicht am Nacken ziehen"],
+   variants:{full:{sets:3,reps:"15 pro Seite"}, short:{sets:2,reps:"12 pro Seite"}}},
+  {id:"legraise", name:"Leg Raises", mode:"reps", pict:"legraise",
+   cues:["Beine langsam absenken","Spannung halten, nicht ganz ablegen"],
+   variants:{full:{sets:3,reps:"10–12"}, short:{sets:2,reps:"10"}}},
+  {id:"sideplank", name:"Side Plank", mode:"time", sides:true, pict:"sideplank",
+   cues:["Gerade Diagonale von Kopf bis Fuß","Hüfte aktiv nach oben drücken"],
+   variants:{full:{sets:2,duration:25}, short:{sets:1,duration:25}}},
+];
+
+const cfg = (ex,v)=>ex.variants[v];
+const dose = (ex,v)=>{
+  const c = cfg(ex,v);
+  return ex.mode==="time" ? c.duration+" Sek."+(ex.sides?" pro Seite":"") : c.reps+" Wdh.";
+};
+
+function buildSteps(variant){
+  const rest = VARIANTS[variant].rest, steps=[];
+  EXERCISES.forEach((ex,exIdx)=>{
+    const c = cfg(ex,variant);
+    for(let s=1;s<=c.sets;s++){
+      if(ex.sides){
+        steps.push({kind:"work",ex,set:s,side:"links"});
+        steps.push({kind:"switch",ex,set:s,duration:SIDE_SWITCH,nextSide:"rechts"});
+        steps.push({kind:"work",ex,set:s,side:"rechts"});
+      }else{
+        steps.push({kind:"work",ex,set:s});
+      }
+      const last = exIdx===EXERCISES.length-1 && s===c.sets;
+      if(!last) steps.push({kind:"rest",ex,set:s,duration:rest});
+    }
+  });
+  return steps;
+}
+
+/* ================= Storage (localStorage with fallback) ================= */
+const KEY = "coreworkout_history_v1";
+const storage = {
+  mem: [],
+  usable: (()=>{ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }catch(e){ return false; } })(),
+  load(){
+    if(this.usable){ try{ return JSON.parse(localStorage.getItem(KEY)||"[]"); }catch(e){ return []; } }
+    return this.mem;
+  },
+  save(list){
+    if(this.usable){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} }
+    else this.mem = list;
+  }
+};
+
+/* ================= Audio ================= */
+let audioCtx = null;
+function beep(freq,dur,vol){
+  freq=freq||880; dur=dur||0.12; vol=vol||0.25;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type="sine"; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+
+/* ================= Pictograms ================= */
+function pict(type,color,size){
+  color=color||"#EDF1F4"; size=size||110;
+  const st = 'stroke="'+color+'" stroke-width="5" stroke-linecap="round" fill="none"';
+  const gnd = '<line x1="10" y1="95" x2="150" y2="95" stroke="'+color+'" stroke-width="2" opacity="0.35"/>';
+  const head = (cx,cy)=>'<circle cx="'+cx+'" cy="'+cy+'" r="9" '+st+'/>';
+  const L = (a,b,c,d)=>'<line x1="'+a+'" y1="'+b+'" x2="'+c+'" y2="'+d+'" '+st+'/>';
+  let b="";
+  if(type==="plank") b = gnd+L(38,52,140,88)+L(44,54,44,95)+L(44,95,64,95)+head(30,44);
+  else if(type==="deadbug") b = gnd+L(52,88,102,88)+head(40,84)+L(62,88,62,40)+L(56,88,26,58)+L(102,88,114,58)+L(114,58,134,58)+L(102,88,148,78);
+  else if(type==="bicycle") b = gnd+L(78,90,48,68)+head(38,58)+L(52,70,76,58)+L(78,90,96,58)+L(96,58,80,46)+L(78,90,148,74);
+  else if(type==="legraise") b = gnd+L(44,90,96,90)+head(32,86)+L(96,90,120,34);
+  else if(type==="sideplank") b = gnd+L(48,52,140,92)+L(48,52,38,95)+L(38,95,58,95)+L(48,52,58,16)+head(44,40);
+  return '<svg viewBox="0 0 160 105" width="'+size+'" height="'+Math.round(size*105/160)+'" aria-hidden="true">'+b+'</svg>';
+}
+
+/* ================= State ================= */
+let S = {
+  screen:"start", variant:"short",
+  steps:[], stepIndex:0, remaining:0, paused:false, elapsed:0, skipped:0,
+  history: storage.load(),
+};
+let tickId=null, lastBeepAt=null, wakeLock=null;
+
+const css = getComputedStyle(document.documentElement);
+const COL = { work: "#E8590C", rest:"#3BA6A0", text:"#EDF1F4", dim:"#8A94A0" };
+
+/* ================= Helpers ================= */
+const fmt = s => { const m=Math.floor(s/60), r=s%60; return m>0 ? m+":"+String(r).padStart(2,"0") : String(r); };
+const fmtLong = s => Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const dayKey = d => { const x=new Date(d); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); };
+
+function requestWake(){
+  if("wakeLock" in navigator){
+    navigator.wakeLock.request("screen").then(l=>{wakeLock=l;}).catch(()=>{});
+  }
+}
+function releaseWake(){ if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock=null; } }
+
+/* ================= Workout engine ================= */
+function isTimedStep(st){ return st.kind!=="work" || st.ex.mode==="time"; }
+function stepDuration(st){
+  if(st.kind==="work") return st.ex.mode==="time" ? cfg(st.ex,S.variant).duration : 0;
+  return st.duration;
+}
+
+function startWorkout(){
+  S.steps = buildSteps(S.variant);
+  S.stepIndex = 0; S.elapsed = 0; S.paused = false; S.skipped = 0;
+  loadStep(0);
+  S.screen = "active";
+  beep(880,0.15);
+  requestWake();
+  render();
+  startTick();
+}
+
+function loadStep(idx){
+  S.stepIndex = idx;
+  const st = S.steps[idx];
+  S.remaining = stepDuration(st);
+  lastBeepAt = null;
+}
+
+function startTick(){
+  stopTick();
+  tickId = setInterval(()=>{
+    if(S.screen!=="active" || S.paused) return;
+    S.elapsed++;
+    const st = S.steps[S.stepIndex];
+    if(isTimedStep(st)){
+      S.remaining--;
+      if(S.remaining>0 && S.remaining<=3 && lastBeepAt!==S.remaining){ lastBeepAt=S.remaining; beep(660,0.1); }
+      if(S.remaining<=0){ beep(990,0.3,0.3); advance(); return; }
+    }
+    updateActive();
+  },1000);
+}
+function stopTick(){ if(tickId){ clearInterval(tickId); tickId=null; } }
+
+function advance(skipped){
+  if(skipped) S.skipped++;
+  const next = S.stepIndex+1;
+  if(next >= S.steps.length){ finishWorkout(); return; }
+  loadStep(next);
+  render();
+}
+
+function finishWorkout(){
+  stopTick(); releaseWake();
+  const workTotal = S.steps.filter(s=>s.kind==="work").length;
+  S.history.push({
+    date: new Date().toISOString(),
+    variant: S.variant,
+    seconds: S.elapsed,
+    sets: workTotal - Math.min(S.skipped, workTotal),
+    setsTotal: workTotal,
+  });
+  storage.save(S.history);
+  S.screen = "done";
+  beep(880,0.15); setTimeout(()=>beep(1100,0.15),180); setTimeout(()=>beep(1320,0.3),360);
+  render();
+}
+
+function abortWorkout(){
+  stopTick(); releaseWake();
+  S.screen="start"; render();
+}
+
+/* ================= Stats ================= */
+function computeStats(){
+  const h = S.history;
+  const total = h.length;
+  const days = new Set(h.map(e=>dayKey(e.date)));
+  // streak: consecutive days ending today or yesterday
+  let streak = 0;
+  const d = new Date();
+  if(!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while(days.has(dayKey(d))){ streak++; d.setDate(d.getDate()-1); }
+  // this week (Mon-Sun)
+  const now = new Date();
+  const monday = new Date(now); monday.setHours(0,0,0,0);
+  monday.setDate(monday.getDate() - ((monday.getDay()+6)%7));
+  const week = h.filter(e=>new Date(e.date)>=monday).length;
+  const totalMin = Math.round(h.reduce((a,e)=>a+e.seconds,0)/60);
+  return {total,streak,week,totalMin};
+}
+
+function chartSvg(){
+  // minutes per day, last 14 days
+  const days=[];
+  for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(dayKey(d)); }
+  const perDay = days.map(k=>{
+    const secs = S.history.filter(e=>dayKey(e.date)===k).reduce((a,e)=>a+e.seconds,0);
+    return Math.round(secs/60);
+  });
+  const max = Math.max(10, ...perDay);
+  const W=480,H=120,pad=4, bw=(W-pad*2)/14;
+  let bars="";
+  perDay.forEach((v,i)=>{
+    const h = v===0 ? 2 : Math.max(4,(v/max)*(H-30));
+    const x = pad+i*bw+3, y = H-18-h;
+    const col = v===0 ? "rgba(255,255,255,0.10)" : COL.work;
+    bars += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-6).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="3" fill="'+col+'"/>';
+    if(v>0) bars += '<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" font-size="10" fill="'+COL.dim+'" text-anchor="middle">'+v+'</text>';
+    const dd = days[i].slice(8);
+    if(i%2===1) bars += '<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="'+(H-4)+'" font-size="9" fill="'+COL.dim+'" text-anchor="middle">'+dd+'</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%">'+bars+'</svg>';
+}
+
+/* ================= Export / Import ================= */
+function exportHistory(){
+  const blob = new Blob([JSON.stringify(S.history,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "core-workout-verlauf.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importHistory(file){
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const data = JSON.parse(r.result);
+      if(Array.isArray(data)){
+        const seen = new Set(S.history.map(e=>e.date));
+        data.forEach(e=>{ if(e && e.date && !seen.has(e.date)) S.history.push(e); });
+        S.history.sort((a,b)=>a.date<b.date?-1:1);
+        storage.save(S.history);
+        render();
+      }
+    }catch(e){ alert("Datei konnte nicht gelesen werden."); }
+  };
+  r.readAsText(file);
+}
+
+/* ================= Rendering ================= */
+const app = document.getElementById("app");
+
+function ringHtml(progress,color,inner){
+  const size=260, r=size/2-12, c=2*Math.PI*r;
+  const off = c*(1-progress);
+  return '<div class="ringwrap" style="width:'+size+'px;height:'+size+'px;margin-left:auto;margin-right:auto;">' +
+    '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)">' +
+    '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="10"/>' +
+    '<circle id="ringFg" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" style="transition:stroke-dashoffset .25s linear"/>' +
+    '</svg><div class="ringinner">'+inner+'</div></div>';
+}
+
+function render(){
+  if(S.screen==="start") renderStart();
+  else if(S.screen==="active") renderActive();
+  else if(S.screen==="done") renderDone();
+  else if(S.screen==="history") renderHistory();
+}
+
+function renderStart(){
+  const steps = buildSteps(S.variant);
+  const workTotal = steps.filter(s=>s.kind==="work").length;
+  const stats = computeStats();
+  let h = '';
+  h += '<div class="eyebrow">Core-Zirkel</div>';
+  h += '<h1>Core Workout</h1>';
+  h += '<div class="sub">5 Übungen · '+workTotal+' Sätze · '+VARIANTS[S.variant].rest+' Sek. Pause · langsam &amp; kontrolliert</div>';
+  if(!storage.usable){
+    h += '<div class="warn">Hinweis: In dieser Vorschau kann der Verlauf nicht dauerhaft gespeichert werden. Auf deiner eigenen Domain (z.&nbsp;B. GitHub Pages) funktioniert die Speicherung automatisch.</div>';
+  }
+  h += '<div class="toggle">';
+  for(const [k,v] of Object.entries(VARIANTS)){
+    h += '<button class="'+(S.variant===k?"active":"")+'" data-action="variant" data-v="'+k+'">'+v.label+'<small>'+v.time+'</small></button>';
+  }
+  h += '</div>';
+  EXERCISES.forEach((ex,i)=>{
+    const c = cfg(ex,S.variant);
+    const d = ex.mode==="time" ? c.sets+' × '+c.duration+' Sek.'+(ex.sides?' pro Seite':'') : c.sets+' × '+c.reps;
+    h += '<div class="card">'+pict(ex.pict,COL.text,72)+'<div class="info"><div class="name">'+(i+1)+'. '+ex.name+'</div><div class="dose">'+d+'</div></div></div>';
+  });
+  h += '<button class="btn" data-action="start" style="margin-top:14px">Workout starten</button>';
+  h += '<button class="btn secondary" data-action="history" style="margin-top:10px">📈 Verlauf ansehen'+(stats.total?' ('+stats.total+')':'')+'</button>';
+  app.innerHTML = h;
+}
+
+function renderActive(){
+  const st = S.steps[S.stepIndex];
+  const isWork = st.kind==="work";
+  const isReps = isWork && st.ex.mode==="reps";
+  const timed = isTimedStep(st);
+  const dur = stepDuration(st);
+  const workDone = S.steps.slice(0,S.stepIndex).filter(s=>s.kind==="work").length;
+  const workTotal = S.steps.filter(s=>s.kind==="work").length;
+  const nextWork = S.steps.slice(S.stepIndex+1).find(s=>s.kind==="work");
+  const color = isWork ? COL.work : COL.rest;
+  const prog = isReps ? 1 : (dur>0 ? S.remaining/dur : 0);
+
+  let title, phase, sub;
+  if(isWork){
+    phase = "Übung";
+    title = st.ex.name + (st.side ? " – "+st.side : "");
+    sub = "Satz "+st.set+" von "+cfg(st.ex,S.variant).sets+" · "+dose(st.ex,S.variant);
+  } else if(st.kind==="switch"){
+    phase = "Seite wechseln";
+    title = "Gleich: "+st.ex.name+" – "+st.nextSide;
+    sub = nextWork ? "Als Nächstes: "+nextWork.ex.name+(nextWork.side?" ("+nextWork.side+")":"")+" · Satz "+nextWork.set+" · "+dose(nextWork.ex,S.variant) : "";
+  } else {
+    phase = "Pause";
+    title = "Kurz durchatmen";
+    sub = nextWork ? "Als Nächstes: "+nextWork.ex.name+(nextWork.side?" ("+nextWork.side+")":"")+" · Satz "+nextWork.set+" · "+dose(nextWork.ex,S.variant) : "";
+  }
+
+  let inner = pict(isWork?st.ex.pict:(nextWork?nextWork.ex.pict:"plank"), isWork?COL.text:COL.dim, 105);
+  if(isReps){
+    inner += '<div class="bigreps" style="color:'+color+'">'+cfg(st.ex,S.variant).reps+'</div>';
+  } else {
+    inner += '<div class="bigtime" id="timerText" style="color:'+color+'">'+fmt(S.remaining)+'</div>';
+    inner += '<div class="target">'+(isWork?('Ziel: '+dose(st.ex,S.variant)):(dur+' Sek.'))+'</div>';
+  }
+
+  let h = '';
+  h += '<div class="topbar"><div>'+VARIANTS[S.variant].label+' · Satz '+(workDone+(isWork?1:0))+' / '+workTotal+'</div><div>⏱ <span id="elapsedText">'+fmtLong(S.elapsed)+'</span></div></div>';
+  h += '<div class="progress"><div style="width:'+((workDone/workTotal)*100).toFixed(1)+'%"></div></div>';
+  h += '<div class="phase" style="color:'+color+'">'+phase+'</div>';
+  h += '<h2>'+title+'</h2>';
+  h += '<div class="stepsub">'+sub+'</div>';
+  h += ringHtml(prog,color,inner);
+  if(isWork) h += '<div class="cues">'+st.ex.cues.map(c=>'<div>'+c+'</div>').join('')+'</div>';
+  h += '<div class="controls">';
+  if(isReps) h += '<button class="btn" data-action="setDone">Satz geschafft ✓</button>';
+  h += '<div class="row">';
+  if(timed) h += '<button class="btn secondary small" data-action="pause" id="pauseBtn">'+(S.paused?"▶ Weiter":"❚❚ Pause")+'</button>';
+  h += '<button class="btn secondary small" data-action="skip">Überspringen »</button>';
+  h += '<button class="btn ghost" data-action="abort">Abbrechen</button>';
+  h += '</div></div>';
+  app.innerHTML = h;
+}
+
+/* light per-second update without full re-render */
+function updateActive(){
+  const st = S.steps[S.stepIndex];
+  const t = document.getElementById("timerText");
+  if(t) t.textContent = fmt(S.remaining);
+  const e = document.getElementById("elapsedText");
+  if(e) e.textContent = fmtLong(S.elapsed);
+  const ring = document.getElementById("ringFg");
+  if(ring && isTimedStep(st)){
+    const dur = stepDuration(st);
+    const c = parseFloat(ring.getAttribute("stroke-dasharray"));
+    ring.setAttribute("stroke-dashoffset",(c*(1-(dur>0?S.remaining/dur:0))).toFixed(1));
+  }
+}
+
+function renderDone(){
+  const last = S.history[S.history.length-1];
+  let h = '<div class="center">';
+  h += '<div style="font-size:64px">💪</div>';
+  h += '<h1 style="color:var(--done);font-size:34px;margin:10px 0 6px">Geschafft!</h1>';
+  h += '<div class="dim" style="margin-bottom:6px">'+VARIANTS[S.variant].label+'-Zirkel · '+last.sets+' Sätze</div>';
+  h += '<div style="font-size:22px;font-weight:700;margin-bottom:30px">Gesamtzeit: '+fmtLong(S.elapsed)+'</div>';
+  h += '<button class="btn secondary" style="max-width:320px" data-action="history">📈 Verlauf ansehen</button>';
+  h += '<button class="btn ghost" style="margin-top:10px" data-action="home">Zurück zur Übersicht</button>';
+  h += '</div>';
+  app.innerHTML = h;
+}
+
+function renderHistory(){
+  const st = computeStats();
+  let h = '';
+  h += '<div style="margin-bottom:14px"><a href="#" class="back" data-action="home">← Zurück</a></div>';
+  h += '<div class="eyebrow">Deine Entwicklung</div><h1 style="font-size:32px">Verlauf</h1>';
+  h += '<div class="stats">';
+  h += '<div class="stat"><b>'+st.total+'</b><span>Workouts</span></div>';
+  h += '<div class="stat"><b>'+st.streak+'</b><span>Tage-Serie</span></div>';
+  h += '<div class="stat"><b>'+st.week+'</b><span>diese Woche</span></div>';
+  h += '<div class="stat"><b>'+st.totalMin+'</b><span>Min. gesamt</span></div>';
+  h += '</div>';
+  h += '<div class="chart"><div class="title">Letzte 14 Tage (Minuten)</div>'+chartSvg()+'</div>';
+  if(S.history.length===0){
+    h += '<div class="dim" style="text-align:center;padding:30px 10px">Noch keine Workouts gespeichert.<br>Dein erstes erscheint hier direkt nach dem Abschluss.</div>';
+  } else {
+    const list = S.history.slice().reverse().slice(0,30);
+    list.forEach(e=>{
+      const d = new Date(e.date);
+      const ds = d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"}) + " " + d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+      h += '<div class="hist-item"><div><span class="v">'+ds+'</span><span class="badge">'+(VARIANTS[e.variant]?VARIANTS[e.variant].label:e.variant)+'</span></div><div class="dim">'+fmtLong(e.seconds)+' · '+e.sets+'/'+e.setsTotal+' Sätze</div></div>';
+    });
+  }
+  h += '<div class="row" style="display:flex;gap:10px;margin-top:14px">';
+  h += '<button class="btn secondary small" data-action="export">Export (JSON)</button>';
+  h += '<button class="btn secondary small" data-action="importClick">Import</button>';
+  h += '</div>';
+  h += '<input type="file" id="importFile" accept="application/json">';
+  app.innerHTML = h;
+  const fi = document.getElementById("importFile");
+  if(fi) fi.addEventListener("change", ev=>{ if(ev.target.files[0]) importHistory(ev.target.files[0]); });
+}
+
+/* ================= Events ================= */
+app.addEventListener("click", ev=>{
+  const el = ev.target.closest("[data-action]");
+  if(!el) return;
+  ev.preventDefault();
+  const a = el.dataset.action;
+  if(a==="variant"){ S.variant = el.dataset.v; render(); }
+  else if(a==="start") startWorkout();
+  else if(a==="setDone"){ beep(990,0.2,0.3); advance(); }
+  else if(a==="skip") advance(true);
+  else if(a==="pause"){ S.paused = !S.paused; const b=document.getElementById("pauseBtn"); if(b) b.textContent = S.paused?"▶ Weiter":"❚❚ Pause"; }
+  else if(a==="abort") abortWorkout();
+  else if(a==="home"){ S.screen="start"; render(); }
+  else if(a==="history"){ S.screen="history"; render(); }
+  else if(a==="export") exportHistory();
+  else if(a==="importClick"){ const fi=document.getElementById("importFile"); if(fi) fi.click(); }
+});
+
+render();
+</script>
+</body>
+</html>
