@@ -196,8 +196,10 @@ function stepDuration(st){
   return st.duration;
 }
 
+const START_COUNTDOWN = 5;
+
 function startWorkout(){
-  S.steps = buildSteps(S.variant);
+  S.steps = [{kind:"countdown", duration:START_COUNTDOWN}, ...buildSteps(S.variant)];
   S.stepIndex = 0; S.elapsed = 0; S.paused = false; S.skipped = 0;
   loadStep(0);
   S.screen = "active";
@@ -394,6 +396,10 @@ function renderActive(){
     phase = "Seite wechseln";
     title = "Gleich: "+st.ex.name+" – "+st.nextSide;
     sub = nextWork ? "Als Nächstes: "+nextWork.ex.name+(nextWork.side?" ("+nextWork.side+")":"")+" · Satz "+nextWork.set+" · "+dose(nextWork.ex,S.variant) : "";
+  } else if(st.kind==="countdown"){
+    phase = "Bereit";
+    title = "Gleich geht's los";
+    sub = nextWork ? "Start: "+nextWork.ex.name+(nextWork.side?" ("+nextWork.side+")":"")+" · Satz "+nextWork.set+" · "+dose(nextWork.ex,S.variant) : "";
   } else {
     phase = "Pause";
     title = "Kurz durchatmen";
