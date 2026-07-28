@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>321tadaa – The idea. 321... Tadaa! Made real.</title>
+<title>321tadaa · custom solution studio</title>
+<meta name="description" content="321tadaa is a custom solution studio — digital tools, workflow automation, and real physical products. Built in Stuttgart, deployed across Europe.">
 <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@300;400;500;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -59,9 +60,9 @@
   .nav-logo {
     font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 1.4rem;
     letter-spacing: -0.03em;
-    background: var(--grad-silver); -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; background-clip: text;
+    color: #ffffff;
   }
+  .logo-bang { color: #ffffff; }
   .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
   .nav-links a {
     text-decoration: none; color: rgba(240,248,255,0.5); font-size: 0.875rem;
@@ -177,6 +178,12 @@
   }
   @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
+  .hero-tagline-sub {
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 400;
+    color: rgba(200,216,232,0.55); letter-spacing: 0.08em;
+    line-height: 1.65;
+    margin-top: 0.5rem; margin-bottom: 1.75rem;
+  }
   .hero-sub {
     font-size: clamp(0.9rem, 2.5vw, 1.05rem); color: rgba(240,248,255,0.45);
     max-width: 480px; line-height: 1.75; margin-bottom: 2.5rem;
@@ -255,6 +262,10 @@
     font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900;
     letter-spacing: -0.03em; color: var(--white);
     margin-bottom: 2.5rem; line-height: 1.1;
+  }
+  .section-sub {
+    font-size: 0.95rem; color: rgba(240,248,255,0.5);
+    margin: -1.75rem 0 2.5rem; line-height: 1.6;
   }
 
   /* ─── SERVICES ─── */
@@ -460,7 +471,7 @@
 
 <!-- NAV -->
 <nav id="mainNav">
-  <div class="nav-logo">321tadaa</div>
+  <div class="nav-logo">321tadaa<span class="logo-bang">!</span></div>
   <div class="lang-toggle">
     <button class="lang-btn" onclick="setLang('de')">DE</button>
     <button class="lang-btn active" onclick="setLang('en')">EN</button>
@@ -495,6 +506,7 @@
     <span class="tagline-line" data-en>Made real.</span>
     <span class="tagline-line" data-de>Gemacht.</span>
   </div>
+  <p class="hero-tagline-sub">custom solution studio<br>digital / workflow / real</p>
   <p class="hero-sub" data-en>Web apps, 3D printing, engineering solutions — crafted in Stuttgart, deployed across Europe. Multilingual. Precise. Personal.</p>
   <p class="hero-sub" data-de>Web-Apps, 3D-Druck, Engineering — entwickelt in Stuttgart, eingesetzt in ganz Europa. Mehrsprachig. Präzise. Persönlich.</p>
   <div class="hero-cta">
@@ -518,32 +530,34 @@
   <div class="section-inner">
     <p class="section-eyebrow" data-en>// What we do</p>
     <p class="section-eyebrow" data-de>// Leistungen</p>
-    <h2 class="section-title" data-en>From concept to reality</h2>
-    <h2 class="section-title" data-de>Von der Idee zur Realität</h2>
+    <h2 class="section-title" data-en>Making ideas work.</h2>
+    <h2 class="section-title" data-de>Wir bringen Ideen zum Laufen.</h2>
+    <p class="section-sub" data-en>Digital, physical, or both — whatever the solution needs.</p>
+    <p class="section-sub" data-de>Digital, physisch oder beides — was die Lösung braucht.</p>
     <div class="services-grid">
       <div class="service-card">
         <div class="service-num">01 ——</div>
         <span class="service-icon">⚡</span>
         <h3 class="service-title" data-en>Web & Applications</h3>
         <h3 class="service-title" data-de>Web & Apps</h3>
-        <p class="service-text" data-en>Booking systems, digital menus, ordering platforms. Mobile-first, multilingual, integrated with your existing tools.</p>
-        <p class="service-text" data-de>Buchungssysteme, digitale Speisekarten, Bestellplattformen. Mobile-first, mehrsprachig, integriert in bestehende Tools.</p>
+        <p class="service-text" data-en>Booking systems, digital menus, ordering platforms — your guests use them on the spot, no app, no account. Mobile-first, multilingual, live at 3‑2‑1‑tadaa speed.</p>
+        <p class="service-text" data-de>Buchungssysteme, digitale Speisekarten, Bestellplattformen — Ihre Gäste nutzen sie sofort vor Ort, ohne App, ohne Konto. Mobile-first, mehrsprachig, live im 3‑2‑1‑Tadaa‑Tempo.</p>
       </div>
       <div class="service-card">
         <div class="service-num">02 ——</div>
         <span class="service-icon">🖨️</span>
         <h3 class="service-title" data-en>3D Printing & Fabrication</h3>
         <h3 class="service-title" data-de>3D-Druck & Fertigung</h3>
-        <p class="service-text" data-en>Precise, functional parts from CAD to physical reality. Custom components, prototypes, small-series production.</p>
-        <p class="service-text" data-de>Präzise, funktionale Teile vom CAD bis zum fertigen Objekt. Individualbauteile, Prototypen, Kleinserie.</p>
+        <p class="service-text" data-en>Custom parts, prototypes, small series — and spare parts nobody sells anymore, reverse‑engineered from the broken original. From a toy wheel to lamps to furniture.</p>
+        <p class="service-text" data-de>Individualbauteile, Prototypen, Kleinserien — und Ersatzteile, die es nicht mehr zu kaufen gibt, vom defekten Original nachkonstruiert. Vom Spielzeugrad über Lampen bis zum Möbelstück.</p>
       </div>
       <div class="service-card">
         <div class="service-num">03 ——</div>
         <span class="service-icon">⚙️</span>
         <h3 class="service-title" data-en>Engineering & Consulting</h3>
         <h3 class="service-title" data-de>Engineering & Beratung</h3>
-        <p class="service-text" data-en>CAD design, process automation, and technical consulting for manufacturing and industrial challenges.</p>
-        <p class="service-text" data-de>CAD-Konstruktion, Prozessautomatisierung und technische Beratung für Industrie und Fertigung.</p>
+        <p class="service-text" data-en>For problems with no off-the-shelf answer: CAD design, process automation, technical consulting. Favourite kind of request: “that’s probably not possible.”</p>
+        <p class="service-text" data-de>Für Probleme ohne Lösung von der Stange: CAD-Konstruktion, Prozessautomatisierung, technische Beratung. Lieblingsanfrage: „Das geht wahrscheinlich nicht.“</p>
       </div>
     </div>
   </div>
@@ -554,8 +568,8 @@
 <!-- PROJECTS -->
 <section id="projects">
   <div class="section-inner">
-    <p class="section-eyebrow" data-en>// Live & running</p>
-    <p class="section-eyebrow" data-de>// Live & in Betrieb</p>
+    <p class="section-eyebrow" data-en>// Proven in use</p>
+    <p class="section-eyebrow" data-de>// Im Einsatz bewährt</p>
     <h2 class="section-title" data-en>Real apps, real clients</h2>
     <h2 class="section-title" data-de>Echte Apps, echte Kunden</h2>
 
@@ -590,6 +604,20 @@
           <span class="project-lang">DE / EN</span>
           <span class="project-lang">Google Sheets API</span>
           <span class="project-lang">Mobile-first</span>
+        </div>
+      </div>
+      <div class="project-card" data-category="events">
+        <span class="project-tag">🎪 Event System</span>
+        <h3 class="project-title" data-en>TCF Summer Serve — Event System</h3>
+        <h3 class="project-title" data-de>TCF Summer Serve — Event-System</h3>
+        <p class="project-desc" data-en>Three apps for one club event: registration with automatic team assignment and meal choice, a live buddy draw with slot-machine reveal, and a scoreboard for the mini-games.</p>
+        <p class="project-desc" data-de>Drei Apps für ein Vereinsfest: Anmeldung mit automatischer Teameinteilung und Essenswahl, Live-Buddy-Auslosung mit Slotmaschinen-Effekt und eine Punktetafel für die Mini-Spiele.</p>
+        <p class="project-outcome" data-en>15+ group sign-ups, and check-in doubles as the headcount</p>
+        <p class="project-outcome" data-de>15+ Gruppenanmeldungen, Check-in zählt gleichzeitig die Gäste</p>
+        <div class="project-langs">
+          <span class="project-lang">DE</span>
+          <span class="project-lang">Google Sheets</span>
+          <span class="project-lang">Live</span>
         </div>
       </div>
       <div class="project-card" data-category="restaurants">
@@ -736,6 +764,34 @@
         </div>
       </div>
       <div class="project-card" data-category="fabrication">
+        <span class="project-tag">🧊 CAD Viewer</span>
+        <h3 class="project-title" data-en>MESSWERK — 3D CAD Viewer</h3>
+        <h3 class="project-title" data-de>MESSWERK — 3D-CAD-Viewer</h3>
+        <p class="project-desc" data-en>Open, rotate, measure and section STEP and STL files straight in the browser — no CAD licence, no installation, no upload. The files never leave the machine.</p>
+        <p class="project-desc" data-de>STEP- und STL-Dateien direkt im Browser öffnen, drehen, messen und schneiden — ohne CAD-Lizenz, ohne Installation, ohne Upload. Die Dateien verlassen den Rechner nicht.</p>
+        <p class="project-outcome" data-en>A quick look at a part without waiting for a free CAD seat</p>
+        <p class="project-outcome" data-de>Schneller Blick aufs Bauteil, ohne auf eine freie CAD-Lizenz zu warten</p>
+        <div class="project-langs">
+          <span class="project-lang">three.js</span>
+          <span class="project-lang">WebAssembly</span>
+          <span class="project-lang">Offline</span>
+        </div>
+      </div>
+      <div class="project-card" data-category="fabrication">
+        <span class="project-tag">📐 Drawing Compare</span>
+        <h3 class="project-title" data-en>PLANWERK — Drawing Compare</h3>
+        <h3 class="project-title" data-de>PLANWERK — Zeichnungsvergleich</h3>
+        <p class="project-desc" data-en>Two revisions of the same drawing, overlaid and aligned. The text compare pairs near-matches, so a part number going 4207 → 4208 shows up as one changed line instead of a hunt across the sheet.</p>
+        <p class="project-desc" data-de>Zwei Revisionen derselben Zeichnung, überlagert und ausgerichtet. Der Textvergleich erkennt Ähnlichkeiten — aus 4207 → 4208 wird eine geänderte Zeile statt einer Suche übers ganze Blatt.</p>
+        <p class="project-outcome" data-en>Revision changes found in seconds, entirely offline</p>
+        <p class="project-outcome" data-de>Revisionsänderungen in Sekunden gefunden, komplett offline</p>
+        <div class="project-langs">
+          <span class="project-lang">PDF</span>
+          <span class="project-lang">Multi-page</span>
+          <span class="project-lang">Offline</span>
+        </div>
+      </div>
+      <div class="project-card" data-category="fabrication">
         <span class="project-tag">🖨️ 3D Design</span>
         <h3 class="project-title" data-en>3D Modeling — Merch & Functional Prototyping</h3>
         <h3 class="project-title" data-de>3D-Modellierung — Merchandising & Funktionsprototypen</h3>
@@ -801,7 +857,7 @@
 </section>
 
 <footer>
-  <div class="footer-logo">321tadaa</div>
+  <div class="footer-logo">321tadaa.com</div>
   <p class="footer-copy">© 2026 321tadaa · Stuttgart · Europe</p>
   <ul class="footer-links">
     <li><a href="#" data-en>Imprint</a><a href="#" data-de>Impressum</a></li>
