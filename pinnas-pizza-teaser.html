@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pinna's Pizza — Bestell-Demo</title>
+<style>
+  :root{
+    --slate:#1c1c1e;
+    --slate2:#232326;
+    --panel:#2a2a2d;
+    --line:#3a3a3f;
+    --red:#7a1f2b;
+    --red-bright:#a12a38;
+    --wa:#25d366;
+    --wa-dark:#128c7e;
+    --ink:#f4f4f2;
+    --muted:#9a9a9f;
+    --muted2:#6e6e73;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--slate);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  /* demo banner */
+  .demo-flag{
+    background:var(--slate2);border-bottom:1px solid var(--line);
+    text-align:center;padding:7px 14px;font-size:12px;
+    letter-spacing:.03em;color:var(--muted2);font-weight:500;
+  }
+  .demo-flag b{color:var(--muted)}
+
+  /* header bar mimicking flyer top strip */
+  header{
+    background:var(--slate2);
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+  }
+  .barrow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:16px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .pmark{
+    width:46px;height:46px;border:2.5px solid var(--red-bright);border-radius:9px;
+    display:grid;place-items:center;font-weight:800;font-size:27px;color:var(--red-bright);
+    font-family:Georgia,"Times New Roman",serif;line-height:1;
+  }
+  .brand h1{font-size:20px;font-weight:800;letter-spacing:.02em}
+  .brand h1 span{color:var(--muted);font-weight:500;display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+  .hours{font-size:12.5px;color:var(--muted);text-align:right}
+  .hours b{color:var(--ink)}
+  @media(max-width:640px){.hours{display:none}}
+
+  /* hero */
+  .hero{padding:46px 0 30px;position:relative;overflow:hidden}
+  .hero:before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 80% at 85% 0%,rgba(122,31,43,.28),transparent 60%);
+    pointer-events:none;
+  }
+  .hero-in{position:relative;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+  @media(max-width:820px){.hero-in{grid-template-columns:1fr}}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--red-bright);font-weight:700;margin-bottom:12px}
+  .hero h2{font-size:clamp(24px,3.6vw,38px);font-weight:800;line-height:1.05;letter-spacing:-.01em}
+  .hero h2 .dot{color:var(--red-bright)}
+  .hero p.sub{color:var(--muted);font-size:16px;margin-top:14px;max-width:38ch}
+  .hero-note{
+    margin-top:22px;font-size:13px;color:var(--muted2);border-left:2px solid var(--line);
+    padding-left:12px;max-width:40ch;
+  }
+  .herocard{
+    background:linear-gradient(160deg,var(--panel),var(--slate2));
+    border:1px solid var(--line);border-radius:16px;padding:20px;
+  }
+  .herocard h3{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px}
+  .flow{display:flex;flex-direction:column;gap:10px}
+  .flowstep{display:flex;gap:11px;align-items:flex-start;font-size:14px}
+  .flowstep .n{
+    flex:0 0 22px;height:22px;border-radius:50%;background:var(--red);color:#fff;
+    font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px;
+  }
+  .flowstep .last{background:var(--wa-dark)}
+
+  /* main grid */
+  .layout{display:grid;grid-template-columns:1fr 372px;gap:26px;padding:12px 0 60px;align-items:start}
+  @media(max-width:940px){.layout{grid-template-columns:1fr}}
+
+  /* mode + area gate */
+  .gate{background:var(--slate2);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px}
+  .gate .lab{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px;font-weight:600}
+  .seg{display:inline-flex;background:var(--slate);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+  .seg button{
+    background:transparent;border:0;color:var(--muted);padding:8px 16px;border-radius:7px;
+    font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit;
+  }
+  .seg button.on{background:var(--red);color:#fff}
+  .arearow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  .combo{position:relative;width:210px}
+  .combo input{
+    background:var(--slate);border:1px solid var(--line);color:var(--ink);
+    padding:9px 34px 9px 12px;border-radius:9px;font-size:14px;font-family:inherit;width:100%;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239a9a9f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;transition:.15s;
+  }
+  .combo input:focus{outline:2px solid var(--red-bright);outline-offset:0;border-color:transparent}
+  /* draw attention while no delivery place is chosen yet */
+  .combo.needs input{border-color:var(--red-bright);background:rgba(161,42,56,.10)}
+  .combo.needs input::placeholder{color:#c98a92}
+  .combo.chosen input{border-color:rgba(37,211,102,.55);background:rgba(37,211,102,.06)}
+  .combo-list{
+    position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:30;
+    background:var(--slate2);border:1px solid var(--line);border-radius:10px;
+    max-height:260px;overflow-y:auto;display:none;box-shadow:0 12px 30px rgba(0,0,0,.5);
+    padding:4px;
+  }
+  .combo-list.open{display:block}
+  .combo-opt{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:9px 11px;border-radius:7px;cursor:pointer;font-size:14px;
+  }
+  .combo-opt:hover,.combo-opt.active{background:var(--panel)}
+  .combo-opt .co-l{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .combo-opt .co-nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .combo-opt .co-plz{font-size:11px;color:var(--muted2)}
+  .combo-opt .co-min{font-size:12px;font-weight:700;color:var(--wa);white-space:nowrap}
+  .combo-empty{padding:11px;font-size:13px;color:var(--muted2);text-align:center}
+  .arearow input{
+    background:var(--slate);border:1px solid var(--line);color:var(--ink);
+    padding:9px 12px;border-radius:9px;font-size:14px;font-family:inherit;width:150px;
+  }
+  .arearow input:focus{outline:2px solid var(--red-bright);outline-offset:0}
+  .areamsg{font-size:13px;font-weight:600}
+  .areamsg.ok{color:var(--wa)}
+  .areamsg.ask{color:#e6b450}
+  .areahint{font-size:11.5px;color:var(--muted2);margin-top:9px}
+  .areahint a{color:#c98a92;text-decoration:underline;text-underline-offset:2px}
+  .areahint a:hover{color:#e8a0a8}
+
+  /* address block — appears only after delivery confirmed */
+  .addrblock{
+    margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+    display:none;animation:slideIn .25s ease;
+  }
+  .addrblock.show{display:block}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .addrgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .addrgrid .full{grid-column:1/-1}
+  @media(max-width:520px){.addrgrid{grid-template-columns:1fr}}
+
+  /* labeled field with three states: required-empty / filled / optional */
+  .fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .fld-lab{font-size:11px;color:var(--muted);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+  .fld-lab em{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:#e8a0a8;background:rgba(161,42,56,.22);padding:1px 6px;border-radius:20px}
+  .fld-lab i{font-style:normal;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2)}
+  .af{
+    background:var(--slate);border:1px solid var(--line);color:var(--ink);
+    padding:10px 12px;border-radius:9px;font-size:14px;font-family:inherit;width:100%;transition:.15s;
+  }
+  select.af{
+    -webkit-appearance:none;appearance:none;cursor:pointer;padding-right:32px;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239a9a9f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+  }
+  .af:focus{outline:2px solid var(--red-bright);outline-offset:0;border-color:transparent}
+  /* required + empty → gently highlighted so it reads as a to-do */
+  .fld.req-empty .af{border-color:var(--red-bright);background:rgba(161,42,56,.10)}
+  .fld.req-empty .af::placeholder{color:#c98a92}
+  /* filled → green accent + check */
+  .fld.filled .af{border-color:rgba(37,211,102,.55);background:rgba(37,211,102,.06)}
+  .fld.filled .fld-lab:after{content:"✓";color:var(--wa);font-weight:800;font-size:12px;margin-left:auto}
+  .fld.filled .fld-lab em{display:none}
+  .addrblock .lab{margin-top:2px}
+
+  /* mirrored fields inside the ticket */
+  .tickfields{margin:6px 0 12px;padding:12px;background:#0e1b16;border:1px solid #1f2c33;border-radius:10px}
+  .tf-head{font-size:12.5px;font-weight:700;color:#cfe9df;margin-bottom:10px}
+  .tickfields .fld-lab{color:#8fb3a8}
+  .tickfields .af{background:#0b141a;border-color:#264039;color:#eafff6}
+  /* required + empty → amber "to-do" so it stands out against the green card */
+  .tickfields .fld.req-empty .af{border-color:#e6b450;background:rgba(230,180,80,.10)}
+  .tickfields .fld.req-empty .af::placeholder{color:#d8b978}
+  .tickfields .fld.req-empty .fld-lab em{background:rgba(230,180,80,.22);color:#f0d29a}
+  /* filled → green confirm */
+  .tickfields .fld.filled .af{border-color:rgba(37,211,102,.6);background:rgba(37,211,102,.07)}
+
+  /* floating total pill */
+  .pill{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(120%);
+    background:var(--red);color:#fff;border-radius:40px;padding:11px 10px 11px 20px;
+    display:flex;align-items:center;gap:14px;z-index:50;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.2,.9,.3,1.3);
+    max-width:calc(100% - 28px);
+  }
+  .pill.show{transform:translateX(-50%) translateY(0)}
+  .pill .pcount{font-size:12px;color:#f4dfe2;letter-spacing:.02em}
+  .pill .ptot{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pill .pjump{
+    background:#fff;color:var(--red);border:0;border-radius:22px;padding:8px 15px;
+    font-weight:800;font-size:12.5px;line-height:1.12;font-family:inherit;cursor:pointer;
+    white-space:normal;text-align:center;max-width:96px;transition:.2s;
+  }
+  .pill .pjump:hover{background:#ffe9ec}
+  .pill .pjump.ready{background:var(--wa);color:#04231a}
+  .pill .pjump.ready:hover{background:#2ee672}
+  /* pill only needed where ticket isn't beside the menu */
+  @media(min-width:941px){.pill{display:none}}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  .tabs button{
+    background:var(--slate2);border:1px solid var(--line);color:var(--muted);
+    padding:8px 15px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .tabs button.on{background:var(--ink);color:var(--slate);border-color:var(--ink)}
+
+  .grouptitle{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted2);margin:6px 2px 12px;font-weight:600}
+
+  /* Genuss-Pakete cards */
+  .pkg-intro{font-size:13px;color:var(--muted);line-height:1.5;margin:2px 2px 16px;padding-left:12px;border-left:2px solid var(--red)}
+  .pkg-intro b{color:var(--ink)}
+  .pkg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.pkg-grid{grid-template-columns:1fr}}
+  .pkg-card{
+    position:relative;background:linear-gradient(160deg,var(--panel),var(--slate2));
+    border:1px solid var(--line);border-radius:14px;padding:16px;overflow:hidden;
+  }
+  .pkg-off{
+    position:absolute;top:12px;right:12px;background:var(--red);color:#fff;
+    font-weight:800;font-size:14px;padding:4px 11px;border-radius:20px;letter-spacing:.02em;
+  }
+  .pkg-nm{font-weight:800;font-size:17px;margin:2px 70px 8px 0}
+  .pkg-items{font-size:13px;color:var(--ink);line-height:1.55;margin-bottom:8px}
+  .pkg-note{font-size:12px;color:var(--muted2);font-style:italic}
+  .pkg-foot{font-size:12px;color:var(--muted2);margin-top:14px;text-align:center}
+  .pkg-start{margin-top:12px;width:100%;background:var(--red);border:0;color:#fff;padding:10px;border-radius:9px;font-weight:700;font-size:13.5px;font-family:inherit;cursor:pointer;transition:.15s}
+  .pkg-start:hover{background:var(--red-bright)}
+
+  /* configurator banner */
+  .pkg-banner{background:linear-gradient(160deg,#2a1e21,var(--slate2));border:1px solid var(--red);border-radius:14px;padding:14px;margin-bottom:16px}
+  .pkg-banner-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .pkg-banner-head{font-size:14px;line-height:1.4}
+  .pkg-banner-head b{color:#fff}
+  .pkg-cancel{background:transparent;border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:11.5px;padding:5px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+  .pkg-cancel:hover{border-color:var(--red-bright);color:var(--ink)}
+  .psteps{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .pstep{display:flex;flex-direction:column;padding:6px 10px;border-radius:9px;background:var(--slate);border:1px solid var(--line);min-width:64px}
+  .pstep-c{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+  .pstep-l{font-size:10px;color:var(--muted2);line-height:1.2}
+  .pstep.active{border-color:var(--red-bright);background:rgba(161,42,56,.14)}
+  .pstep.active .pstep-c{color:#e8a0a8}
+  .pstep.done{border-color:rgba(37,211,102,.5);background:rgba(37,211,102,.08)}
+  .pstep.done .pstep-c{color:var(--wa)}
+  .pstep-sep{color:var(--muted2);font-size:13px}
+  .pchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .pchip{display:inline-flex;align-items:center;gap:5px;background:var(--slate);border:1px solid var(--line);border-radius:20px;padding:4px 6px 4px 11px;font-size:12px}
+  .pchip button{background:rgba(255,255,255,.08);border:0;color:var(--muted);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1;font-family:inherit}
+  .pchip button:hover{background:var(--red);color:#fff}
+  .pkg-done{margin-top:13px;width:100%;background:var(--wa);border:0;color:#04231a;padding:11px;border-radius:10px;font-weight:800;font-size:14.5px;font-family:inherit;cursor:pointer}
+  .pkg-done:hover{background:#2ee672}
+  .item.dimmed{opacity:.4}
+  .stepper .st-mid.st-full{background:rgba(37,211,102,.18);color:#bff3d6;cursor:default}
+  .stepper .st-mid.st-full:hover{background:rgba(37,211,102,.18)}
+  .add-off{text-align:center;font-size:11.5px;color:var(--muted2);padding:8px;font-style:italic}
+
+  /* package group in cart */
+  .cg-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px;margin:10px 0 4px;color:var(--ink)}
+  .cg-off{background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:1px 8px;border-radius:20px}
+  .pkg-line{padding:4px 0;border-bottom:0}
+  .pkg-line .li-nm{font-weight:500}
+  .cg-sub{display:flex;justify-content:space-between;font-size:12px;color:var(--wa);padding:3px 0 2px;border-bottom:1px solid var(--line)}
+  .cg-remove{background:transparent;border:0;color:var(--muted2);font-size:11px;font-family:inherit;cursor:pointer;padding:5px 0 10px;text-decoration:underline}
+  .cg-remove:hover{color:var(--red-bright)}
+
+  .items{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.items{grid-template-columns:1fr}}
+  .item{
+    background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;
+    display:flex;flex-direction:column;gap:7px;transition:.15s;
+  }
+  .item:hover{border-color:#4a4a50}
+  .item .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .item .nm{font-weight:700;font-size:15px}
+  .item .pr{font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
+  .item .ds{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .item .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:1px}
+  .tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--panel);color:var(--muted);letter-spacing:.02em}
+  .tag.veg{background:#1f3324;color:#7fd39b}
+  .tag.hot{background:#3a1f22;color:#e88}
+  .add-wrap{margin-top:5px}
+  .item .add{
+    width:100%;background:var(--red);border:0;color:#fff;padding:8px;border-radius:8px;
+    font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .item .add:hover{background:var(--red-bright)}
+  .item .add:active{transform:scale(.97)}
+
+  .stepper{
+    display:flex;align-items:stretch;background:var(--red);border-radius:8px;overflow:hidden;
+    height:35px;
+  }
+  .stepper button{border:0;background:transparent;color:#fff;font-family:inherit;cursor:pointer;transition:.15s}
+  .stepper .st-left{
+    flex:0 0 40px;display:grid;place-items:center;background:rgba(0,0,0,.16);
+  }
+  .stepper .st-left:hover{background:rgba(0,0,0,.3)}
+  .stepper .st-left.del{color:#ffd9dd}
+  .stepper .st-left.del:hover{background:var(--red-bright)}
+  .stepper .st-mid{
+    flex:1;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;
+  }
+  .stepper .st-mid:hover{background:var(--red-bright)}
+  .stepper .st-qty{
+    flex:0 0 40px;display:grid;place-items:center;background:rgba(0,0,0,.28);
+    font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;
+  }
+  .gf{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted2);cursor:pointer;user-select:none}
+  .gf input{accent-color:var(--red-bright);width:14px;height:14px}
+
+  /* ticket */
+  .ticketwrap{position:static}
+  @media(min-width:941px){.ticketwrap{position:sticky;top:82px}}
+  .ticket{
+    background:#0b141a;border:1px solid #1f2c33;border-radius:16px;overflow:hidden;
+    box-shadow:0 14px 40px rgba(0,0,0,.45);
+  }
+  .ticket .wahead{
+    background:var(--wa-dark);padding:12px 15px;display:flex;align-items:center;gap:11px;
+  }
+  .wa-ava{width:34px;height:34px;border-radius:50%;background:#0a5c50;display:grid;place-items:center;font-size:16px}
+  .ticket .wahead .t1{font-size:14px;font-weight:700;color:#fff;line-height:1.2}
+  .ticket .wahead .t2{font-size:11px;color:#a7d7cf}
+  .wabody{padding:16px 14px;min-height:200px;background:#0b141a;
+    background-image:radial-gradient(rgba(255,255,255,.015) 1px,transparent 1px);background-size:18px 18px}
+  .bubble{
+    background:#005c4b;color:#e9fff6;border-radius:10px 10px 10px 2px;padding:11px 13px;
+    font-size:13px;max-width:100%;font-variant-numeric:tabular-nums;white-space:pre-wrap;line-height:1.55;
+    word-break:break-word;
+  }
+  .bubble .bt{font-weight:800;letter-spacing:.02em;margin-bottom:6px;display:block;color:#fff}
+  .empty{color:#5b6b6f;font-size:13px;text-align:center;padding:34px 10px}
+  .empty span{font-size:30px;display:block;margin-bottom:8px;opacity:.6}
+  .tfoot{background:#111b21;border-top:1px solid #1f2c33;padding:13px 15px}
+  .trow{display:flex;justify-content:space-between;font-size:13px;color:#b9c6cb;margin-bottom:5px}
+  .trow.big{color:#fff;font-weight:800;font-size:16px;margin-top:8px;margin-bottom:12px}
+  .send{
+    width:100%;background:var(--wa);border:0;color:#04231a;padding:13px;border-radius:11px;
+    font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;display:flex;align-items:center;
+    justify-content:center;gap:9px;transition:.15s;
+  }
+  .send:hover{background:#2ee672}
+  .send:disabled{background:#26413a;color:#5b7c72;cursor:not-allowed}
+  .minhint{font-size:11px;color:#e6b450;text-align:center;margin-top:8px}
+
+  .line-item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .line-item:last-child{border-bottom:0}
+  .li-l{display:flex;flex-direction:column;gap:2px}
+  .li-nm{font-weight:600}
+  .li-sub{font-size:11px;color:var(--muted2)}
+  .li-r{display:flex;align-items:center;gap:10px}
+  .qty{display:flex;align-items:center;gap:8px}
+  .qty button{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:14px;cursor:pointer;line-height:1;font-family:inherit}
+  .qty button:hover{border-color:var(--red-bright)}
+  .cartbox{background:var(--slate2);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .cartbox h4{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted2);font-size:12.5px;text-align:center}
+  footer b{color:var(--muted)}
+  .egg{color:inherit;text-decoration:none;transition:.2s}
+  .egg:hover b{color:var(--red-bright)}
+  .egg:hover{text-decoration:underline;text-underline-offset:3px}
+  .disc{max-width:60ch;margin:0 auto 10px}
+</style>
+</head>
+<body>
+
+<div class="demo-flag">DEMO / KONZEPT — <b>321tadaa</b> · nicht mit Pinna's Pizza verbunden · echte Preise &amp; Karte, Beispiel-Bestellablauf</div>
+
+<header>
+  <div class="wrap barrow">
+    <div class="brand">
+      <div class="pmark">P</div>
+      <h1>Pinna's Pizza<span>Bietigheim-Bissingen</span></h1>
+    </div>
+    <div class="hours"><b>Di – So · 17:00–21:30</b><br>Enzstr. 2 · 74321 B.-Bissingen</div>
+  </div>
+</header>
+
+<div class="pill" id="pill" role="status" aria-live="polite">
+  <div>
+    <div class="pcount" id="pillCount">0 Artikel</div>
+    <div class="ptot" id="pillTot">0,00 €</div>
+  </div>
+  <button class="pjump" id="pillJump">Zur Bestellung ↓</button>
+</div>
+
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <div class="kicker">Bestellen ohne Warteschleife</div>
+      <h2>Deine Bestellung<br>wird zum fertigen<br>Zettel<span class="dot">.</span></h2>
+      <p class="sub">Kein durchgeklingeltes Telefon in der Stoßzeit. Der Gast tippt, ihr bekommt einen sauberen Ticket per WhatsApp — mit Adresse, Allergenen und Summe.</p>
+      <p class="hero-note">Gedacht als Ergänzung, nicht als Ersatz fürs Telefon. Zahlung bleibt wie gehabt: bar oder kontaktlos (SumUp) bei Lieferung.</p>
+    </div>
+    <div class="herocard">
+      <h3>So läuft's</h3>
+      <div class="flow">
+        <div class="flowstep"><div class="n">1</div><div>Gast wählt Lieferung oder Abholung und prüft kurz die PLZ.</div></div>
+        <div class="flowstep"><div class="n">2</div><div>Tippt Pizzen &amp; Pakete an — eine Größe, ein Tap.</div></div>
+        <div class="flowstep"><div class="n">3</div><div>Ihr bekommt einen fertig formatierten WhatsApp-Zettel.</div></div>
+        <div class="flowstep"><div class="n last">✓</div><div>Ihr lest ab statt mitzuschreiben. Kein verpasster Anruf.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="gate">
+    <div class="lab">Lieferung oder Abholung?</div>
+    <div class="seg" id="modeSeg">
+      <button class="on" data-mode="delivery">Lieferung</button>
+      <button data-mode="pickup">Abholung · −5%</button>
+    </div>
+    <div class="arearow" id="areaRow">
+      <div class="combo" id="combo">
+        <input id="plz" placeholder="Ort wählen oder tippen…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="comboList">
+        <div class="combo-list" id="comboList" role="listbox"></div>
+      </div>
+      <span class="areamsg" id="areaMsg"></span>
+    </div>
+    <div class="areahint" id="areaHint">Ort aus der Liste wählen — der jeweilige Mindestbestellwert steht direkt daneben. Weitere Orte <a href="https://pinnas-pizza.de/kontakt/" target="_blank" rel="noopener">auf Anfrage</a> oder direkt anrufen: <a href="tel:+4971479299682">07147 9299682</a>.</div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="tabs" id="tabs"></div>
+      <div id="menu"></div>
+    </div>
+
+    <div class="ticketwrap">
+      <div class="cartbox" id="cartBox" style="display:none">
+        <h4>Deine Auswahl</h4>
+        <div id="cartLines"></div>
+      </div>
+
+      <div class="ticket">
+        <div class="wahead">
+          <div class="wa-ava">🍕</div>
+          <div>
+            <div class="t1">Pinna's Pizza</div>
+            <div class="t2" id="waStatus">Bestell-Ticket · Vorschau</div>
+          </div>
+        </div>
+        <div class="wabody">
+          <div id="bubbleHost">
+            <div class="empty" id="emptyState"><span>🧾</span>Noch nichts ausgewählt.<br>Tipp links etwas an — hier entsteht der Zettel.</div>
+          </div>
+        </div>
+        <div class="tfoot">
+          <div class="trow"><span>Zwischensumme</span><span id="subT">0,00 €</span></div>
+          <div class="trow" id="discRow" style="display:none"><span>Abholrabatt −5%</span><span id="discT">0,00 €</span></div>
+          <div class="trow big"><span>Summe</span><span id="totT">0,00 €</span></div>
+
+          <div class="tickfields" id="tickFields" style="display:none">
+            <div class="tf-head" id="tfHead">Noch kurz für die Lieferung:</div>
+            <div class="addrgrid">
+              <label class="fld full" data-for="Street"><span class="fld-lab">Straße &amp; Hausnummer <em>Pflicht</em></span>
+                <input class="af" data-field="Street" placeholder="z. B. Hauptstraße 12" autocomplete="off"></label>
+              <label class="fld" data-for="Name"><span class="fld-lab">Name <em>Pflicht</em></span>
+                <input class="af" data-field="Name" placeholder="Dein Name" autocomplete="off"></label>
+              <label class="fld" data-for="Phone"><span class="fld-lab">Telefon <i>empfohlen</i></span>
+                <input class="af" data-field="Phone" placeholder="für Rückfragen" autocomplete="off"></label>
+              <label class="fld full" data-for="Time"><span class="fld-lab">Wunschzeit <i>optional</i></span>
+                <select class="af" data-field="Time"></select></label>
+              <label class="fld full" data-for="Note"><span class="fld-lab">Hinweis <i>optional</i></span>
+                <input class="af" data-field="Note" placeholder="Klingel / Etage / Hinweis" autocomplete="off"></label>
+            </div>
+          </div>
+
+          <button class="send" id="sendBtn" disabled>Per WhatsApp senden</button>
+          <div class="minhint" id="minHint" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p class="disc">Unverbindliche Konzept-Demo, gebaut von <a class="egg" href="https://321tadaa.com" target="_blank" rel="noopener"><b>321tadaa</b></a>. Speisekarte, Preise und Liefergebiete Stand der öffentlichen Website (pinnas-pizza.de). Kein echter Bestellvorgang — der WhatsApp-Button zeigt nur, wie das Ticket beim Betrieb ankäme.</p>
+  <p><a class="egg" href="https://321tadaa.com" target="_blank" rel="noopener"><b>Making ideas work.</b></a></p>
+</footer>
+
+<script>
+const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
+const GF_SURCHARGE = 4.90;
+
+// Delivery places — each with its own minimum order value and PLZ.
+// A single list powers the dropdown; typing filters it by name OR PLZ.
+const PLACES = [
+  {name:"Bissingen",         plz:"74321", min:15},
+  {name:"Untermberg",        plz:"74321", min:15},
+  {name:"Kreuzäckern",       plz:"74321", min:15},
+  {name:"Bietigheim",        plz:"74321", min:25},
+  {name:"Lug",               plz:"74321", min:25},
+  {name:"Sand",              plz:"74321", min:25},
+  {name:"Buch",              plz:"74321", min:25},
+  {name:"Metterzimmern",     plz:"74321", min:25},
+  {name:"Kammgarnspinnerei", plz:"74321", min:25},
+  {name:"Oberriexingen",     plz:"71739", min:25},
+  {name:"Unterriexingen",    plz:"71706", min:25},
+  {name:"Großsachsenheim",   plz:"74343", min:25},
+  {name:"Kleinsachsenheim",  plz:"74343", min:30},
+  {name:"Tamm",              plz:"71732", min:30},
+  {name:"Tamm-Hohenstange",  plz:"71732", min:35},
+  {name:"Sersheim",          plz:"74372", min:40},
+  {name:"Ingersheim",        plz:"74379", min:40},
+];
+
+function filterPlaces(raw){
+  const v = raw.trim().toLowerCase();
+  if(!v) return PLACES.slice();
+  return PLACES.filter(p =>
+    p.name.toLowerCase().includes(v) || p.plz.startsWith(v)
+  );
+}
+
+const MENU = {
+  "Pizza": [
+    {g:"Klassiker", items:[
+      {n:"Pizzabrot ohne Knoblauch", d:"vegan", p:6.00, veg:true, nogf:true},
+      {n:"Pizzabrot mit Knoblauch", d:"vegan", p:6.50, veg:true, nogf:true},
+      {n:"Marinara", d:"San Marzano Tomaten, Knoblauch, Oregano", p:8.50, veg:true},
+      {n:"Margherita", d:"San Marzano Tomaten, Fior di Latte, Basilikum", p:9.90, veg:true},
+      {n:"Salami", d:"San Marzano Tomaten, Fior di Latte, Salami", p:10.50},
+      {n:"Prosciutto", d:"San Marzano Tomaten, Fior di Latte, Hinterschinken", p:10.50},
+      {n:"Funghi", d:"San Marzano Tomaten, Fior di Latte, frische Champignons", p:10.50, veg:true},
+      {n:"Hawaii", d:"San Marzano Tomaten, Fior di Latte, Hinterschinken, Ananas", p:11.50},
+    ]},
+    {g:"Pinna's Favoriten", items:[
+      {n:"Costa Tonno", d:"San Marzano Tomaten, Fior di Latte, Thunfisch, Zwiebeln — Pinna's Lieblingspizza", p:11.90},
+      {n:"Romana", d:"San Marzano Tomaten, Fior di Latte, Sardellenfilets, Oregano", p:11.50},
+      {n:"Diavola", d:"San Marzano Tomaten, Fior di Latte, scharfe Salami, schwarze Oliven, Oregano", p:11.90, hot:true},
+      {n:"Spinaci e Gorgonzola", d:"San Marzano Tomaten, Fior di Latte, Blattspinat, Gorgonzola, Knoblauch", p:12.50, veg:true},
+      {n:"Capricciosa", d:"San Marzano Tomaten, Fior di Latte, Hinterschinken, Artischocken, Champignons, Oregano", p:12.50},
+      {n:"Costa Alici", d:"San Marzano Tomaten, Fior di Latte, Sardellenfilets, Kapern, schwarze Oliven, Basilikum", p:13.50},
+      {n:"4 Stagioni", d:"San Marzano Tomaten, Fior di Latte, Hinterschinken, Salami, Artischocken, Champignons", p:13.50},
+      {n:"4 Formaggi", d:"San Marzano Tomaten, Fior di Latte, Gorgonzola, Grana Padano, Mascarpone", p:14.50, veg:true},
+      {n:"Sapori dell'Orto", d:"San Marzano Tomaten, Fior di Latte, Auberginen, Paprika, Zucchini (gegrillt), Blattspinat, Knoblauch", p:14.50, veg:true},
+      {n:"Bella Parma", d:"San Marzano Tomaten, Fior di Latte, Rucola, Kirschtomaten, Parmaschinken, Grana Padano", p:15.50},
+      {n:"Salmone", d:"San Marzano Tomaten, Fior di Latte, Lachs, Blattspinat, Mascarpone", p:15.50},
+      {n:"Verde di Bologna", d:"Mascarpone, Fior di Latte, Mortadella, Pistazien, Basilikum", p:15.50},
+      {n:"Dolce Peccato", d:"Fior di Latte, Gorgonzola, Birne, Parmaschinken, Walnüsse", p:15.50},
+    ]},
+    {g:"Süß", items:[
+      {n:"Dolce Pinna", d:"Pizzabrötchen mit Nutella", p:9.50, veg:true, nogf:true},
+    ]},
+  ],
+  "Pasta": [
+    {g:"", items:[
+      {n:"Lasagne al Forno", d:"Bolognesesoße mit Hackfleisch, Sahne, Grana Padano, Fior di Latte — Pinna's Lieblings-Pasta", p:15.50, nogf:true},
+      {n:"Rigatoni al Forno", d:"Bolognese mit Hackfleisch, Sahne, Fior di Latte", p:13.50, nogf:true},
+      {n:"Canneloni", d:"Ricotta, Spinat, Tomatensoße, Fior di Latte", p:15.50, veg:true, nogf:true},
+    ]},
+  ],
+  "Salate": [
+    {g:"Dressing inklusive — Hausdressing oder Rucola (Extra: 2,00 €)", items:[
+      {n:"Beilagensalat", d:"Blattsalat, Mais, Paprika, Gurken, Cocktailtomaten, Zwiebeln — vegan", p:5.50, veg:true, nogf:true},
+      {n:"Mista", d:"+ Oliven — vegan", p:9.90, veg:true, nogf:true},
+      {n:"Noce e Grana", d:"Mais, Gurken, Oliven, Zwiebeln, Walnüsse, Grana Padano — vegetarisch", p:11.90, veg:true, nogf:true},
+      {n:"Greca", d:"+ Oliven, Schafskäse — vegetarisch", p:11.90, veg:true, nogf:true},
+      {n:"Tonno", d:"+ Oliven, Thunfisch", p:12.90, nogf:true},
+      {n:"Regina", d:"Cocktailtomaten, Hinterschinken, Grana Padano, Artischocken, Ei", p:14.90, nogf:true},
+    ]},
+  ],
+  "Getränke": [
+    {g:"Alkoholfrei (1,0 l · 15 ct Pfand)", items:[
+      {n:"Coca-Cola", d:"1,0 l", p:5.00, nogf:true, _grp:"soft"},
+      {n:"Coca-Cola Zero", d:"1,0 l", p:5.00, nogf:true, _grp:"soft"},
+      {n:"Fanta", d:"1,0 l", p:5.00, nogf:true, _grp:"soft"},
+      {n:"Sprite", d:"1,0 l", p:5.00, nogf:true, _grp:"soft"},
+      {n:"Mezzo Mix", d:"1,0 l", p:5.00, nogf:true, _grp:"soft"},
+      {n:"Mineralwasser", d:"Ensinger Sport, 1,0 l · 25 ct Pfand", p:3.50, nogf:true, _grp:"soft"},
+    ]},
+    {g:"Bier (Berg Brauerei · 0,3 l · 8 ct Pfand)", items:[
+      {n:"Original Hell", d:"0,3 l Bügelflasche", p:3.00, nogf:true},
+      {n:"Natur-Radler", d:"0,3 l Bügelflasche", p:3.00, nogf:true},
+    ]},
+    {g:"Wein (0,7 l)", items:[
+      {n:"Primitivo", d:"Rotwein", p:16.00, nogf:true},
+      {n:"Lemberger trocken", d:"Rotwein", p:16.00, nogf:true},
+      {n:"Lambrusco", d:"Rotwein", p:11.50, nogf:true},
+      {n:"Pinot Grigio", d:"Weißwein", p:16.00, nogf:true},
+      {n:"Chardonnay & Weißburgunder", d:"Weißwein", p:16.00, nogf:true},
+    ]},
+  ],
+};
+
+// Genuss-Pakete: percentage discounts on the combined item total (delivery).
+const PACKAGES = [
+  {name:"Friends-Box", note:"Für Freunde, Filmabende oder kleine Runden.", off:11,
+   slots:[{cat:"pizza",n:4,label:"Pizzen"},{cat:"saladBig",n:2,label:"große Salate"},{cat:"soft",n:2,label:"Softgetränke (1,0 l)"}]},
+  {name:"Family-Deal", note:"Perfekt für gemeinsame Abende.", off:10,
+   slots:[{cat:"pizza",n:3,label:"Pizzen"},{cat:"saladBig",n:1,label:"großer Salat"},{cat:"soft",n:1,label:"Softgetränk (1,0 l)"}]},
+  {name:"Veggie-Vorteil", note:"Leicht, frisch und voller Geschmack.", off:8,
+   slots:[{cat:"pizzaVeg",n:2,label:"vegetarische / vegane Pizzen"},{cat:"saladBig",n:2,label:"große Salate"},{cat:"soft",n:1,label:"Softgetränk (1,0 l)"}]},
+  {name:"Office- / Feierabend-Deal", note:"Schnell, unkompliziert & fair.", off:7,
+   slots:[{cat:"pizza",n:2,label:"Pizzen"},{cat:"saladSmall",n:2,label:"kleine Salate (Beilage)"},{cat:"soft",n:1,label:"Getränk (1,0 l)"}]},
+];
+
+// human-readable summary of a package's slots (for the info cards)
+function pkgSummary(pk){ return pk.slots.map(s=>`${s.n} ${s.label}`).join(' · '); }
+
+// which slot category (if any) does a menu item satisfy?
+// tab = the MENU category the item lives in; used to distinguish pizza/salad/drink.
+function itemCats(it, tab){
+  const cats=[];
+  if(tab==="Pizza" && !it.n.startsWith("Pizzabrot")){ cats.push("pizza"); if(it.veg) cats.push("pizzaVeg"); }
+  if(tab==="Salate"){ if(it.n==="Beilagensalat") cats.push("saladSmall"); else cats.push("saladBig"); }
+  if(tab==="Getränke" && it._grp==="soft") cats.push("soft");
+  return cats;
+}
+
+let mode = "delivery";
+let inArea = null; // null=unknown, true, false, "ask"
+let currentMin = 0; // active minimum order for the entered place
+let triedSend = false; // becomes true once the user taps send, to surface fields
+let fieldsRevealed = false; // once contact fields are shown, keep them shown
+let cart = []; // à-la-carte lines: {key,n,base,gf,q}
+let activePkg = null; // package being built: {def, slots:[{filled:[{n,base,gf}]}]}
+
+const eur = v => v.toFixed(2).replace('.',',') + ' €';
+
+/* ---------- mode + area ---------- */
+document.getElementById('modeSeg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  mode = b.dataset.mode;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on', x===b));
+  document.getElementById('areaRow').style.display = mode==='delivery' ? 'flex':'none';
+  document.getElementById('areaHint').style.display = mode==='delivery' ? 'block':'none';
+  refreshComboState();
+  updateAddrVisibility();
+  render();
+});
+
+const plz = document.getElementById('plz');
+const areaMsg = document.getElementById('areaMsg');
+const comboList = document.getElementById('comboList');
+let selectedPlace = null; // the confirmed place object, or null
+let activeIdx = -1;        // keyboard-highlighted option
+
+function openCombo(){ comboList.classList.add('open'); plz.setAttribute('aria-expanded','true'); }
+function closeCombo(){ comboList.classList.remove('open'); plz.setAttribute('aria-expanded','false'); activeIdx=-1; }
+
+function renderCombo(){
+  const matches = filterPlaces(plz.value);
+  comboList.innerHTML='';
+  if(!matches.length){
+    comboList.innerHTML='<div class="combo-empty">Ort nicht im Liefergebiet — auf Anfrage</div>';
+    return;
+  }
+  matches.forEach((p,i)=>{
+    const o=document.createElement('div');
+    o.className='combo-opt'+(i===activeIdx?' active':'');
+    o.setAttribute('role','option');
+    o.innerHTML=`
+      <div class="co-l"><span class="co-nm">${p.name}</span><span class="co-plz">${p.plz}</span></div>
+      <span class="co-min">ab ${eur(p.min)}</span>`;
+    o.onclick=()=>choosePlace(p);
+    comboList.appendChild(o);
+  });
+}
+
+function refreshComboState(){
+  const combo = document.getElementById('combo');
+  // only in delivery mode does a location matter
+  if(mode!=='delivery'){ combo.classList.remove('needs'); combo.classList.remove('chosen'); return; }
+  combo.classList.toggle('chosen', inArea===true);
+  combo.classList.toggle('needs', inArea!==true);
+}
+
+function choosePlace(p){
+  selectedPlace = p;
+  plz.value = `${p.name} · ${p.plz}`;
+  inArea = true; currentMin = p.min;
+  areaMsg.textContent = `✓ Lieferung ab ${eur(p.min)}`;
+  areaMsg.className = 'areamsg ok';
+  closeCombo();
+  refreshComboState();
+  updateAddrVisibility();
+  render();
+}
+
+function clearSelection(){
+  // typing after a selection invalidates it until a new pick is made
+  selectedPlace = null; inArea = null; currentMin = 0;
+  areaMsg.textContent=''; areaMsg.className='areamsg';
+  refreshComboState();
+}
+
+plz.addEventListener('input', ()=>{
+  clearSelection();
+  activeIdx=-1;
+  renderCombo();
+  openCombo();
+  updateAddrVisibility();
+  render();
+});
+plz.addEventListener('focus', ()=>{ renderCombo(); openCombo(); });
+plz.addEventListener('keydown', e=>{
+  const opts = comboList.querySelectorAll('.combo-opt');
+  if(e.key==='ArrowDown'){ e.preventDefault(); activeIdx=Math.min(activeIdx+1,opts.length-1); renderCombo(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); activeIdx=Math.max(activeIdx-1,0); renderCombo(); }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    const matches=filterPlaces(plz.value);
+    if(matches[activeIdx>=0?activeIdx:0]) choosePlace(matches[activeIdx>=0?activeIdx:0]);
+  } else if(e.key==='Escape'){ closeCombo(); }
+});
+document.addEventListener('click', e=>{
+  if(!document.getElementById('combo').contains(e.target)) closeCombo();
+});
+
+function updateAddrVisibility(){ /* top address block removed; contact lives at the ticket now */ }
+
+// ---------- contact fields (at the ticket) ----------
+const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:false}, Time:{req:false}, Note:{req:false} };
+const form = { Street:'', Name:'', Phone:'', Time:'', Note:'' };
+
+// Opening hours: Tue–Sun (2..0), 17:00–21:30. During opening hours the default
+// wished-time is "so bald wie möglich"; outside them we default to 17:00 Uhr.
+function isOpenNow(){
+  const now = new Date();
+  const day = now.getDay();             // 0=Sun … 6=Sat
+  const openDay = day===0 || day>=2;    // Tue..Sun open, Mon closed
+  const mins = now.getHours()*60 + now.getMinutes();
+  return openDay && mins >= 17*60 && mins <= 21*60+30;
+}
+
+// populate the Time <select>; ASAP option only while open, else preselect 17:00
+document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
+  const openNow = isOpenNow();
+  if(openNow){
+    const o=document.createElement('option');
+    o.value=''; o.textContent='so bald wie möglich';
+    sel.appendChild(o);
+  }
+  for(let m=17*60; m<=21*60+30; m+=15){
+    const h=String(Math.floor(m/60)).padStart(2,'0');
+    const mm=String(m%60).padStart(2,'0');
+    const o=document.createElement('option');
+    o.value=`${h}:${mm}`; o.textContent=`${h}:${mm} Uhr`;
+    sel.appendChild(o);
+  }
+  // default selection
+  if(!openNow){ sel.value='17:00'; form.Time='17:00'; }
+  else { sel.value=''; form.Time=''; }
+});
+
+// wire all field copies: editing one updates shared state + all mirrors
+function syncFieldUI(){
+  const active = document.activeElement;
+  document.querySelectorAll('.af').forEach(el=>{
+    const f = el.dataset.field;
+    // never touch the field the user is currently typing in — on mobile,
+    // reassigning value (even the same string) can drop focus or reset the caret
+    if(el !== active && el.value !== form[f]) el.value = form[f];
+    const wrap = el.closest('.fld');
+    if(!wrap) return;
+    const filled = form[f].trim().length>0;
+    const req = FIELD_META[f].req;
+    wrap.classList.toggle('filled', filled);
+    wrap.classList.toggle('req-empty', req && !filled);
+  });
+}
+document.querySelectorAll('.af').forEach(el=>{
+  const handler = ()=>{ form[el.dataset.field] = el.value; syncFieldUI(); render(); };
+  el.addEventListener('input', handler);
+  el.addEventListener('change', handler);
+});
+
+/* ---------- menu render ---------- */
+const tabsEl = document.getElementById('tabs');
+const menuEl = document.getElementById('menu');
+let activeTab = Object.keys(MENU)[0];
+
+const TABS = [...Object.keys(MENU), "Genuss-Pakete"];
+Object.keys(MENU); // (MENU tabs) + a special packages tab
+TABS.forEach(cat=>{
+  const b=document.createElement('button');
+  b.textContent=cat; b.className = cat===activeTab?'on':'';
+  b.onclick=()=>{activeTab=cat;[...tabsEl.children].forEach(x=>x.classList.toggle('on',x.textContent===cat));renderMenu();};
+  tabsEl.appendChild(b);
+});
+
+function renderMenu(){
+  menuEl.innerHTML='';
+  if(activeTab==="Genuss-Pakete" && !activePkg){ renderPackages(); return; }
+  if(activePkg){ menuEl.appendChild(buildPkgBanner()); }
+  const tab = activeTab==="Genuss-Pakete" ? "Pizza" : activeTab;
+  MENU[tab].forEach(group=>{
+    if(group.g){const t=document.createElement('div');t.className='grouptitle';t.textContent=group.g;menuEl.appendChild(t);}
+    const grid=document.createElement('div');grid.className='items';
+    group.items.forEach(it=>{
+      const inPkg = !!activePkg;
+      const card=document.createElement('div');
+      card.className='item';
+      const gfId='gf_'+Math.random().toString(36).slice(2);
+      card.innerHTML=`
+        <div class="top"><div class="nm">${it.n}</div><div class="pr">${eur(it.p)}</div></div>
+        <div class="ds">${it.d}</div>
+        <div class="meta">
+          ${it.veg?'<span class="tag veg">vegetarisch</span>':''}
+          ${it.hot?'<span class="tag hot">scharf</span>':''}
+        </div>
+        ${(!it.nogf && !inPkg)?`<label class="gf"><input type="checkbox" id="${gfId}"> glutenfrei · 27 cm (+${eur(GF_SURCHARGE)})</label>`:''}
+        <div class="add-wrap"></div>`;
+
+      const wrap=card.querySelector('.add-wrap');
+      const gfBox = (!it.nogf && !inPkg) ? card.querySelector('#'+gfId) : null;
+
+      function paint(){
+        if(inPkg){
+          const cnt = pkgItemCount(it, tab);
+          const si = slotIndexForItem(it, tab);
+          const hasRoom = si>=0 && activePkg.slots[si].filled.length < activePkg.slots[si].n;
+          if(cnt===0 && !hasRoom){
+            // doesn't fit any current step and none selected → hint
+            card.classList.add('dimmed');
+            wrap.innerHTML=`<div class="add-off">passt nicht in den aktuellen Schritt</div>`;
+            return;
+          }
+          card.classList.remove('dimmed');
+          if(cnt===0){
+            wrap.innerHTML=`<button class="add" aria-label="${it.n} zum Paket">+ Zum Paket</button>`;
+            wrap.querySelector('.add').onclick=()=>pkgAddItem(it, tab, false);
+          } else {
+            const leftIcon = cnt===1
+              ? `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`
+              : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+            const plusDisabled = !hasRoom ? ' disabled' : '';
+            wrap.innerHTML=`
+              <div class="stepper">
+                <button class="st-left${cnt===1?' del':''}" aria-label="${cnt===1?'entfernen':'weniger'}">${leftIcon}</button>
+                <button class="st-mid${plusDisabled?' st-full':''}" aria-label="${it.n} noch eins"${plusDisabled}>${it.n} ${hasRoom?'+':'✓'}</button>
+                <span class="st-qty">${cnt}</span>
+              </div>`;
+            wrap.querySelector('.st-left').onclick=()=>pkgRemoveOne(it, tab);
+            const mid=wrap.querySelector('.st-mid');
+            if(hasRoom) mid.onclick=()=>pkgAddItem(it, tab, false);
+          }
+          return;
+        }
+        const gf = gfBox ? gfBox.checked : false;
+        const key = it.n+(gf?'|gf':'');
+        const line = cart.find(c=>c.key===key);
+        const q = line ? line.q : 0;
+        if(q===0){
+          wrap.innerHTML=`<button class="add" aria-label="${it.n} hinzufügen">+ Hinzufügen</button>`;
+          wrap.querySelector('.add').onclick=()=>{ addItem(it, gf); };
+        } else {
+          const leftIcon = q===1
+            ? `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`
+            : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+          wrap.innerHTML=`
+            <div class="stepper">
+              <button class="st-left${q===1?' del':''}" aria-label="${q===1?'entfernen':'weniger'}">${leftIcon}</button>
+              <button class="st-mid" aria-label="${it.n} noch eins">${it.n} +</button>
+              <span class="st-qty">${q}</span>
+            </div>`;
+          wrap.querySelector('.st-left').onclick=()=>changeQty(key,-1);
+          wrap.querySelector('.st-mid').onclick=()=>addItem(it, gf);
+        }
+      }
+      if(gfBox) gfBox.addEventListener('change', paint);
+      paint();
+      card._paint = paint;
+      grid.appendChild(card);
+    });
+    menuEl.appendChild(grid);
+  });
+}
+
+function buildPkgBanner(){
+  const wrap=document.createElement('div');
+  wrap.className='pkg-banner';
+  const idx=activeSlotIndex();
+  const done=pkgComplete();
+  const steps = activePkg.slots.map((s,i)=>{
+    const cls = s.filled.length===s.n ? 'done' : (i===idx ? 'active':'todo');
+    return `<div class="pstep ${cls}">
+      <span class="pstep-c">${s.filled.length}/${s.n}</span>
+      <span class="pstep-l">${s.label}</span></div>`;
+  }).join('<span class="pstep-sep">›</span>');
+
+  // filled items list with remove buttons
+  let chosen='';
+  activePkg.slots.forEach((s,si)=>{
+    s.filled.forEach((f,fi)=>{
+      chosen += `<span class="pchip" data-s="${si}" data-f="${fi}">${f.n}<button aria-label="entfernen">×</button></span>`;
+    });
+  });
+
+  const headline = done
+    ? `<b>${activePkg.def.name} komplett</b> — ${activePkg.def.off}% Paket-Nachlass wird abgezogen`
+    : idx>=0 ? `<b>${activePkg.def.name}</b> — jetzt wählen: <b>${activePkg.slots[idx].n - activePkg.slots[idx].filled.length} × ${activePkg.slots[idx].label}</b>`
+    : `<b>${activePkg.def.name}</b>`;
+
+  wrap.innerHTML=`
+    <div class="pkg-banner-top">
+      <div class="pkg-banner-head">${headline}</div>
+      <button class="pkg-cancel" aria-label="Paket abbrechen">✕ Abbrechen</button>
+    </div>
+    <div class="psteps">${steps}</div>
+    ${chosen?`<div class="pchips">${chosen}</div>`:''}
+    ${done?`<button class="pkg-done">Paket übernehmen ✓</button>`:''}`;
+
+  wrap.querySelector('.pkg-cancel').onclick=cancelPackage;
+  wrap.querySelectorAll('.pchip').forEach(ch=>{
+    ch.querySelector('button').onclick=()=>pkgRemoveFromSlot(+ch.dataset.s, +ch.dataset.f);
+  });
+  const doneBtn=wrap.querySelector('.pkg-done');
+  if(doneBtn) doneBtn.onclick=commitPackage;
+  return wrap;
+}
+
+// commit a completed package into the cart as discounted lines, then reset
+function commitPackage(){
+  if(!pkgComplete()) return;
+  const pk=activePkg.def;
+  const stamp=Date.now().toString(36);
+  activePkg.slots.forEach(s=>s.filled.forEach(f=>{
+    cart.push({
+      key:`pkg:${stamp}:${f.n}:${f.gf?'gf':''}:${Math.random().toString(36).slice(2,6)}`,
+      n:f.n, base:f.base, gf:f.gf, q:1,
+      pkg:{name:pk.name, off:pk.off, id:stamp}
+    });
+  }));
+  activePkg=null;
+  activeTab="Genuss-Pakete";
+  syncTabs();
+  renderMenu();
+  render();
+}
+function repaintMenu(){ menuEl.querySelectorAll('.item').forEach(c=>c._paint && c._paint()); }
+
+function renderPackages(){
+  const intro=document.createElement('div');
+  intro.className='pkg-intro';
+  intro.innerHTML=`Da es <b>eine Pizza-Größe</b> gibt, gleichen die Genuss-Pakete das aus: <b>mehr bestellen = besserer Preis</b>. Einfach die passenden Artikel in den Warenkorb legen — Pinna zieht den Paket-Nachlass beim Bestätigen ab.`;
+  menuEl.appendChild(intro);
+  const grid=document.createElement('div');grid.className='pkg-grid';
+  PACKAGES.forEach(pk=>{
+    const c=document.createElement('div');c.className='pkg-card';
+    c.innerHTML=`
+      <div class="pkg-off">−${pk.off}%</div>
+      <div class="pkg-nm">${pk.name}</div>
+      <div class="pkg-items">${pkgSummary(pk)}</div>
+      <div class="pkg-note">${pk.note}</div>
+      <button class="pkg-start">Zusammenstellen →</button>`;
+    c.querySelector('.pkg-start').onclick=()=>startPackage(pk);
+    grid.appendChild(c);
+  });
+  menuEl.appendChild(grid);
+  const foot=document.createElement('div');
+  foot.className='pkg-foot';
+  foot.textContent='Paket-Nachlass gilt bei Lieferung. Fragen? Einfach durchklingeln.';
+  menuEl.appendChild(foot);
+}
+
+function addItem(it, gf){
+  const key = it.n+(gf?'|gf':'');
+  const ex = cart.find(c=>c.key===key);
+  if(ex) ex.q++;
+  else cart.push({key,n:it.n,base:it.p,gf,q:1});
+  render();
+}
+function changeQty(key,delta){
+  const c=cart.find(x=>x.key===key); if(!c)return;
+  c.q+=delta; if(c.q<=0) cart=cart.filter(x=>x.key!==key);
+  render();
+}
+function lineTotal(c){ return (c.base + (c.gf?GF_SURCHARGE:0)) * c.q; }
+
+/* ---------- package configurator engine ---------- */
+function startPackage(def){
+  activePkg = { def, slots: def.slots.map(s=>({...s, filled:[]})) };
+  // jump to the first slot's tab and highlight
+  activeTab = tabForCat(def.slots[0].cat);
+  syncTabs();
+  renderMenu();
+  render();
+  // scroll menu into view
+  document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cancelPackage(){
+  activePkg = null;
+  renderMenu();
+  render();
+}
+function tabForCat(cat){
+  if(cat==="pizza"||cat==="pizzaVeg") return "Pizza";
+  if(cat==="saladBig"||cat==="saladSmall") return "Salate";
+  if(cat==="soft") return "Getränke";
+  return "Pizza";
+}
+// which slot (index) is currently the "active" one to fill — first not-yet-full
+function activeSlotIndex(){
+  if(!activePkg) return -1;
+  return activePkg.slots.findIndex(s=>s.filled.length < s.n);
+}
+// does this item qualify for the active package's current slot?
+function itemFitsActiveSlot(it, tab){
+  if(!activePkg) return false;
+  const idx = activeSlotIndex(); if(idx<0) return false;
+  return itemCats(it, tab).includes(activePkg.slots[idx].cat);
+}
+function pkgAddItem(it, tab, gf){
+  // add to a not-yet-full slot matching this item's category
+  const cats = itemCats(it, tab);
+  const idx = activePkg.slots.findIndex(s=>cats.includes(s.cat) && s.filled.length<s.n);
+  if(idx<0) return; // no room in any matching slot
+  activePkg.slots[idx].filled.push({n:it.n, base:it.p, gf:!!gf});
+  // advance the view to the next unfilled slot's tab
+  const next = activeSlotIndex();
+  if(next>=0 && next!==idx){ activeTab = tabForCat(activePkg.slots[next].cat); syncTabs(); }
+  renderMenu();
+  render();
+}
+function pkgRemoveFromSlot(slotIdx, fillIdx){
+  activePkg.slots[slotIdx].filled.splice(fillIdx,1);
+  const t = tabForCat(activePkg.slots[slotIdx].cat);
+  if(activeTab!==t){ activeTab=t; syncTabs(); }
+  renderMenu();
+  render();
+}
+// find the slot this item belongs to (by category), preferring the active one
+function slotIndexForItem(it, tab){
+  if(!activePkg) return -1;
+  const cats = itemCats(it, tab);
+  // prefer a not-yet-full slot whose cat matches; else any matching slot
+  let idx = activePkg.slots.findIndex(s=>cats.includes(s.cat) && s.filled.length<s.n);
+  if(idx<0) idx = activePkg.slots.findIndex(s=>cats.includes(s.cat));
+  return idx;
+}
+// how many of this exact item are in its slot
+function pkgItemCount(it, tab){
+  const si = slotIndexForItem(it, tab);
+  if(si<0) return 0;
+  return activePkg.slots[si].filled.filter(f=>f.n===it.n).length;
+}
+// remove one occurrence of this item from its slot
+function pkgRemoveOne(it, tab){
+  const si = slotIndexForItem(it, tab);
+  if(si<0) return;
+  const fi = activePkg.slots[si].filled.map(f=>f.n).lastIndexOf(it.n);
+  if(fi>=0) pkgRemoveFromSlot(si, fi);
+}
+function pkgComplete(){ return activePkg && activePkg.slots.every(s=>s.filled.length===s.n); }
+function pkgItemsSubtotal(){
+  if(!activePkg) return 0;
+  return activePkg.slots.reduce((s,slot)=>
+    s + slot.filled.reduce((a,f)=>a + f.base + (f.gf?GF_SURCHARGE:0), 0), 0);
+}
+function pkgDiscount(){
+  // discount applies only to the package items, only on delivery
+  if(!activePkg || !pkgComplete() || mode!=='delivery') return 0;
+  return pkgItemsSubtotal() * (activePkg.def.off/100);
+}
+function syncTabs(){
+  [...document.getElementById('tabs').children].forEach(x=>x.classList.toggle('on', x.textContent===activeTab));
+}
+
+/* ---------- totals + ticket ---------- */
+// group committed cart lines by package id (or 'solo' for à-la-carte)
+function cartGroups(){
+  const groups = new Map(); // id -> {pkgName, off, lines:[]}
+  cart.forEach(c=>{
+    const id = c.pkg ? c.pkg.id : 'solo';
+    if(!groups.has(id)) groups.set(id, {id, pkgName:c.pkg?c.pkg.name:null, off:c.pkg?c.pkg.off:0, lines:[]});
+    groups.get(id).lines.push(c);
+  });
+  return [...groups.values()];
+}
+function groupSubtotal(g){ return g.lines.reduce((s,c)=>s+lineTotal(c),0); }
+function packageDiscountTotal(){
+  if(mode!=='delivery') return 0;
+  return cartGroups().reduce((s,g)=> s + (g.pkgName ? groupSubtotal(g)*(g.off/100) : 0), 0);
+}
+
+function render(){
+  const cartBox=document.getElementById('cartBox');
+  const cartLines=document.getElementById('cartLines');
+  const sub = cart.reduce((s,c)=>s+lineTotal(c),0);
+  const pkgDisc = packageDiscountTotal();
+  const pickupDisc = mode==='pickup' ? sub*0.05 : 0;
+  const tot = sub - pkgDisc - pickupDisc;
+
+  // cart editor — grouped by package
+  if(cart.length){
+    cartBox.style.display='block';
+    cartLines.innerHTML='';
+    cartGroups().forEach(g=>{
+      if(g.pkgName){
+        const gsub=groupSubtotal(g);
+        const head=document.createElement('div');head.className='cg-head';
+        head.innerHTML=`<span>🎁 ${g.pkgName}</span><span class="cg-off">−${g.off}%</span>`;
+        cartLines.appendChild(head);
+        g.lines.forEach(c=>{
+          const row=document.createElement('div');row.className='line-item pkg-line';
+          row.innerHTML=`<div class="li-l"><div class="li-nm">${c.n}</div>${c.gf?'<div class="li-sub">glutenfrei · 27 cm</div>':''}</div>
+            <div class="li-r"><div class="li-nm">${eur(lineTotal(c))}</div></div>`;
+          cartLines.appendChild(row);
+        });
+        const sr=document.createElement('div');sr.className='cg-sub';
+        const gd = mode==='delivery' ? gsub*(g.off/100) : 0;
+        sr.innerHTML=`<span>Paket-Nachlass</span><span>−${eur(gd)}</span>`;
+        cartLines.appendChild(sr);
+        const rm=document.createElement('button');rm.className='cg-remove';rm.textContent='Paket entfernen';
+        rm.onclick=()=>{ cart=cart.filter(x=>!(x.pkg&&x.pkg.id===g.id)); render(); };
+        cartLines.appendChild(rm);
+      } else {
+        g.lines.forEach(c=>{
+          const row=document.createElement('div');row.className='line-item';
+          row.innerHTML=`
+            <div class="li-l"><div class="li-nm">${c.n}</div>${c.gf?'<div class="li-sub">glutenfrei · 27 cm</div>':''}</div>
+            <div class="li-r">
+              <div class="qty"><button data-m="-1">−</button><span>${c.q}</span><button data-m="1">+</button></div>
+              <div class="li-nm">${eur(lineTotal(c))}</div>
+            </div>`;
+          row.querySelectorAll('.qty button').forEach(bt=>bt.onclick=()=>changeQty(c.key, +bt.dataset.m));
+          cartLines.appendChild(row);
+        });
+      }
+    });
+  } else cartBox.style.display='none';
+
+  // gather address from shared state
+  const addr = {
+    street: form.Street.trim(),
+    name: form.Name.trim(),
+    phone: form.Phone.trim(),
+    time: form.Time,
+    note: form.Note.trim(),
+  };
+
+  // ticket bubble
+  const host=document.getElementById('bubbleHost');
+  if(!cart.length){
+    host.innerHTML='<div class="empty"><span>🧾</span>Noch nichts ausgewählt.<br>Tipp links etwas an — hier entsteht der Zettel.</div>';
+  } else {
+    let lines = cartGroups().map(g=>{
+      if(g.pkgName){
+        const gd = mode==='delivery' ? groupSubtotal(g)*(g.off/100) : 0;
+        const inner = g.lines.map(c=>`  • ${c.n}${c.gf?' (glutenfrei 27cm)':''}`).join('\n');
+        return `🎁 ${g.pkgName} (−${g.off}%)\n${inner}\n  Paket-Nachlass: −${eur(gd)}`;
+      }
+      return g.lines.map(c=>`${c.q}× ${c.n}${c.gf?' (glutenfrei 27cm)':''}  —  ${eur(lineTotal(c))}`).join('\n');
+    }).join('\n');
+    const modeLine = mode==='pickup' ? 'ABHOLUNG (−5%)' : 'LIEFERUNG';
+    let block = '';
+    if(mode==='delivery'){
+      const parts=[];
+      if(addr.name) parts.push(addr.name);
+      if(addr.street) parts.push(addr.street);
+      if(selectedPlace) parts.push(`${selectedPlace.name} · ${selectedPlace.plz}`);
+      if(addr.phone) parts.push('Tel: '+addr.phone);
+      parts.push('Wunschzeit: '+(addr.time?addr.time+' Uhr':'so bald wie möglich'));
+      if(addr.note) parts.push('Hinweis: '+addr.note);
+      if(parts.length) block = '\n'+'—'.repeat(18)+'\n'+parts.join('\n');
+    } else {
+      block = '\n'+'—'.repeat(18)+'\nAbholung: Enzstr. 2';
+      if(addr.name) block += '\nName: '+addr.name;
+    }
+    host.innerHTML=`<div class="bubble"><span class="bt">🍕 NEUE BESTELLUNG · ${modeLine}</span>${lines}\n${'—'.repeat(18)}\nSumme: ${eur(tot)}${block}\n\n<i style="color:#a7d7cf">— gesendet über die Bestell-Demo</i></div>`;
+  }
+
+  document.getElementById('subT').textContent=eur(sub);
+  const discRow=document.getElementById('discRow');
+  // reuse discRow for package discount; pickup uses its own line below
+  const totalDisc = pkgDisc + pickupDisc;
+  if(totalDisc>0){
+    discRow.style.display='flex';
+    const label = pkgDisc>0 && pickupDisc>0 ? 'Paket- & Abholrabatt'
+                : pkgDisc>0 ? 'Paket-Nachlass' : 'Abholrabatt −5%';
+    discRow.querySelector('span').textContent=label;
+    document.getElementById('discT').textContent='−'+eur(totalDisc);
+  } else discRow.style.display='none';
+  document.getElementById('totT').textContent=eur(tot);
+
+  // send gating
+  const btn=document.getElementById('sendBtn');
+  const minHint=document.getElementById('minHint');
+  const count = cart.reduce((s,c)=>s+c.q,0);
+  let blocked=false, hint='', needContact=false;
+  if(!cart.length){ blocked=true; }
+  else if(mode==='delivery'){
+    if(inArea!==true){ blocked=true; hint='Bitte oben deinen Ort aus der Liste wählen.'; }
+    else if(tot < currentMin){ blocked=true; hint=`Mindestbestellwert für ${selectedPlace?selectedPlace.name:'diesen Ort'}: ${eur(currentMin)} — noch ${eur(currentMin-tot)}.`; }
+    else if(!addr.street || !addr.name){ needContact=true; } // not blocked: click reveals fields
+  }
+  btn.disabled=blocked;
+  document.getElementById('waStatus').textContent = cart.length ? `${count} Artikel · ${eur(tot)}` : 'Bestell-Ticket · Vorschau';
+  if(hint){minHint.style.display='block';minHint.textContent=hint;} else minHint.style.display='none';
+  btn.textContent = needContact ? 'Angaben ergänzen & senden' : 'Per WhatsApp senden';
+
+  // ticket-embedded contact fields: show once delivery is viable and contact
+  // info is needed (or the user tapped send). Once shown, stay shown for the
+  // rest of the session so filling the 2nd field never yanks focus away.
+  const tickFields = document.getElementById('tickFields');
+  const deliverable = mode==='delivery' && cart.length>0 && inArea===true && tot>=currentMin;
+  if(deliverable && (needContact || triedSend)) fieldsRevealed = true;
+  if(mode!=='delivery' || cart.length===0) fieldsRevealed = false; // reset when not relevant
+  const showTickFields = deliverable && fieldsRevealed;
+  tickFields.style.display = showTickFields ? 'block' : 'none';
+  const tfHead = document.getElementById('tfHead');
+  if(showTickFields) tfHead.textContent = needContact
+        ? 'Noch kurz für die Lieferung:' : 'Angaben für die Lieferung:';
+
+  // floating pill (mobile)
+  const pill=document.getElementById('pill');
+  const pjump=document.getElementById('pillJump');
+  if(cart.length){
+    document.getElementById('pillCount').textContent = count===1?'1 Artikel':count+' Artikel';
+    document.getElementById('pillTot').textContent = eur(tot);
+    const ready = mode==='pickup' ? true : (inArea===true && tot>=currentMin);
+    pjump.classList.toggle('ready', ready);
+    pjump.textContent = ready ? 'Weiter zur Bestellung' : 'Zur Bestellung';
+  }
+  if(typeof refreshPillVisibility==='function') refreshPillVisibility();
+
+  if(typeof repaintMenu==='function') repaintMenu();
+}
+
+document.getElementById('pillJump').onclick=()=>{
+  document.querySelector('.ticket').scrollIntoView({behavior:'smooth',block:'center'});
+};
+
+// Pill visibility: show whenever there are items in the cart.
+// It hides only where it would be redundant or in the way — i.e. when either
+// the order-details (address) block OR the ticket / order-summary card is on
+// screen, since both already show the running total and the send action.
+function regionOnScreen(el){
+  if(!el) return false;
+  const r = el.getBoundingClientRect();
+  if(r.height===0) return false; // not rendered / collapsed
+  return r.top < window.innerHeight - 40 && r.bottom > 40;
+}
+function pillRedundant(){
+  // hide the pill only where it repeats the ticket's own total + send action
+  return regionOnScreen(document.querySelector('.ticket'));
+}
+function refreshPillVisibility(){
+  const pill=document.getElementById('pill');
+  const show = cart.length>0 && !pillRedundant();
+  pill.classList.toggle('show', show);
+}
+window.addEventListener('scroll', refreshPillVisibility, {passive:true});
+window.addEventListener('resize', refreshPillVisibility, {passive:true});
+document.getElementById('sendBtn').onclick=()=>{
+  triedSend = true;
+  // if required contact info is missing, reveal + focus it here instead of sending
+  if(mode==='delivery' && (!form.Street.trim() || !form.Name.trim())){
+    render(); // ensures tickFields are shown
+    const first = !form.Street.trim() ? 'Street' : 'Name';
+    const el = document.querySelector(`#tickFields .af[data-field="${first}"]`)
+            || document.querySelector(`.af[data-field="${first}"]`);
+    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>el.focus(),300); }
+    return;
+  }
+  const modeLine = mode==='pickup' ? 'ABHOLUNG (-5%)' : 'LIEFERUNG';
+  const lines = cartGroups().map(g=>{
+    if(g.pkgName){
+      const gd = mode==='delivery' ? groupSubtotal(g)*(g.off/100) : 0;
+      const inner = g.lines.map(c=>`  - ${c.n}${c.gf?' (glutenfrei 27cm)':''}`).join('\n');
+      return `[${g.pkgName}] -${g.off}%\n${inner}\n  Paket-Nachlass: -${eur(gd)}`;
+    }
+    return g.lines.map(c=>`${c.q}x ${c.n}${c.gf?' (glutenfrei 27cm)':''} - ${eur(lineTotal(c))}`).join('\n');
+  }).join('\n');
+  const sub = cart.reduce((s,c)=>s+lineTotal(c),0);
+  const tot = sub - packageDiscountTotal() - (mode==='pickup'? sub*0.05 : 0);
+  let txt = `NEUE BESTELLUNG - ${modeLine}\n${lines}\n${'-'.repeat(18)}\nSumme: ${eur(tot)}`;
+  if(mode==='delivery'){
+    txt += `\n${'-'.repeat(18)}`;
+    if(form.Name.trim()) txt += `\n${form.Name.trim()}`;
+    if(form.Street.trim()) txt += `\n${form.Street.trim()}`;
+    if(selectedPlace) txt += `\n${selectedPlace.name} · ${selectedPlace.plz}`;
+    if(form.Phone.trim()) txt += `\nTel: ${form.Phone.trim()}`;
+    txt += `\nWunschzeit: ${form.Time?form.Time+' Uhr':'so bald wie möglich'}`;
+    if(form.Note.trim()) txt += `\nHinweis: ${form.Note.trim()}`;
+  } else {
+    txt += `\n${'-'.repeat(18)}\nAbholung: Enzstr. 2`;
+    if(form.Name.trim()) txt += `\nName: ${form.Name.trim()}`;
+  }
+  txt += `\n\n(Konzept-Demo · 321tadaa)`;
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
+  window.open(url, '_blank');
+};
+
+renderMenu();
+syncFieldUI();
+refreshComboState();
+render();
+</script>
+</body>
+</html>
