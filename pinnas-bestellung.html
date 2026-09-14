@@ -385,10 +385,40 @@
   .oq-items{font-size:13.5px;line-height:1.5;margin:6px 0}
   .oq-meta{font-size:12px;color:var(--muted);margin-bottom:8px}.oq-meta b{color:var(--ink)}
   .oq-actions{display:flex;gap:7px;flex-wrap:wrap}
+  .oq-eta{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .eta-btn{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:12px;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer}
+  .eta-btn:hover{border-color:var(--amber)}
   .oq-actions button{flex:1;min-width:80px;border:0;border-radius:8px;padding:10px;font-weight:700;font-size:12.5px;font-family:inherit;cursor:pointer}
   .oq-next{background:var(--wa);color:#04231a}.oq-back{background:var(--panel);color:var(--muted)}
   .op-sync{max-width:640px;margin:10px auto;text-align:center;font-size:11.5px;color:var(--muted2)}
   .op-empty{text-align:center;color:var(--muted2);padding:36px 16px;font-size:14px}
+  /* customer waiting page */
+  .wait-overlay{position:fixed;inset:0;background:var(--slate);z-index:75;display:none;overflow-y:auto}
+  .wait-overlay.show{display:block}
+  .wait-page{max-width:640px;margin:0 auto;padding:24px 18px 40px;text-align:center}
+  .wp-code{font-size:56px;font-weight:900;letter-spacing:.02em;margin:14px 0 2px}
+  .wp-sub{color:var(--muted);font-size:14px;margin-bottom:6px}
+  .wp-eta{font-size:15px;font-weight:700;color:var(--amber);margin:6px 0 18px}
+  .wp-eta b{color:var(--ink)}
+  .wp-track{display:flex;margin:20px 0 8px;padding:0 6px}
+  .wp-step{flex:1;position:relative;display:flex;flex-direction:column;align-items:center}
+  .wp-step::before{content:"";position:absolute;top:15px;right:50%;width:100%;height:3px;background:var(--line);z-index:0}
+  .wp-step:first-child::before{display:none}
+  .wp-step.done::before,.wp-step.cur::before{background:var(--wa)}
+  .wp-dot{position:relative;z-index:1;width:32px;height:32px;border-radius:50%;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center;font-size:14px}
+  .wp-lbl{margin-top:8px;font-size:11px;color:var(--muted);height:26px;line-height:1.2}
+  .wp-step.done .wp-dot{background:var(--wa);border-color:var(--wa);color:#04231a;font-weight:800}
+  .wp-step.cur .wp-dot{background:var(--amber);border-color:var(--amber);color:#3a2c08;font-weight:800;box-shadow:0 0 0 5px rgba(230,180,80,.18)}
+  .wp-step.cur .wp-lbl{color:var(--ink);font-weight:700}
+  .wp-ready{background:var(--wa);color:#04231a;padding:18px;border-radius:14px;font-weight:800;font-size:20px;margin:16px 0;animation:pop .4s}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .wp-note{font-size:12.5px;color:var(--muted2);line-height:1.5;margin-top:14px}
+  .wp-new{background:var(--red);border:0;color:#fff;padding:13px;border-radius:12px;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:20px}
+  /* mode + wait summary next to send button */
+  .send-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--slate);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px;font-size:13px}
+  .send-summary .ss-mode{font-weight:700}
+  .send-summary .ss-wait{color:var(--amber);font-weight:600}
+  .send-summary .ss-wait.ok{color:var(--wa)}
   .wait-hint{font-size:13px;color:var(--amber);font-weight:600;margin-top:12px;min-height:1px}
   .wait-hint.ok{color:var(--wa)}
 
@@ -553,6 +583,7 @@
             </div>
           </div>
 
+          <div class="send-summary" id="sendSummary"></div>
           <button class="send" id="sendBtn" disabled>Per WhatsApp senden</button>
           <div class="minhint" id="minHint" style="display:none"></div>
         </div>
@@ -593,6 +624,10 @@
 </div>
 
 <div class="ex-overlay" id="exOverlay"><div class="ex-sheet" id="exSheet"></div></div>
+<div class="wait-overlay" id="waitOverlay">
+  <div class="wait-page" id="waitPage"></div>
+</div>
+
 <script>
 /* ============ LIVE DATA CONFIG ============
  * The teaser UI is unchanged. These read the menu/zones/offers LIVE from
@@ -722,6 +757,10 @@ const OrderStore = {
   async setStatus(id,status){
     if(SCRIPT_URL){ try{ await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'status',id,status})}); }catch(e){ console.error(e); } }
     else { const a=_localOrders(); const o=a.find(x=>x.Bestell_ID===id); if(o)o.Status=status; _saveOrders(a); }
+  },
+  async setEta(id,eta){
+    if(SCRIPT_URL){ try{ await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'eta',id,eta})}); }catch(e){ console.error(e); } }
+    else { const a=_localOrders(); const o=a.find(x=>x.Bestell_ID===id); if(o)o.Zielzeit=eta; _saveOrders(a); }
   }
 };
 const _localOrders=()=>{try{return JSON.parse(localStorage.getItem('pinnas_orders_demo')||'[]')}catch{return[]}};
@@ -1266,14 +1305,14 @@ function addItem(it, gf){
   const key = it.n+(gf?'|gf':'');
   const ex = cart.find(c=>c.key===key && !c.opts && !c.note);
   if(ex) ex.q++;
-  else cart.push({key,n:it.n,base:it.p,gf,q:1});
+  else cart.push({key,n:it.n,base:it.p,gf,q:1,cat:it.cat});
   render();
 }
 // add a CUSTOMIZED line (own line, never merged) from the Extras sheet
 function addCustomLine(it, gf, opts, note, qty){
   const optKey = (opts||[]).map(o=>o.name).join(',');
   const key = it.n+(gf?'|gf':'')+'|x'+optKey+'|'+(note||'')+'|'+Math.random().toString(36).slice(2,5);
-  cart.push({key,n:it.n,base:it.p,gf,q:qty||1,opts:opts||[],note:note||''});
+  cart.push({key,n:it.n,base:it.p,gf,q:qty||1,opts:opts||[],note:note||'',cat:it.cat});
   render();
 }
 function changeQty(key,delta){
@@ -1605,18 +1644,36 @@ document.getElementById('sendBtn').onclick=()=>{
     if(g.pkgName){ return `[${g.pkgName}] `+g.lines.map(c=>`${c.q}x ${c.n}`).join(', '); }
     return g.lines.map(c=>`${c.q}x ${c.n}${c.gf?' (glutenfrei)':''}${c.opts&&c.opts.length?' ('+c.opts.map(o=>o.name).join(', ')+')':''}${c.note?' ['+c.note+']':''}`).join('; ');
   }).join('; ');
-  OrderStore.create({
+  // auto-calculated TARGET ETA (clock time = now + estimated wait, delivery bundled into window)
+  const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
+  let waitMin = waitFromLoad((liveKitchenLoad||0)+myLoad);
+  if(mode==='delivery'){ const win=SETTINGS.lieferfenster; waitMin=Math.ceil(waitMin/win)*win; }
+  const targetEta = clockPlus(waitMin);   // "HH:MM"
+  const sendBtnEl=document.getElementById('sendBtn');
+  sendBtnEl.disabled=true; sendBtnEl.textContent='wird gesendet…';
+  const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
+  const orderObj={
     code, modus:(mode==='pickup'?'Abholung':'Lieferung'), status:'neu',
-    artikel, summe:eur(tot), last:cartLoadWeight(),
+    artikel, summe:eur(tot), last:cartLoadWeight(), zielzeit:targetEta,
     wunschzeit: mode==='delivery' ? (form.Time?form.Time+' Uhr':'baldmöglich') : 'Abholung',
     name: form.Name.trim(),
     adresse: mode==='delivery' ? [form.Street.trim(), selectedPlace?`${selectedPlace.name} ${selectedPlace.plz}`:''].filter(Boolean).join(', ') : '',
     telefon: form.Phone.trim(), notiz: form.Note.trim()
-  }); // fire-and-forget; WhatsApp opens regardless
-  // 2) open WhatsApp → the human channel
-  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
-  window.open(url, '_blank');
+  };
+  // 2) open WhatsApp alongside (new tab) immediately
+  window.open(waUrl, '_blank');
+  // 3) write order, then show the waiting page with the returned id
+  OrderStore.create(orderObj).then(id=>{
+    sendBtnEl.disabled=false; sendBtnEl.textContent='Per WhatsApp senden';
+    cart=[]; render();
+    showWaitingPage({...orderObj, Bestell_ID:id||('local'+Date.now()), Zeit:new Date().toISOString(), Status:'neu', Code:code, Zielzeit:targetEta});
+  });
 };
+// clock time (HH:MM) that is `mins` from now
+function clockPlus(mins){
+  const d=new Date(Date.now()+mins*60000);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
 
 /* ================= OPERATOR: kitchen queue ================= */
 const OFLOW=['neu','arbeit','fertig','abgeschlossen'];
@@ -1647,6 +1704,13 @@ async function updateWaitHint(){
   if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
   else { const win=SETTINGS.lieferfenster; const d=Math.ceil(wait/win)*win; el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${d} Min`; }
   el.className='wait-hint'+(wait<SETTINGS.warnMin?' ok':'');
+  // mirror into the send-button summary
+  const ss=document.getElementById('sendSummary');
+  if(ss){
+    const modeLbl = isPickup ? 'Abholung' : 'Lieferung';
+    const waitLbl = isPickup ? `fertig ca. ${wait} Min` : `Lieferung ca. ${Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster} Min`;
+    ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${wait<SETTINGS.warnMin?' ok':''}">⏱ ${waitLbl}</span>`;
+  }
 }
 function openOperator(){
   document.getElementById('opOverlay').classList.add('show');
@@ -1690,10 +1754,18 @@ function renderOpQueue(){
     const st=String(o.Status||'neu');const idx=OFLOW.indexOf(st);const m=String(o.Modus||'').toLowerCase();
     const t=new Date(o.Zeit);const hhmm=isNaN(t)?'':t.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     const el=document.createElement('div');el.className='oq s-'+st;
+    const ziel=o.Zielzeit||o.zielzeit||'';
     el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
       <div class="oq-items">${String(o.Artikel||'').replace(/;/g,'<br>')}</div>
-      <div class="oq-meta">${o.Summe?`<b>${o.Summe}</b> · `:''}${o.Adresse?o.Adresse+' · ':''}${o.Wunschzeit?'Zeit: '+o.Wunschzeit:''}${o.Notiz?' · '+o.Notiz:''}</div>
+      <div class="oq-meta">${o.Summe?`<b>${o.Summe}</b> · `:''}${o.Adresse?o.Adresse+' · ':''}${o.Notiz?o.Notiz:''}</div>
+      <div class="oq-eta">🎯 Zielzeit: <button class="eta-btn" data-id="${o.Bestell_ID}" data-eta="${ziel}">${ziel||'—:—'} ✎</button></div>
       <div class="oq-actions"></div>`;
+    const etaBtn=el.querySelector('.eta-btn');
+    etaBtn.onclick=()=>{
+      const cur=etaBtn.dataset.eta||'';
+      const v=prompt('Zielzeit (Uhrzeit, z. B. 19:15):', cur);
+      if(v!==null){ opSetEta(o.Bestell_ID, v.trim()); }
+    };
     const act=el.querySelector('.oq-actions');
     if(idx>0){const bk=document.createElement('button');bk.className='oq-back';bk.textContent='← '+OSHORT[OFLOW[idx-1]];bk.onclick=()=>opSetStatus(o.Bestell_ID,OFLOW[idx-1]);act.appendChild(bk);}
     if(idx<OFLOW.length-1){const nx=document.createElement('button');nx.className='oq-next';nx.textContent=OSHORT[OFLOW[idx+1]]+' →';nx.onclick=()=>opSetStatus(o.Bestell_ID,OFLOW[idx+1]);act.appendChild(nx);}
@@ -1701,6 +1773,7 @@ function renderOpQueue(){
   });
 }
 async function opSetStatus(id,status){ const o=opOrders.find(x=>x.Bestell_ID===id);if(o)o.Status=status;renderOpQueue(); await OrderStore.setStatus(id,status); }
+async function opSetEta(id,eta){ const o=opOrders.find(x=>x.Bestell_ID===id);if(o){o.Zielzeit=eta;}renderOpQueue(); await OrderStore.setEta(id,eta); }
 
 /* secret entry: triple-tap or long-press the header logo */
 (function(){
@@ -1710,6 +1783,53 @@ async function opSetStatus(id,status){ const o=opOrders.find(x=>x.Bestell_ID===i
   mark.addEventListener('pointerdown',()=>{ht=setTimeout(openOperator,600);});
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>mark.addEventListener(ev,()=>clearTimeout(ht)));
 })();
+
+/* ---------- customer waiting page ---------- */
+const WFLOW=['neu','arbeit','fertig','abgeschlossen'];
+const WLABEL={neu:'Eingegangen',arbeit:'In Zubereitung',fertig:'Fertig',abgeschlossen:'Abgeschlossen'};
+let waitId=null, waitTimer=null;
+function showWaitingPage(order){
+  waitId=order.Bestell_ID;
+  document.getElementById('waitOverlay').classList.add('show');
+  renderWaitingPage(order);
+  // remember on device so a re-scan returns here
+  try{ localStorage.setItem('pinnas_mywait', JSON.stringify({id:waitId, ts:Date.now()})); }catch(e){}
+  if(waitTimer)clearInterval(waitTimer);
+  waitTimer=setInterval(pollWaiting, 5000);
+}
+async function pollWaiting(){
+  if(!waitId)return;
+  try{ const orders=await OrderStore.list(); const o=orders.find(x=>x.Bestell_ID===waitId); if(o)renderWaitingPage(o); }catch(e){}
+}
+function renderWaitingPage(o){
+  const st=String(o.Status||o.status||'neu'); const idx=WFLOW.indexOf(st);
+  const eta=o.Zielzeit||o.zielzeit||'';
+  const modus=String(o.Modus||o.modus||'');
+  const isPickup = modus.toLowerCase()==='abholung';
+  const steps=WFLOW.map((s,i)=>{
+    const cls=i<idx?'done':(i===idx?'cur':''); const ic=i<idx?'✓':(i===idx?'●':'○');
+    return `<div class="wp-step ${cls}"><div class="wp-dot">${ic}</div><div class="wp-lbl">${WLABEL[s]}</div></div>`;
+  }).join('');
+  const ready = st==='fertig';
+  const done = st==='abgeschlossen';
+  document.getElementById('waitPage').innerHTML=`
+    <div class="wp-code">${o.Code||o.code||'—'}</div>
+    <div class="wp-sub">Deine Bestellnummer${modus?' · '+modus:''}</div>
+    ${eta?`<div class="wp-eta">${isPickup?'Fertig':'Lieferung'} ca. <b>${eta} Uhr</b></div>`:''}
+    ${ready?`<div class="wp-ready">🎉 Fertig! ${isPickup?'Bitte abholen':'Kommt zu dir'}</div>`:''}
+    ${done?`<div class="wp-ready" style="background:var(--panel);color:var(--muted)">Abgeschlossen — danke!</div>`:''}
+    <div class="wp-track">${steps}</div>
+    <div class="wp-note">Lass diese Seite offen — der Status aktualisiert sich von selbst.<br>Bei Fragen einfach per WhatsApp melden.</div>
+    <button class="wp-new" id="wpNew">Neue Bestellung</button>`;
+  const nb=document.getElementById('wpNew');
+  if(nb) nb.onclick=()=>{ closeWaitingPage(); };
+}
+function closeWaitingPage(){
+  document.getElementById('waitOverlay').classList.remove('show');
+  if(waitTimer){clearInterval(waitTimer);waitTimer=null;}
+  waitId=null;
+  try{ localStorage.removeItem('pinnas_mywait'); }catch(e){}
+}
 
 async function boot(){
   const flag=document.getElementById('srcFlag');
