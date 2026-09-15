@@ -385,9 +385,11 @@
   .oq-items{font-size:13.5px;line-height:1.5;margin:6px 0}
   .oq-meta{font-size:12px;color:var(--muted);margin-bottom:8px}.oq-meta b{color:var(--ink)}
   .oq-actions{display:flex;gap:7px;flex-wrap:wrap}
-  .oq-eta{font-size:12px;color:var(--muted);margin-bottom:8px}
-  .eta-btn{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:12px;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer}
-  .eta-btn:hover{border-color:var(--amber)}
+  .oq-eta{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .eta-val{font-weight:800;color:var(--ink);font-size:14px;min-width:48px;text-align:center}
+  .eta-adj{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:13px;font-weight:700;padding:5px 11px;border-radius:8px;cursor:pointer}
+  .eta-adj:hover{border-color:var(--amber)}
+  .eta-adj:active{background:var(--amber);color:#3a2c08}
   .oq-actions button{flex:1;min-width:80px;border:0;border-radius:8px;padding:10px;font-weight:700;font-size:12.5px;font-family:inherit;cursor:pointer}
   .oq-next{background:var(--wa);color:#04231a}.oq-back{background:var(--panel);color:var(--muted)}
   .op-sync{max-width:640px;margin:10px auto;text-align:center;font-size:11.5px;color:var(--muted2)}
@@ -413,6 +415,8 @@
   .wp-ready{background:var(--wa);color:#04231a;padding:18px;border-radius:14px;font-weight:800;font-size:20px;margin:16px 0;animation:pop .4s}
   @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
   .wp-note{font-size:12.5px;color:var(--muted2);line-height:1.5;margin-top:14px}
+  .wp-note a{color:#c98a92;text-decoration:underline;text-underline-offset:2px;font-weight:600}
+  .wp-note a:hover{color:#e8a0a8}
   .wp-new{background:var(--red);border:0;color:#fff;padding:13px;border-radius:12px;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:20px}
   /* mode + wait summary next to send button */
   .send-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--slate);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px;font-size:13px}
@@ -1708,7 +1712,8 @@ async function updateWaitHint(){
   const ss=document.getElementById('sendSummary');
   if(ss){
     const modeLbl = isPickup ? 'Abholung' : 'Lieferung';
-    const waitLbl = isPickup ? `fertig ca. ${wait} Min` : `Lieferung ca. ${Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster} Min`;
+    const clockT = clockPlus(isPickup ? wait : Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster);
+    const waitLbl = isPickup ? `fertig ca. ${wait} Min (${clockT} Uhr)` : `Lieferung ca. ${Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster} Min (${clockT} Uhr)`;
     ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${wait<SETTINGS.warnMin?' ok':''}">⏱ ${waitLbl}</span>`;
   }
 }
@@ -1727,12 +1732,31 @@ document.getElementById('opLockClose').onclick=closeOperator;
 document.getElementById('opExit').onclick=closeOperator;
 document.getElementById('opRefresh').onclick=()=>loadOpOrders();
 document.getElementById('opFilters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;opFilter=b.dataset.f;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));renderOpQueue();});
-function startOpPoll(){ loadOpOrders(); if(opTimer)clearInterval(opTimer); opTimer=setInterval(loadOpOrders,5000); }
+function startOpPoll(){ loadOpOrders(); if(opTimer)clearInterval(opTimer); opTimer=setInterval(loadOpOrders,4000); }
 function stopOpPoll(){ if(opTimer){clearInterval(opTimer);opTimer=null;} }
+let _opHash='', _opSyncing=false;
+const _etaOverrides={}; // id → eta set locally, wins until the sheet catches up
 async function loadOpOrders(){
-  opOrders=await OrderStore.list();
-  document.getElementById('opSync').textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  renderOpQueue();
+  if(_opSyncing) return;
+  _opSyncing=true;
+  const dot=document.getElementById('opSync');
+  if(dot && opOrders.length) dot.textContent='aktualisiere …';
+  try{
+    const fresh=await OrderStore.list();
+    if(Array.isArray(fresh) && (fresh.length>0 || _opHash==='')){
+      // apply any local ETA overrides that the sheet hasn't reflected yet
+      fresh.forEach(o=>{ if(_etaOverrides[o.Bestell_ID]!==undefined){
+        if(String(o.Zielzeit||'')===_etaOverrides[o.Bestell_ID]) delete _etaOverrides[o.Bestell_ID]; // sheet caught up
+        else o.Zielzeit=_etaOverrides[o.Bestell_ID]; // keep local until it does
+      }});
+      opOrders=fresh;
+      const h=JSON.stringify(fresh.map(o=>[o.Bestell_ID,o.Status,o.Zielzeit]));
+      if(h!==_opHash){ _opHash=h; renderOpQueue(); }
+    }
+    if(dot) dot.textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }catch(e){
+    if(dot) dot.textContent='⚠ Verbindung … erneuter Versuch';
+  }finally{ _opSyncing=false; }
 }
 function renderOpQueue(){
   const openLoad=loadFromOrders(opOrders);
@@ -1758,22 +1782,34 @@ function renderOpQueue(){
     el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
       <div class="oq-items">${String(o.Artikel||'').replace(/;/g,'<br>')}</div>
       <div class="oq-meta">${o.Summe?`<b>${o.Summe}</b> · `:''}${o.Adresse?o.Adresse+' · ':''}${o.Notiz?o.Notiz:''}</div>
-      <div class="oq-eta">🎯 Zielzeit: <button class="eta-btn" data-id="${o.Bestell_ID}" data-eta="${ziel}">${ziel||'—:—'} ✎</button></div>
+      <div class="oq-eta">🎯 Zielzeit
+        <button class="eta-adj" data-d="-5">−5</button>
+        <span class="eta-val">${ziel||'—:—'}</span>
+        <button class="eta-adj" data-d="5">+5</button>
+      </div>
       <div class="oq-actions"></div>`;
-    const etaBtn=el.querySelector('.eta-btn');
-    etaBtn.onclick=()=>{
-      const cur=etaBtn.dataset.eta||'';
-      const v=prompt('Zielzeit (Uhrzeit, z. B. 19:15):', cur);
-      if(v!==null){ opSetEta(o.Bestell_ID, v.trim()); }
-    };
+    el.querySelectorAll('.eta-adj').forEach(btn=>{
+      btn.onclick=()=>opAdjustEta(o.Bestell_ID, parseInt(btn.dataset.d,10));
+    });
     const act=el.querySelector('.oq-actions');
     if(idx>0){const bk=document.createElement('button');bk.className='oq-back';bk.textContent='← '+OSHORT[OFLOW[idx-1]];bk.onclick=()=>opSetStatus(o.Bestell_ID,OFLOW[idx-1]);act.appendChild(bk);}
     if(idx<OFLOW.length-1){const nx=document.createElement('button');nx.className='oq-next';nx.textContent=OSHORT[OFLOW[idx+1]]+' →';nx.onclick=()=>opSetStatus(o.Bestell_ID,OFLOW[idx+1]);act.appendChild(nx);}
     list.appendChild(el);
   });
 }
-async function opSetStatus(id,status){ const o=opOrders.find(x=>x.Bestell_ID===id);if(o)o.Status=status;renderOpQueue(); await OrderStore.setStatus(id,status); }
-async function opSetEta(id,eta){ const o=opOrders.find(x=>x.Bestell_ID===id);if(o){o.Zielzeit=eta;}renderOpQueue(); await OrderStore.setEta(id,eta); }
+async function opSetStatus(id,status){ const o=opOrders.find(x=>x.Bestell_ID===id);if(o)o.Status=status; _opHash=''; renderOpQueue(); await OrderStore.setStatus(id,status); }
+// shift target time by ±minutes (click, no typing); persists to sheet so it survives refresh
+async function opAdjustEta(id,delta){
+  const o=opOrders.find(x=>x.Bestell_ID===id); if(!o) return;
+  let base = o.Zielzeit||o.zielzeit||'';
+  let mins;
+  if(/^\d{1,2}:\d{2}$/.test(base)){ const [h,m]=base.split(':').map(Number); mins=h*60+m; }
+  else { const d=new Date(); mins=d.getHours()*60+d.getMinutes(); } // no target yet → start from now
+  mins=(mins+delta+1440)%1440;
+  const eta=String(Math.floor(mins/60)).padStart(2,'0')+':'+String(mins%60).padStart(2,'0');
+  o.Zielzeit=eta; _etaOverrides[id]=eta; _opHash=''; renderOpQueue();
+  await OrderStore.setEta(id,eta); // persist
+}
 
 /* secret entry: triple-tap or long-press the header logo */
 (function(){
@@ -1819,7 +1855,7 @@ function renderWaitingPage(o){
     ${ready?`<div class="wp-ready">🎉 Fertig! ${isPickup?'Bitte abholen':'Kommt zu dir'}</div>`:''}
     ${done?`<div class="wp-ready" style="background:var(--panel);color:var(--muted)">Abgeschlossen — danke!</div>`:''}
     <div class="wp-track">${steps}</div>
-    <div class="wp-note">Lass diese Seite offen — der Status aktualisiert sich von selbst.<br>Bei Fragen einfach per WhatsApp melden.</div>
+    <div class="wp-note">Lass diese Seite offen — der Status aktualisiert sich von selbst.<br>Fragen? <a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">WhatsApp</a> · <a href="tel:+4971479299682">07147 9299682</a></div>
     <button class="wp-new" id="wpNew">Neue Bestellung</button>`;
   const nb=document.getElementById('wpNew');
   if(nb) nb.onclick=()=>{ closeWaitingPage(); };
