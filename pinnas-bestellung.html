@@ -738,8 +738,11 @@ function _parseSettings(rows){
   const g=(k,d)=>m[k]!==undefined?_num(m[k]):d;
   SETTINGS={ofen:g('Gleichzeitig im Ofen (Pizzen)',8)||8,backzeit:g('Backzeit pro Ofengang (Minuten)',10)||10,
     lieferfenster:g('Lieferzeit-Fenster (Minuten)',30)||30,prepOther:g('Standard-Zubereitung Salat/Pasta (Min)',8)||8,
-    warnMin:g('Warnschwelle Wartezeit (Minuten)',45)||45};
+    warnMin:g('Warnschwelle Wartezeit (Minuten)',45)||45,
+    puffer:g('Puffer für Kundenzeit (Minuten)',5)};   // added to the time SHOWN to the customer
 }
+// customer-facing wait = internal estimate + safety buffer (kitchen sees the raw internal one)
+function customerWait(internalMin){ return internalMin + (SETTINGS.puffer||0); }
 function configForCat(cat){ return CONFIG_OPTS.filter(o=>_truthy(o.Aktiv)&&o.Kategorie===cat); }
 
 /* ===== Orders → Google Sheet (kitchen queue), via Apps Script ===== */
@@ -893,7 +896,11 @@ function itemCats(it, tab){
   const cats=[];
   if(tab==="Pizza" && !it.n.startsWith("Pizzabrot")){ cats.push("pizza"); if(it.veg) cats.push("pizzaVeg"); }
   if(tab==="Salate"){ if(it.n==="Beilagensalat") cats.push("saladSmall"); else cats.push("saladBig"); }
-  if(tab==="Getränke" && it._grp==="soft") cats.push("soft");
+  if(tab==="Getränke"){
+    // any drink counts as "soft" unless it's clearly alcoholic (Bier/Wein/…)
+    const alcoholic=/bier|wein|radler|lager|hell|pils|lemberger|primitivo|lambrusco|chardonnay|grigio|prosecco|sekt/i.test((it.n||'')+' '+(it.d||''));
+    if(it._grp==="soft" || !alcoholic) cats.push("soft");
+  }
   return cats;
 }
 
@@ -1641,16 +1648,16 @@ document.getElementById('sendBtn').onclick=()=>{
     txt += `\n${'-'.repeat(18)}\nAbholung: Enzstr. 2`;
     if(form.Name.trim()) txt += `\nName: ${form.Name.trim()}`;
   }
-  txt += `\n\n(Konzept-Demo · 321tadaa)`;
-  // 1) write to the Sheet → appears in Pinna's kitchen queue
+  // 1) generate the order code and prepend it (for easy correlation with the kitchen)
   const code = nextOrderCode();
+  txt = `Bestellung ${code}\n${txt}`;
   const artikel = cartGroups().map(g=>{
     if(g.pkgName){ return `[${g.pkgName}] `+g.lines.map(c=>`${c.q}x ${c.n}`).join(', '); }
     return g.lines.map(c=>`${c.q}x ${c.n}${c.gf?' (glutenfrei)':''}${c.opts&&c.opts.length?' ('+c.opts.map(o=>o.name).join(', ')+')':''}${c.note?' ['+c.note+']':''}`).join('; ');
   }).join('; ');
   // auto-calculated TARGET ETA (clock time = now + estimated wait, delivery bundled into window)
   const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
-  let waitMin = waitFromLoad((liveKitchenLoad||0)+myLoad);
+  let waitMin = customerWait(waitFromLoad((liveKitchenLoad||0)+myLoad));
   if(mode==='delivery'){ const win=SETTINGS.lieferfenster; waitMin=Math.ceil(waitMin/win)*win; }
   const targetEta = clockPlus(waitMin);   // "HH:MM"
   const sendBtnEl=document.getElementById('sendBtn');
@@ -1697,13 +1704,16 @@ function estimateWait(extraLoad){ return waitFromLoad(loadFromOrders(opOrders)+(
 let _waitTimer=null;
 function scheduleWaitHint(){ clearTimeout(_waitTimer); _waitTimer=setTimeout(updateWaitHint, 400); }
 
-// customer-facing wait hint on the gate (fetches current kitchen load live)
+// customer-facing wait hint on the gate (uses a cached kitchen load, refetched at most every 30s)
+let _loadFetchedAt=0;
 async function updateWaitHint(){
   const el=document.getElementById('waitHint'); if(!el)return;
-  el.textContent='Wartezeit wird berechnet …'; el.className='wait-hint';
-  try{ const orders=await OrderStore.list(); liveKitchenLoad=loadFromOrders(orders); }catch(e){}
+  // only re-fetch the kitchen load if the cache is stale (>30s) — avoids a fetch on every render
+  if(Date.now()-_loadFetchedAt > 30000){
+    try{ const orders=await OrderStore.list(); liveKitchenLoad=loadFromOrders(orders); _loadFetchedAt=Date.now(); }catch(e){}
+  }
   const myLoad=cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
-  const wait=waitFromLoad(liveKitchenLoad+myLoad);
+  const wait=customerWait(waitFromLoad(liveKitchenLoad+myLoad));
   const isPickup = (typeof mode!=='undefined' && mode==='pickup');
   if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
   else { const win=SETTINGS.lieferfenster; const d=Math.ceil(wait/win)*win; el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${d} Min`; }
@@ -1730,7 +1740,12 @@ document.getElementById('opUnlock').onclick=()=>{
 document.getElementById('opPin').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('opUnlock').click();});
 document.getElementById('opLockClose').onclick=closeOperator;
 document.getElementById('opExit').onclick=closeOperator;
-document.getElementById('opRefresh').onclick=()=>loadOpOrders();
+document.getElementById('opRefresh').onclick=(e)=>{
+  const b=e.currentTarget; const old=b.textContent;
+  b.textContent='⏳'; b.disabled=true;
+  _opHash=''; // force a re-render even if data is unchanged
+  Promise.resolve(loadOpOrders()).finally(()=>{ setTimeout(()=>{ b.textContent=old; b.disabled=false; },400); });
+};
 document.getElementById('opFilters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;opFilter=b.dataset.f;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));renderOpQueue();});
 function startOpPoll(){ loadOpOrders(); if(opTimer)clearInterval(opTimer); opTimer=setInterval(loadOpOrders,4000); }
 function stopOpPoll(){ if(opTimer){clearInterval(opTimer);opTimer=null;} }
