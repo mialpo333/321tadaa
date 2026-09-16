@@ -753,7 +753,7 @@ const OrderStore = {
       catch(e){ console.error('order write failed',e); return null; }
     }else{ // demo: localStorage
       const a=_localOrders(); const id='B'+Date.now();
-      a.push({Bestell_ID:id,Zeit:new Date().toISOString(),Code:order.code,Modus:order.modus,Status:'neu',Artikel:order.artikel,Summe:order.summe,Wunschzeit:order.wunschzeit||'',Name:order.name||'',Adresse:order.adresse||'',Telefon:order.telefon||'',Notiz:order.notiz||'',Last:order.last||0});
+      a.push({Bestell_ID:id,Zeit:new Date().toISOString(),Code:order.code,Modus:order.modus,Status:'neu',Artikel:order.artikel,Summe:order.summe,Wunschzeit:order.wunschzeit||'',Name:order.name||'',Adresse:order.adresse||'',Telefon:order.telefon||'',Notiz:order.notiz||'',Last:order.last||0,Zielzeit:order.zielzeit||''});
       _saveOrders(a); return id;
     }
   },
@@ -1019,6 +1019,23 @@ function isOpenNow(){
   const openDay = day===0 || day>=2;    // Tue..Sun open, Mon closed
   const mins = now.getHours()*60 + now.getMinutes();
   return openDay && mins >= 17*60 && mins <= 21*60+30;
+}
+// opening window in minutes-of-day (kept in sync with isOpenNow / the slot list)
+const OPEN_FROM = 17*60, OPEN_TO = 21*60+30;
+function hhmmToMin(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(s||'').trim()); return m? (+m[1])*60+(+m[2]) : null; }
+function minToHHMM(m){ m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+// The target ready/delivery clock time:
+//  - earliest = now + kitchen wait
+//  - if the customer picked a Wunschzeit later than that, honor it
+//  - never before opening; if it lands after closing, cap at closing
+function computeTargetTime(waitMin, wishedHHMM){
+  const now=new Date();
+  let earliest = now.getHours()*60 + now.getMinutes() + waitMin;
+  const wished = hhmmToMin(wishedHHMM);
+  let target = (wished!==null && wished>earliest) ? wished : earliest;
+  if(target < OPEN_FROM) target = OPEN_FROM;   // before opening → first slot
+  if(target > OPEN_TO)   target = OPEN_TO;      // after closing → last slot
+  return minToHHMM(target);
 }
 
 // populate the Time <select>; ASAP option only while open, else preselect 17:00
@@ -1655,11 +1672,12 @@ document.getElementById('sendBtn').onclick=()=>{
     if(g.pkgName){ return `[${g.pkgName}] `+g.lines.map(c=>`${c.q}x ${c.n}`).join(', '); }
     return g.lines.map(c=>`${c.q}x ${c.n}${c.gf?' (glutenfrei)':''}${c.opts&&c.opts.length?' ('+c.opts.map(o=>o.name).join(', ')+')':''}${c.note?' ['+c.note+']':''}`).join('; ');
   }).join('; ');
-  // auto-calculated TARGET ETA (clock time = now + estimated wait, delivery bundled into window)
+  // TARGET clock time: max(now+wait, Wunschzeit), clamped to opening hours
   const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
   let waitMin = customerWait(waitFromLoad((liveKitchenLoad||0)+myLoad));
   if(mode==='delivery'){ const win=SETTINGS.lieferfenster; waitMin=Math.ceil(waitMin/win)*win; }
-  const targetEta = clockPlus(waitMin);   // "HH:MM"
+  const wished = (mode==='delivery' && form.Time) ? form.Time : '';
+  const targetEta = computeTargetTime(waitMin, wished);   // "HH:MM"
   const sendBtnEl=document.getElementById('sendBtn');
   sendBtnEl.disabled=true; sendBtnEl.textContent='wird gesendet…';
   const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
@@ -1747,30 +1765,40 @@ document.getElementById('opRefresh').onclick=(e)=>{
   Promise.resolve(loadOpOrders()).finally(()=>{ setTimeout(()=>{ b.textContent=old; b.disabled=false; },400); });
 };
 document.getElementById('opFilters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;opFilter=b.dataset.f;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));renderOpQueue();});
-function startOpPoll(){ loadOpOrders(); if(opTimer)clearInterval(opTimer); opTimer=setInterval(loadOpOrders,4000); }
+function startOpPoll(){ loadOpOrders(); if(opTimer)clearInterval(opTimer); opTimer=setInterval(loadOpOrders,9000); }
 function stopOpPoll(){ if(opTimer){clearInterval(opTimer);opTimer=null;} }
-let _opHash='', _opSyncing=false;
+let _opHash='', _opSyncing=false, _everHadOrders=false, _emptyStreak=0;
 const _etaOverrides={}; // id → eta set locally, wins until the sheet catches up
 async function loadOpOrders(){
   if(_opSyncing) return;
   _opSyncing=true;
   const dot=document.getElementById('opSync');
-  if(dot && opOrders.length) dot.textContent='aktualisiere …';
+  let slow=setTimeout(()=>{ if(dot)dot.textContent='aktualisiere …'; },1500);
   try{
     const fresh=await OrderStore.list();
-    if(Array.isArray(fresh) && (fresh.length>0 || _opHash==='')){
-      // apply any local ETA overrides that the sheet hasn't reflected yet
-      fresh.forEach(o=>{ if(_etaOverrides[o.Bestell_ID]!==undefined){
-        if(String(o.Zielzeit||'')===_etaOverrides[o.Bestell_ID]) delete _etaOverrides[o.Bestell_ID]; // sheet caught up
-        else o.Zielzeit=_etaOverrides[o.Bestell_ID]; // keep local until it does
-      }});
-      opOrders=fresh;
-      const h=JSON.stringify(fresh.map(o=>[o.Bestell_ID,o.Status,o.Zielzeit]));
-      if(h!==_opHash){ _opHash=h; renderOpQueue(); }
+    if(Array.isArray(fresh)){
+      if(fresh.length===0){
+        _emptyStreak++;
+        // a single empty poll is treated as a glitch and ignored if we had orders;
+        // two in a row (or we never had orders) is accepted as genuinely empty.
+        const acceptEmpty = !_everHadOrders || _emptyStreak>=2;
+        if(acceptEmpty){ opOrders=[]; if(_opHash!=='[]'){ _opHash='[]'; renderOpQueue(); } }
+      } else {
+        _emptyStreak=0; _everHadOrders=true;
+        fresh.forEach(o=>{ if(_etaOverrides[o.Bestell_ID]!==undefined){
+          if(String(o.Zielzeit||'')===_etaOverrides[o.Bestell_ID]) delete _etaOverrides[o.Bestell_ID];
+          else o.Zielzeit=_etaOverrides[o.Bestell_ID];
+        }});
+        opOrders=fresh;
+        const h=JSON.stringify(fresh.map(o=>[o.Bestell_ID,o.Status,o.Zielzeit]));
+        if(h!==_opHash){ _opHash=h; renderOpQueue(); }
+      }
     }
-    if(dot) dot.textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    clearTimeout(slow);
+    if(dot) dot.textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
-    if(dot) dot.textContent='⚠ Verbindung … erneuter Versuch';
+    clearTimeout(slow);
+    if(dot && !/Stand:/.test(dot.textContent)) dot.textContent='—';
   }finally{ _opSyncing=false; }
 }
 function renderOpQueue(){
