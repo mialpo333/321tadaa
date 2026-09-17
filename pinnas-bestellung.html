@@ -394,6 +394,17 @@
   .oq-next{background:var(--wa);color:#04231a}.oq-back{background:var(--panel);color:var(--muted)}
   .op-sync{max-width:640px;margin:10px auto;text-align:center;font-size:11.5px;color:var(--muted2)}
   .op-empty{text-align:center;color:var(--muted2);padding:36px 16px;font-size:14px}
+  /* kitchen timeline */
+  .timeline{max-width:640px;margin:0 auto 12px;background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 8px}
+  .tl-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);font-weight:700;margin-bottom:10px}
+  .tl-track{position:relative;height:54px;background:var(--slate);border-radius:8px;overflow:hidden}
+  .tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red-bright);z-index:3}
+  .tl-now::after{content:"jetzt";position:absolute;top:-2px;left:3px;font-size:9px;color:var(--red-bright);font-weight:700}
+  .tl-hour{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+  .tl-hour span{position:absolute;bottom:2px;left:3px;font-size:9px;color:var(--muted2)}
+  .tl-block{position:absolute;top:16px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .tl-block.s-neu{background:#4a90d9}.tl-block.s-arbeit{background:var(--amber);color:#3a2c08}.tl-block.s-fertig{background:var(--wa);color:#04231a}
+  .tl-empty{font-size:12px;color:var(--muted2);text-align:center;padding:16px}
   /* customer waiting page */
   .wait-overlay{position:fixed;inset:0;background:var(--slate);z-index:75;display:none;overflow-y:auto}
   .wait-overlay.show{display:block}
@@ -418,6 +429,10 @@
   .wp-note a{color:#c98a92;text-decoration:underline;text-underline-offset:2px;font-weight:600}
   .wp-note a:hover{color:#e8a0a8}
   .wp-new{background:var(--red);border:0;color:#fff;padding:13px;border-radius:12px;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:20px}
+  .wp-check{background:var(--slate2);border:1px solid var(--line);color:var(--ink);padding:11px;border-radius:11px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:16px;display:block;margin-left:auto;margin-right:auto}
+  .wp-check:hover{border-color:var(--wa)}
+  .wp-nav{display:block;max-width:280px;margin:10px auto 0;background:var(--wa-dark);color:#eafff6;padding:12px;border-radius:11px;font-weight:700;font-size:14px;text-decoration:none;text-align:center}
+  .wp-nav:hover{background:var(--wa)}
   /* mode + wait summary next to send button */
   .send-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--slate);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px;font-size:13px}
   .send-summary .ss-mode{font-weight:700}
@@ -616,6 +631,7 @@
       <button class="op-nav" id="opRefresh">↻</button>
     </div>
     <div class="cap-bar" id="capBar"></div>
+    <div class="timeline" id="timeline"></div>
     <div class="op-filters" id="opFilters">
       <button class="on" data-f="aktiv">Aktiv</button>
       <button data-f="lieferung">Lieferung</button>
@@ -736,10 +752,21 @@ function _buildPackages(rows){
 function _parseSettings(rows){
   const m={}; rows.forEach(r=>m[(r.Einstellung||'').trim()]=r.Wert);
   const g=(k,d)=>m[k]!==undefined?_num(m[k]):d;
+  const gt=(k,d)=>{ const v=m[k]; const mm=/^(\d{1,2}):(\d{2})$/.exec(String(v||'').trim()); return mm?(+mm[1])*60+(+mm[2]):d; };
   SETTINGS={ofen:g('Gleichzeitig im Ofen (Pizzen)',8)||8,backzeit:g('Backzeit pro Ofengang (Minuten)',10)||10,
     lieferfenster:g('Lieferzeit-Fenster (Minuten)',30)||30,prepOther:g('Standard-Zubereitung Salat/Pasta (Min)',8)||8,
     warnMin:g('Warnschwelle Wartezeit (Minuten)',45)||45,
-    puffer:g('Puffer für Kundenzeit (Minuten)',5)};   // added to the time SHOWN to the customer
+    puffer:g('Puffer für Kundenzeit (Minuten)',5),
+    prepProPizza:g('Vorbereitung pro Pizza (Minuten)',2),
+    openFrom:gt('Öffnung von (Uhr)',17*60),      // opening time, minutes-of-day
+    openTo:gt('Öffnung bis (Uhr)',21*60+30)};     // closing time
+}
+// per-order prep+bake duration in minutes (its own time footprint)
+function orderDuration(loadUnits){
+  const pizzas=loadUnits; // load ~ pizza-equivalents
+  const prep=pizzas*(SETTINGS.prepProPizza||2);
+  const bake=Math.ceil(pizzas/SETTINGS.ofen)*SETTINGS.backzeit;
+  return Math.max(SETTINGS.prepOther, prep+bake);
 }
 // customer-facing wait = internal estimate + safety buffer (kitchen sees the raw internal one)
 function customerWait(internalMin){ return internalMin + (SETTINGS.puffer||0); }
@@ -1011,30 +1038,25 @@ function updateAddrVisibility(){ /* top address block removed; contact lives at 
 const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:false}, Time:{req:false}, Note:{req:false} };
 const form = { Street:'', Name:'', Phone:'', Time:'', Note:'' };
 
-// Opening hours: Tue–Sun (2..0), 17:00–21:30. During opening hours the default
-// wished-time is "so bald wie möglich"; outside them we default to 17:00 Uhr.
+// Opening hours come from the sheet (Einstellungen), defaults 17:00–21:30. Mon closed.
+function openFrom(){ return (SETTINGS&&SETTINGS.openFrom!=null)?SETTINGS.openFrom:17*60; }
+function openTo(){ return (SETTINGS&&SETTINGS.openTo!=null)?SETTINGS.openTo:21*60+30; }
 function isOpenNow(){
   const now = new Date();
   const day = now.getDay();             // 0=Sun … 6=Sat
   const openDay = day===0 || day>=2;    // Tue..Sun open, Mon closed
   const mins = now.getHours()*60 + now.getMinutes();
-  return openDay && mins >= 17*60 && mins <= 21*60+30;
+  return openDay && mins >= openFrom() && mins <= openTo();
 }
-// opening window in minutes-of-day (kept in sync with isOpenNow / the slot list)
-const OPEN_FROM = 17*60, OPEN_TO = 21*60+30;
 function hhmmToMin(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(s||'').trim()); return m? (+m[1])*60+(+m[2]) : null; }
 function minToHHMM(m){ m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
-// The target ready/delivery clock time:
-//  - earliest = now + kitchen wait
-//  - if the customer picked a Wunschzeit later than that, honor it
-//  - never before opening; if it lands after closing, cap at closing
 function computeTargetTime(waitMin, wishedHHMM){
   const now=new Date();
   let earliest = now.getHours()*60 + now.getMinutes() + waitMin;
   const wished = hhmmToMin(wishedHHMM);
   let target = (wished!==null && wished>earliest) ? wished : earliest;
-  if(target < OPEN_FROM) target = OPEN_FROM;   // before opening → first slot
-  if(target > OPEN_TO)   target = OPEN_TO;      // after closing → last slot
+  if(target < openFrom()) target = openFrom();
+  if(target > openTo())   target = openTo();
   return minToHHMM(target);
 }
 
@@ -1046,7 +1068,7 @@ document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
     o.value=''; o.textContent='so bald wie möglich';
     sel.appendChild(o);
   }
-  for(let m=17*60; m<=21*60+30; m+=15){
+  for(let m=openFrom(); m<=openTo(); m+=15){
     const h=String(Math.floor(m/60)).padStart(2,'0');
     const mm=String(m%60).padStart(2,'0');
     const o=document.createElement('option');
@@ -1054,7 +1076,7 @@ document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
     sel.appendChild(o);
   }
   // default selection
-  if(!openNow){ sel.value='17:00'; form.Time='17:00'; }
+  if(!openNow){ const ft=minToHHMM(openFrom()); sel.value=ft; form.Time=ft; }
   else { sel.value=''; form.Time=''; }
 });
 
@@ -1674,7 +1696,7 @@ document.getElementById('sendBtn').onclick=()=>{
   }).join('; ');
   // TARGET clock time: max(now+wait, Wunschzeit), clamped to opening hours
   const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
-  let waitMin = customerWait(waitFromLoad((liveKitchenLoad||0)+myLoad));
+  let waitMin = customerWait(scheduleAwareWait(myLoad, _liveOrders));
   if(mode==='delivery'){ const win=SETTINGS.lieferfenster; waitMin=Math.ceil(waitMin/win)*win; }
   const wished = (mode==='delivery' && form.Time) ? form.Time : '';
   const targetEta = computeTargetTime(waitMin, wished);   // "HH:MM"
@@ -1718,20 +1740,39 @@ function waitFromLoad(load){
   const batches=Math.ceil(load/SETTINGS.ofen);
   return Math.max(SETTINGS.prepOther, batches*SETTINGS.backzeit);
 }
+// Schedule-aware wait for a NEW order of `newLoad` pizza-equivalents.
+// Key idea: orders already targeted far in the future don't compete for capacity NOW,
+// so a kitchen with spread-out orders isn't "overloaded". Only load whose target time
+// falls within the next `horizon` minutes counts as current congestion.
+function scheduleAwareWait(newLoad, ordersList){
+  const orders = ordersList || opOrders || [];
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const horizon=Math.max(SETTINGS.backzeit*2, 20); // "competing now" window
+  let competingLoad=0;
+  orders.filter(o=>o.Status==='neu'||o.Status==='arbeit').forEach(o=>{
+    const units = (o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))
+      ? parseFloat(o.Last)
+      : (String(o.Artikel||'').match(/(\d+)x/g)||[]).reduce((a,x)=>a+parseInt(x),0);
+    const ziel = hhmmToMin(o.Zielzeit);
+    // an order competes for current capacity if it has no target, or its target is soon
+    if(ziel===null || ziel-nowMin <= horizon) competingLoad += units;
+  });
+  return orderDuration(newLoad) + waitFromLoad(competingLoad);
+}
 function estimateWait(extraLoad){ return waitFromLoad(loadFromOrders(opOrders)+(extraLoad||0)); }
 let _waitTimer=null;
 function scheduleWaitHint(){ clearTimeout(_waitTimer); _waitTimer=setTimeout(updateWaitHint, 400); }
 
 // customer-facing wait hint on the gate (uses a cached kitchen load, refetched at most every 30s)
-let _loadFetchedAt=0;
+let _loadFetchedAt=0, _liveOrders=[];
 async function updateWaitHint(){
   const el=document.getElementById('waitHint'); if(!el)return;
-  // only re-fetch the kitchen load if the cache is stale (>30s) — avoids a fetch on every render
+  // only re-fetch the kitchen orders if the cache is stale (>30s)
   if(Date.now()-_loadFetchedAt > 30000){
-    try{ const orders=await OrderStore.list(); liveKitchenLoad=loadFromOrders(orders); _loadFetchedAt=Date.now(); }catch(e){}
+    try{ const orders=await OrderStore.list(); _liveOrders=Array.isArray(orders)?orders:[]; liveKitchenLoad=loadFromOrders(_liveOrders); _loadFetchedAt=Date.now(); }catch(e){}
   }
   const myLoad=cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
-  const wait=customerWait(waitFromLoad(liveKitchenLoad+myLoad));
+  const wait=customerWait(scheduleAwareWait(myLoad, _liveOrders));
   const isPickup = (typeof mode!=='undefined' && mode==='pickup');
   if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
   else { const win=SETTINGS.lieferfenster; const d=Math.ceil(wait/win)*win; el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${d} Min`; }
@@ -1801,7 +1842,33 @@ async function loadOpOrders(){
     if(dot && !/Stand:/.test(dot.textContent)) dot.textContent='—';
   }finally{ _opSyncing=false; }
 }
+function renderTimeline(){
+  const el=document.getElementById('timeline'); if(!el)return;
+  const active=(opOrders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig');
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  // window: from now (rounded down to hour) spanning 2.5h
+  const start=Math.floor(nowMin/60)*60;
+  const span=150; // minutes shown
+  const pos=m=>((m-start)/span)*100;
+  let hours='';
+  for(let h=Math.ceil(start/60)*60; h<start+span; h+=60){
+    hours+=`<div class="tl-hour" style="left:${pos(h)}%"><span>${minToHHMM(h)}</span></div>`;
+  }
+  let blocks='';
+  active.forEach(o=>{
+    const ziel=hhmmToMin(o.Zielzeit);
+    if(ziel===null || ziel<start || ziel>start+span) return;
+    const units=(o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))?parseFloat(o.Last):1;
+    const dur=Math.max(6, orderDuration(units)); // block width ~ its duration
+    const left=pos(ziel-dur); const width=Math.max(6,(dur/span)*100);
+    blocks+=`<div class="tl-block s-${o.Status}" style="left:${Math.max(0,left)}%;width:${width}%" title="${o.Code} · ${o.Zielzeit}">${o.Code||''}</div>`;
+  });
+  const nowLine=`<div class="tl-now" style="left:${pos(nowMin)}%"></div>`;
+  el.innerHTML=`<div class="tl-title">Zeitplan (nächste 2,5 Std)</div>`+
+    (active.length? `<div class="tl-track">${hours}${blocks}${nowLine}</div>` : `<div class="tl-empty">Keine geplanten Bestellungen</div>`);
+}
 function renderOpQueue(){
+  renderTimeline();
   const openLoad=loadFromOrders(opOrders);
   const wait=estimateWait(0);
   const pct=Math.min(100,Math.round(openLoad/SETTINGS.ofen*100));
@@ -1868,7 +1935,7 @@ const WFLOW=['neu','arbeit','fertig','abgeschlossen'];
 const WLABEL={neu:'Eingegangen',arbeit:'In Zubereitung',fertig:'Fertig',abgeschlossen:'Abgeschlossen'};
 let waitId=null, waitTimer=null;
 function showWaitingPage(order){
-  waitId=order.Bestell_ID;
+  waitId=order.Bestell_ID; _waitHash='';
   document.getElementById('waitOverlay').classList.add('show');
   renderWaitingPage(order);
   // remember on device so a re-scan returns here
@@ -1876,9 +1943,16 @@ function showWaitingPage(order){
   if(waitTimer)clearInterval(waitTimer);
   waitTimer=setInterval(pollWaiting, 5000);
 }
+let _waitHash='';
 async function pollWaiting(){
   if(!waitId)return;
-  try{ const orders=await OrderStore.list(); const o=orders.find(x=>x.Bestell_ID===waitId); if(o)renderWaitingPage(o); }catch(e){}
+  try{
+    const orders=await OrderStore.list(); const o=orders.find(x=>x.Bestell_ID===waitId);
+    if(o){
+      const h=String(o.Status)+'|'+String(o.Zielzeit||'');
+      if(h!==_waitHash){ _waitHash=h; renderWaitingPage(o); }
+    }
+  }catch(e){}
 }
 function renderWaitingPage(o){
   const st=String(o.Status||o.status||'neu'); const idx=WFLOW.indexOf(st);
@@ -1898,8 +1972,16 @@ function renderWaitingPage(o){
     ${ready?`<div class="wp-ready">🎉 Fertig! ${isPickup?'Bitte abholen':'Kommt zu dir'}</div>`:''}
     ${done?`<div class="wp-ready" style="background:var(--panel);color:var(--muted)">Abgeschlossen — danke!</div>`:''}
     <div class="wp-track">${steps}</div>
-    <div class="wp-note">Lass diese Seite offen — der Status aktualisiert sich von selbst.<br>Fragen? <a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">WhatsApp</a> · <a href="tel:+4971479299682">07147 9299682</a></div>
+    <button class="wp-check" id="wpCheck">↻ Status aktualisieren</button>
+    ${isPickup?`<a class="wp-nav" id="wpNav" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent('Pinnas Pizza, Enzstr. 2, 74321 Bietigheim-Bissingen')}" target="_blank" rel="noopener">🧭 Route zur Abholung</a>`:''}
+    <div class="wp-note">Der Status aktualisiert sich von selbst.<br>Fragen? <a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">WhatsApp</a> · <a href="tel:+4971479299682">07147 9299682</a></div>
     <button class="wp-new" id="wpNew">Neue Bestellung</button>`;
+  const cb=document.getElementById('wpCheck');
+  if(cb) cb.onclick=()=>{
+    cb.textContent='⏳ prüfe …'; cb.disabled=true;
+    _waitHash=''; // force refresh even if unchanged
+    Promise.resolve(pollWaiting()).finally(()=>setTimeout(()=>{ const b2=document.getElementById('wpCheck'); if(b2){b2.textContent='↻ Status aktualisieren'; b2.disabled=false;} },500));
+  };
   const nb=document.getElementById('wpNew');
   if(nb) nb.onclick=()=>{ closeWaitingPage(); };
 }
