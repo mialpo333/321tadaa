@@ -790,7 +790,10 @@ const OrderStore = {
   },
   async list(){
     let arr;
-    if(SCRIPT_URL){ try{ const r=await fetch(SCRIPT_URL); const j=await r.json(); arr=j.orders||[]; }catch(e){ console.error(e); return []; } }
+    if(SCRIPT_URL){
+      try{ const r=await fetch(SCRIPT_URL); const j=await r.json(); arr=j.orders||[]; OrderStore.lastError=j.ok===false?(j.error||'Fehler'):''; }
+      catch(e){ console.error(e); OrderStore.lastError='Bestellungen konnten nicht geladen werden'; return []; }
+    }
     else arr=_localOrders();
     return arr.filter(isTodayOrder).map(o=>({...o, Zielzeit:fmtHHMM(o.Zielzeit)}));
   },
@@ -1066,8 +1069,13 @@ function fmtHHMM(v){
   return m ? m[1].padStart(2,'0')+':'+m[2] : '';
 }
 // only orders placed today (local date) count anywhere in the app
+function orderDate(o){
+  let t=new Date(o.Zeit);
+  if(isNaN(t)){ const ms=parseInt(String(o.Bestell_ID||'').replace(/\D/g,''),10); if(ms>1e12) t=new Date(ms); } // id = "B"+timestamp
+  return t;
+}
 function isTodayOrder(o){
-  const t=new Date(o.Zeit); if(isNaN(t)) return false;
+  const t=orderDate(o); if(isNaN(t)) return true; // can't tell → show rather than hide
   const n=new Date();
   return t.getFullYear()===n.getFullYear() && t.getMonth()===n.getMonth() && t.getDate()===n.getDate();
 }
@@ -1879,7 +1887,8 @@ async function loadOpOrders(){
       }
     }
     clearTimeout(slow);
-    if(dot) dot.textContent='Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    if(dot) dot.textContent = OrderStore.lastError ? '⚠ '+OrderStore.lastError
+      : 'Stand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
     clearTimeout(slow);
     if(dot && !/Stand:/.test(dot.textContent)) dot.textContent='—';
@@ -1948,11 +1957,11 @@ function renderOpQueue(){
   if(opFilter==='aktiv')shown=shown.filter(o=>o.Status!=='abgeschlossen');
   else if(opFilter==='lieferung')shown=shown.filter(o=>String(o.Modus).toLowerCase()==='lieferung');
   else if(opFilter==='abholung')shown=shown.filter(o=>String(o.Modus).toLowerCase()==='abholung');
-  shown.sort((a,b)=>new Date(a.Zeit)-new Date(b.Zeit)); // FIFO oldest first
+  shown.sort((a,b)=>orderDate(a)-orderDate(b)); // FIFO oldest first
   if(!shown.length){list.innerHTML='<div class="op-empty">Keine Bestellungen.</div>';return;}
   shown.forEach(o=>{
     const st=String(o.Status||'neu');const idx=OFLOW.indexOf(st);const m=String(o.Modus||'').toLowerCase();
-    const t=new Date(o.Zeit);const hhmm=isNaN(t)?'':t.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const t=orderDate(o);const hhmm=isNaN(t)?'':t.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     const el=document.createElement('div');el.className='oq s-'+st;
     const ziel=fmtHHMM(o.Zielzeit||o.zielzeit);
     el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
