@@ -17,6 +17,7 @@
     --ink:#f4f4f2;
     --muted:#9a9a9f;
     --muted2:#6e6e73;
+    --amber:#e6b450;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -397,12 +398,15 @@
   /* kitchen timeline */
   .timeline{max-width:640px;margin:0 auto 12px;background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 8px}
   .tl-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);font-weight:700;margin-bottom:10px}
-  .tl-track{position:relative;height:54px;background:var(--slate);border-radius:8px;overflow:hidden}
+  .tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;background:var(--slate);scrollbar-width:thin}
+  .tl-track{position:relative;min-width:100%}
+  .tl-half{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.35}
+  .tl-title span{text-transform:none;letter-spacing:0;font-weight:600;margin-left:6px;color:var(--muted)}
   .tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red-bright);z-index:3}
   .tl-now::after{content:"jetzt";position:absolute;top:-2px;left:3px;font-size:9px;color:var(--red-bright);font-weight:700}
   .tl-hour{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
   .tl-hour span{position:absolute;bottom:2px;left:3px;font-size:9px;color:var(--muted2)}
-  .tl-block{position:absolute;top:16px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .tl-block{position:absolute;height:22px;padding:0 6px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .tl-block.s-neu{background:#4a90d9}.tl-block.s-arbeit{background:var(--amber);color:#3a2c08}.tl-block.s-fertig{background:var(--wa);color:#04231a}
   .tl-empty{font-size:12px;color:var(--muted2);text-align:center;padding:16px}
   /* customer waiting page */
@@ -785,8 +789,10 @@ const OrderStore = {
     }
   },
   async list(){
-    if(SCRIPT_URL){ try{ const r=await fetch(SCRIPT_URL); const j=await r.json(); return j.orders||[]; }catch(e){ console.error(e); return []; } }
-    else return _localOrders();
+    let arr;
+    if(SCRIPT_URL){ try{ const r=await fetch(SCRIPT_URL); const j=await r.json(); arr=j.orders||[]; }catch(e){ console.error(e); return []; } }
+    else arr=_localOrders();
+    return arr.filter(isTodayOrder).map(o=>({...o, Zielzeit:fmtHHMM(o.Zielzeit)}));
   },
   async setStatus(id,status){
     if(SCRIPT_URL){ try{ await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'status',id,status})}); }catch(e){ console.error(e); } }
@@ -1050,6 +1056,22 @@ function isOpenNow(){
 }
 function hhmmToMin(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(s||'').trim()); return m? (+m[1])*60+(+m[2]) : null; }
 function minToHHMM(m){ m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+// Normalise any time value to "HH:MM": "17:00", "17:00:00", "17:00 Uhr",
+// or a legacy Sheets time cell serialised as "1899-12-30T17:00:00.000Z".
+function fmtHHMM(v){
+  if(v===null||v===undefined||v==='') return '';
+  const s=String(v).trim();
+  let m=/^(\d{1,2}):(\d{2})/.exec(s);
+  if(!m) m=/T(\d{2}):(\d{2})/.exec(s);
+  return m ? m[1].padStart(2,'0')+':'+m[2] : '';
+}
+// only orders placed today (local date) count anywhere in the app
+function isTodayOrder(o){
+  const t=new Date(o.Zeit); if(isNaN(t)) return false;
+  const n=new Date();
+  return t.getFullYear()===n.getFullYear() && t.getMonth()===n.getMonth() && t.getDate()===n.getDate();
+}
+function isOpenDay(){ const d=new Date().getDay(); return d===0 || d>=2; } // Tue..Sun
 function computeTargetTime(waitMin, wishedHHMM){
   const now=new Date();
   let earliest = now.getHours()*60 + now.getMinutes() + waitMin;
@@ -1060,15 +1082,20 @@ function computeTargetTime(waitMin, wishedHHMM){
   return minToHHMM(target);
 }
 
-// populate the Time <select>; ASAP option only while open, else preselect 17:00
-document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
+// populate the Time <select>; ASAP option only while open, else preselect opening time.
+// Called from boot() after the sheet settings are loaded. Today only, no past slots.
+function buildTimeOptions(){
+ document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
+  sel.innerHTML='';
   const openNow = isOpenNow();
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
   if(openNow){
     const o=document.createElement('option');
     o.value=''; o.textContent='so bald wie möglich';
     sel.appendChild(o);
   }
   for(let m=openFrom(); m<=openTo(); m+=15){
+    if(openNow && m<nowMin) continue;
     const h=String(Math.floor(m/60)).padStart(2,'0');
     const mm=String(m%60).padStart(2,'0');
     const o=document.createElement('option');
@@ -1078,7 +1105,8 @@ document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
   // default selection
   if(!openNow){ const ft=minToHHMM(openFrom()); sel.value=ft; form.Time=ft; }
   else { sel.value=''; form.Time=''; }
-});
+ });
+}
 
 // wire all field copies: editing one updates shared state + all mirrors
 function syncFieldUI(){
@@ -1736,6 +1764,20 @@ function loadFromOrders(orders){
     .reduce((s,o)=>{ if(o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))return s+parseFloat(o.Last);
       const m=String(o.Artikel||'').match(/(\d+)x/g)||[]; return s+m.reduce((a,x)=>a+parseInt(x),0);},0);
 }
+function orderUnits(o){
+  return (o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))
+    ? parseFloat(o.Last)
+    : (String(o.Artikel||'').match(/(\d+)x/g)||[]).reduce((a,x)=>a+parseInt(x),0);
+}
+// load that competes for the oven NOW: open orders with no target or a target within the horizon
+function competingLoad(orders){
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const horizon=Math.max(SETTINGS.backzeit*2, 20);
+  return (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit').reduce((s,o)=>{
+    const ziel=hhmmToMin(o.Zielzeit);
+    return (ziel===null || ziel-nowMin<=horizon) ? s+orderUnits(o) : s;
+  },0);
+}
 function waitFromLoad(load){
   const batches=Math.ceil(load/SETTINGS.ofen);
   return Math.max(SETTINGS.prepOther, batches*SETTINGS.backzeit);
@@ -1746,18 +1788,7 @@ function waitFromLoad(load){
 // falls within the next `horizon` minutes counts as current congestion.
 function scheduleAwareWait(newLoad, ordersList){
   const orders = ordersList || opOrders || [];
-  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  const horizon=Math.max(SETTINGS.backzeit*2, 20); // "competing now" window
-  let competingLoad=0;
-  orders.filter(o=>o.Status==='neu'||o.Status==='arbeit').forEach(o=>{
-    const units = (o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))
-      ? parseFloat(o.Last)
-      : (String(o.Artikel||'').match(/(\d+)x/g)||[]).reduce((a,x)=>a+parseInt(x),0);
-    const ziel = hhmmToMin(o.Zielzeit);
-    // an order competes for current capacity if it has no target, or its target is soon
-    if(ziel===null || ziel-nowMin <= horizon) competingLoad += units;
-  });
-  return orderDuration(newLoad) + waitFromLoad(competingLoad);
+  return orderDuration(newLoad) + waitFromLoad(competingLoad(orders));
 }
 function estimateWait(extraLoad){ return waitFromLoad(loadFromOrders(opOrders)+(extraLoad||0)); }
 let _waitTimer=null;
@@ -1774,16 +1805,28 @@ async function updateWaitHint(){
   const myLoad=cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
   const wait=customerWait(scheduleAwareWait(myLoad, _liveOrders));
   const isPickup = (typeof mode!=='undefined' && mode==='pickup');
-  if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
-  else { const win=SETTINGS.lieferfenster; const d=Math.ceil(wait/win)*win; el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${d} Min`; }
-  el.className='wait-hint'+(wait<SETTINGS.warnMin?' ok':'');
+  // same calculation as the order that gets sent: max(now+wait, Wunschzeit), inside opening hours
+  const win=SETTINGS.lieferfenster;
+  const waitShown = isPickup ? wait : Math.ceil(wait/win)*win;
+  const wished = (!isPickup && form.Time) ? form.Time : '';
+  const target = computeTargetTime(waitShown, wished);
+  const scheduled = !!wished || !isOpenNow();       // a fixed clock time, not "in X Min"
+  const wishMissed = !!wished && target!==wished;   // wished time is earlier than possible
+  const ok = scheduled ? !wishMissed : wait<SETTINGS.warnMin;
+  if(!isOpenDay()){ el.textContent='Heute Ruhetag'; }
+  else if(scheduled){ el.textContent = isPickup ? `⏱ Abholbereit heute um ${target} Uhr` : `🛵 Lieferung heute um ${target} Uhr`; }
+  else if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
+  else { el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${waitShown} Min`; }
+  el.className='wait-hint'+(ok?' ok':'');
   // mirror into the send-button summary
   const ss=document.getElementById('sendSummary');
   if(ss){
     const modeLbl = isPickup ? 'Abholung' : 'Lieferung';
-    const clockT = clockPlus(isPickup ? wait : Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster);
-    const waitLbl = isPickup ? `fertig ca. ${wait} Min (${clockT} Uhr)` : `Lieferung ca. ${Math.ceil(wait/SETTINGS.lieferfenster)*SETTINGS.lieferfenster} Min (${clockT} Uhr)`;
-    ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${wait<SETTINGS.warnMin?' ok':''}">⏱ ${waitLbl}</span>`;
+    let waitLbl;
+    if(wishMissed) waitLbl = `frühestens ${target} Uhr`;
+    else if(scheduled) waitLbl = `${isPickup?'fertig':'Lieferung'} um ${target} Uhr`;
+    else waitLbl = isPickup ? `fertig ca. ${wait} Min (${target} Uhr)` : `Lieferung ca. ${waitShown} Min (${target} Uhr)`;
+    ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${ok?' ok':''}">⏱ ${waitLbl}</span>`;
   }
 }
 function openOperator(){
@@ -1842,41 +1885,64 @@ async function loadOpOrders(){
     if(dot && !/Stand:/.test(dot.textContent)) dot.textContent='—';
   }finally{ _opSyncing=false; }
 }
+let _tlAutoScrolled=false;
 function renderTimeline(){
   const el=document.getElementById('timeline'); if(!el)return;
+  const prev=document.getElementById('tlScroll'); const prevLeft=prev?prev.scrollLeft:null;
   const active=(opOrders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig');
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  // window: from now (rounded down to hour) spanning 2.5h
-  const start=Math.floor(nowMin/60)*60;
-  const span=150; // minutes shown
-  const pos=m=>((m-start)/span)*100;
-  let hours='';
-  for(let h=Math.ceil(start/60)*60; h<start+span; h+=60){
-    hours+=`<div class="tl-hour" style="left:${pos(h)}%"><span>${minToHHMM(h)}</span></div>`;
+  const PX=4; // pixels per minute
+  const items=active.map(o=>{
+    const ziel=hhmmToMin(o.Zielzeit); if(ziel===null) return null;
+    const dur=Math.max(6, orderDuration(orderUnits(o)));
+    return {o, start:ziel-dur, end:ziel};
+  }).filter(Boolean).sort((a,b)=>a.start-b.start);
+  // range: whole service day, widened for any order outside it
+  let from=openFrom()-30, to=openTo()+30;
+  items.forEach(it=>{ from=Math.min(from,it.start-15); to=Math.max(to,it.end+15); });
+  from=Math.floor(from/30)*30; to=Math.ceil(to/30)*30;
+  const x=m=>(m-from)*PX;
+  // overlapping orders go into separate lanes so none hides another
+  const laneEnd=[];
+  items.forEach(it=>{ let l=laneEnd.findIndex(e=>e<=it.start); if(l<0){ l=laneEnd.length; laneEnd.push(0); } laneEnd[l]=it.start+Math.max(88/PX, it.end-it.start)+1; it.lane=l; });
+  const H=16+Math.max(1,laneEnd.length)*26+18;
+  let grid='';
+  for(let m=from; m<=to; m+=30){
+    grid += (m%60===0)
+      ? `<div class="tl-hour" style="left:${x(m)}px"><span>${minToHHMM(m)}</span></div>`
+      : `<div class="tl-half" style="left:${x(m)}px"></div>`;
   }
-  let blocks='';
-  active.forEach(o=>{
-    const ziel=hhmmToMin(o.Zielzeit);
-    if(ziel===null || ziel<start || ziel>start+span) return;
-    const units=(o.Last!==undefined&&o.Last!==''&&!isNaN(parseFloat(o.Last)))?parseFloat(o.Last):1;
-    const dur=Math.max(6, orderDuration(units)); // block width ~ its duration
-    const left=pos(ziel-dur); const width=Math.max(6,(dur/span)*100);
-    blocks+=`<div class="tl-block s-${o.Status}" style="left:${Math.max(0,left)}%;width:${width}%" title="${o.Code} · ${o.Zielzeit}">${o.Code||''}</div>`;
-  });
-  const nowLine=`<div class="tl-now" style="left:${pos(nowMin)}%"></div>`;
-  el.innerHTML=`<div class="tl-title">Zeitplan (nächste 2,5 Std)</div>`+
-    (active.length? `<div class="tl-track">${hours}${blocks}${nowLine}</div>` : `<div class="tl-empty">Keine geplanten Bestellungen</div>`);
+  const blocks=items.map(it=>{
+    const o=it.o; const w=Math.max(88,(it.end-it.start)*PX);
+    return `<div class="tl-block s-${o.Status}" style="left:${x(it.start)}px;width:${w}px;top:${16+it.lane*26}px" title="${o.Code||''} · ${o.Zielzeit} Uhr">${o.Code||''} · ${o.Zielzeit}</div>`;
+  }).join('');
+  const nowIn = nowMin>=from && nowMin<=to;
+  const nowLine = nowIn ? `<div class="tl-now" style="left:${x(nowMin)}px"></div>` : '';
+  const sub = nowIn ? '' : `<span>jetzt ${minToHHMM(nowMin)}</span>`;
+  el.innerHTML=`<div class="tl-title">Zeitplan heute · ${minToHHMM(from)}–${minToHHMM(to)}${sub}</div>`+
+    `<div class="tl-scroll" id="tlScroll"><div class="tl-track" style="width:${(to-from)*PX}px;height:${H}px">${grid}${blocks}${nowLine}</div></div>`+
+    (items.length?'':`<div class="tl-empty">Heute noch keine geplanten Bestellungen</div>`);
+  const sc=document.getElementById('tlScroll');
+  if(prevLeft!==null && _tlAutoScrolled){ sc.scrollLeft=prevLeft; }
+  else {
+    // first view: jump to "jetzt" during service, otherwise to the first order (or opening time)
+    const focus = nowIn ? nowMin : (items[0] ? items[0].start : openFrom());
+    sc.scrollLeft=Math.max(0, x(focus)-60);
+    _tlAutoScrolled=true;
+  }
 }
 function renderOpQueue(){
   renderTimeline();
-  const openLoad=loadFromOrders(opOrders);
-  const wait=estimateWait(0);
-  const pct=Math.min(100,Math.round(openLoad/SETTINGS.ofen*100));
+  // opOrders holds today's orders only (see OrderStore.list)
+  const nowLoad=competingLoad(opOrders);      // due within the next minutes
+  const dayLoad=loadFromOrders(opOrders);     // everything still open today
+  const wait=waitFromLoad(nowLoad);
+  const pct=Math.min(100,Math.round(nowLoad/SETTINGS.ofen*100));
   const warn=wait>=SETTINGS.warnMin;
   document.getElementById('capBar').innerHTML=`
-    <div class="cap-head"><div class="cap-title">Küchen-Auslastung</div><div class="cap-eta ${warn?'warn':'ok'}">≈ ${wait} Min</div></div>
+    <div class="cap-head"><div class="cap-title">Küchen-Auslastung jetzt</div><div class="cap-eta ${warn?'warn':'ok'}">≈ ${wait} Min</div></div>
     <div class="cap-meter"><div class="cap-fill ${pct>=100?'full':(warn?'warn':'')}" style="width:${pct}%"></div></div>
-    <div class="cap-stats"><div><b>${Math.round(openLoad*10)/10}</b> Last offen</div><div><b>${opOrders.filter(o=>o.Status==='neu').length}</b> neu</div><div><b>${opOrders.filter(o=>o.Status==='arbeit').length}</b> in Arbeit</div><div><b>${SETTINGS.ofen}</b> pro Ofen</div></div>`;
+    <div class="cap-stats"><div><b>${Math.round(nowLoad*10)/10}</b> Last jetzt</div><div><b>${Math.round(dayLoad*10)/10}</b> heute offen</div><div><b>${opOrders.filter(o=>o.Status==='neu').length}</b> neu</div><div><b>${opOrders.filter(o=>o.Status==='arbeit').length}</b> in Arbeit</div><div><b>${SETTINGS.ofen}</b> pro Ofen</div></div>`;
   const list=document.getElementById('opQueue');list.innerHTML='';
   let shown=opOrders.slice();
   if(opFilter==='aktiv')shown=shown.filter(o=>o.Status!=='abgeschlossen');
@@ -1888,7 +1954,7 @@ function renderOpQueue(){
     const st=String(o.Status||'neu');const idx=OFLOW.indexOf(st);const m=String(o.Modus||'').toLowerCase();
     const t=new Date(o.Zeit);const hhmm=isNaN(t)?'':t.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     const el=document.createElement('div');el.className='oq s-'+st;
-    const ziel=o.Zielzeit||o.zielzeit||'';
+    const ziel=fmtHHMM(o.Zielzeit||o.zielzeit);
     el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
       <div class="oq-items">${String(o.Artikel||'').replace(/;/g,'<br>')}</div>
       <div class="oq-meta">${o.Summe?`<b>${o.Summe}</b> · `:''}${o.Adresse?o.Adresse+' · ':''}${o.Notiz?o.Notiz:''}</div>
@@ -1911,7 +1977,7 @@ async function opSetStatus(id,status){ const o=opOrders.find(x=>x.Bestell_ID===i
 // shift target time by ±minutes (click, no typing); persists to sheet so it survives refresh
 async function opAdjustEta(id,delta){
   const o=opOrders.find(x=>x.Bestell_ID===id); if(!o) return;
-  let base = o.Zielzeit||o.zielzeit||'';
+  let base = fmtHHMM(o.Zielzeit||o.zielzeit);
   let mins;
   if(/^\d{1,2}:\d{2}$/.test(base)){ const [h,m]=base.split(':').map(Number); mins=h*60+m; }
   else { const d=new Date(); mins=d.getHours()*60+d.getMinutes(); } // no target yet → start from now
@@ -1956,7 +2022,7 @@ async function pollWaiting(){
 }
 function renderWaitingPage(o){
   const st=String(o.Status||o.status||'neu'); const idx=WFLOW.indexOf(st);
-  const eta=o.Zielzeit||o.zielzeit||'';
+  const eta=fmtHHMM(o.Zielzeit||o.zielzeit);
   const modus=String(o.Modus||o.modus||'');
   const isPickup = modus.toLowerCase()==='abholung';
   const steps=WFLOW.map((s,i)=>{
@@ -2001,6 +2067,7 @@ async function boot(){
     else if(res.live) flag.innerHTML='Menü live aus Google Sheets';
     else flag.innerHTML='⚠ Konnte Google Sheet nicht laden — Standard-Menü aktiv';
   }
+  buildTimeOptions();
   buildTabs();
   renderMenu();
   syncFieldUI();
