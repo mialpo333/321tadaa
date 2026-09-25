@@ -395,48 +395,42 @@
   .oq-next{background:var(--wa);color:#04231a}.oq-back{background:var(--panel);color:var(--muted)}
   .op-sync{max-width:640px;margin:10px auto;text-align:center;font-size:11.5px;color:var(--muted2)}
   .op-empty{text-align:center;color:var(--muted2);padding:36px 16px;font-size:14px}
-  /* kitchen timeline */
-  .timeline{max-width:640px;margin:0 auto 12px;background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 8px}
-  .tl-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);font-weight:700;margin-bottom:10px}
-  .tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;background:var(--slate);scrollbar-width:thin}
+  /* kitchen timeline — the centre piece */
+  .timeline{max-width:640px;margin:0 auto 12px;background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px}
+  .tl-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+  .tl-title span{text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)}
+  .tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;background:var(--slate)}
+  .tl-scroll::-webkit-scrollbar{height:8px}
+  .tl-scroll::-webkit-scrollbar-track{background:var(--slate);border-radius:8px}
+  .tl-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .tl-scroll{scrollbar-width:thin;scrollbar-color:var(--line) var(--slate)}
   .tl-track{position:relative;min-width:100%}
-  .tl-half{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.35}
-  .tl-title span{text-transform:none;letter-spacing:0;font-weight:600;margin-left:6px;color:var(--muted)}
-  .tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red-bright);z-index:3}
-  .tl-now::after{content:"jetzt";position:absolute;top:-2px;left:3px;font-size:9px;color:var(--red-bright);font-weight:700}
+  .tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red-bright);z-index:4}
+  .tl-now::after{content:"jetzt";position:absolute;top:1px;left:3px;font-size:9px;color:var(--red-bright);font-weight:700}
   .tl-hour{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
-  .tl-hour span{position:absolute;bottom:2px;left:3px;font-size:9px;color:var(--muted2)}
-  .tl-block{position:absolute;height:22px;padding:0 6px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .tl-half{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.35}
+  .tl-hour span{position:absolute;bottom:3px;left:4px;font-size:9.5px;color:var(--muted2)}
+  /* per-Takt pizza count strip along the top */
+  .tl-takt{position:absolute;top:0;height:16px;display:grid;place-items:center;font-size:9.5px;font-weight:700;color:var(--muted2)}
+  .tl-takt.busy{color:#3a2c08;background:rgba(230,180,80,.85);border-radius:3px}
+  .tl-takt.over{color:#fff;background:var(--red-bright);border-radius:3px}
+  /* an order block: the pizza count is the message */
+  .tl-block{position:absolute;height:34px;border-radius:6px;display:flex;align-items:center;gap:6px;padding:0 8px;
+    font-size:15px;font-weight:900;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.35);border:0;font-family:inherit}
+  .tl-block small{font-size:9.5px;font-weight:700;opacity:.85}
   .tl-block.s-neu{background:#4a90d9}.tl-block.s-arbeit{background:var(--amber);color:#3a2c08}.tl-block.s-fertig{background:var(--wa);color:#04231a}
+  .tl-block.sel{outline:2px solid var(--ink);outline-offset:1px}
   .tl-empty{font-size:12px;color:var(--muted2);text-align:center;padding:16px}
-  /* customer waiting page */
-  .wait-overlay{position:fixed;inset:0;background:var(--slate);z-index:75;display:none;overflow-y:auto}
-  .wait-overlay.show{display:block}
-  .wait-page{max-width:640px;margin:0 auto;padding:24px 18px 40px;text-align:center}
-  .wp-code{font-size:56px;font-weight:900;letter-spacing:.02em;margin:14px 0 2px}
-  .wp-sub{color:var(--muted);font-size:14px;margin-bottom:6px}
-  .wp-eta{font-size:15px;font-weight:700;color:var(--amber);margin:6px 0 18px}
-  .wp-eta b{color:var(--ink)}
-  .wp-track{display:flex;margin:20px 0 8px;padding:0 6px}
-  .wp-step{flex:1;position:relative;display:flex;flex-direction:column;align-items:center}
-  .wp-step::before{content:"";position:absolute;top:15px;right:50%;width:100%;height:3px;background:var(--line);z-index:0}
-  .wp-step:first-child::before{display:none}
-  .wp-step.done::before,.wp-step.cur::before{background:var(--wa)}
-  .wp-dot{position:relative;z-index:1;width:32px;height:32px;border-radius:50%;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center;font-size:14px}
-  .wp-lbl{margin-top:8px;font-size:11px;color:var(--muted);height:26px;line-height:1.2}
-  .wp-step.done .wp-dot{background:var(--wa);border-color:var(--wa);color:#04231a;font-weight:800}
-  .wp-step.cur .wp-dot{background:var(--amber);border-color:var(--amber);color:#3a2c08;font-weight:800;box-shadow:0 0 0 5px rgba(230,180,80,.18)}
-  .wp-step.cur .wp-lbl{color:var(--ink);font-weight:700}
-  .wp-ready{background:var(--wa);color:#04231a;padding:18px;border-radius:14px;font-weight:800;font-size:20px;margin:16px 0;animation:pop .4s}
-  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-  .wp-note{font-size:12.5px;color:var(--muted2);line-height:1.5;margin-top:14px}
-  .wp-note a{color:#c98a92;text-decoration:underline;text-underline-offset:2px;font-weight:600}
-  .wp-note a:hover{color:#e8a0a8}
-  .wp-new{background:var(--red);border:0;color:#fff;padding:13px;border-radius:12px;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:20px}
-  .wp-check{background:var(--slate2);border:1px solid var(--line);color:var(--ink);padding:11px;border-radius:11px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;width:100%;max-width:280px;margin-top:16px;display:block;margin-left:auto;margin-right:auto}
-  .wp-check:hover{border-color:var(--wa)}
-  .wp-nav{display:block;max-width:280px;margin:10px auto 0;background:var(--wa-dark);color:#eafff6;padding:12px;border-radius:11px;font-weight:700;font-size:14px;text-decoration:none;text-align:center}
-  .wp-nav:hover{background:var(--wa)}
+  .tl-det{margin-top:9px;background:var(--slate);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .tl-det b{color:var(--ink)}
+  .tl-legend{margin-top:7px;font-size:10.5px;color:var(--muted2);text-align:center}
+  /* order sent confirmation (in place of the ticket preview) */
+  .sent-ok{background:rgba(37,211,102,.10);border:1px solid rgba(37,211,102,.45);border-radius:12px;padding:18px;text-align:center}
+  .so-t{font-size:17px;font-weight:800;color:#bff3d6;margin-bottom:8px}
+  .so-s{font-size:13px;color:#9fc7b8;line-height:1.5}
+  .so-s b{color:#eafff6;font-size:15px}
+  .so-new{margin-top:14px;background:var(--wa);border:0;color:#04231a;padding:11px 18px;border-radius:10px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
   /* mode + wait summary next to send button */
   .send-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--slate);border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px;font-size:13px}
   .send-summary .ss-mode{font-weight:700}
@@ -597,9 +591,9 @@
                 <input class="af" data-field="Street" placeholder="z. B. Hauptstraße 12" autocomplete="off"></label>
               <label class="fld" data-for="Name"><span class="fld-lab">Name <em>Pflicht</em></span>
                 <input class="af" data-field="Name" placeholder="Dein Name" autocomplete="off"></label>
-              <label class="fld" data-for="Phone"><span class="fld-lab">Telefon <i>empfohlen</i></span>
-                <input class="af" data-field="Phone" placeholder="für Rückfragen" autocomplete="off"></label>
-              <label class="fld full" data-for="Time"><span class="fld-lab">Wunschzeit <i>optional</i></span>
+              <label class="fld" data-for="Phone"><span class="fld-lab">Telefon <em>Pflicht</em></span>
+                <input class="af" data-field="Phone" placeholder="für Rückfragen" autocomplete="tel" inputmode="tel"></label>
+              <label class="fld full" data-for="Time"><span class="fld-lab">Abfahrt des Fahrers <i>Lieferzeit</i></span>
                 <select class="af" data-field="Time"></select></label>
               <label class="fld full" data-for="Note"><span class="fld-lab">Hinweis <i>optional</i></span>
                 <input class="af" data-field="Note" placeholder="Klingel / Etage / Hinweis" autocomplete="off"></label>
@@ -634,8 +628,8 @@
       <span class="op-title">Küche</span>
       <button class="op-nav" id="opRefresh">↻</button>
     </div>
-    <div class="cap-bar" id="capBar"></div>
     <div class="timeline" id="timeline"></div>
+    <div class="cap-bar" id="capBar"></div>
     <div class="op-filters" id="opFilters">
       <button class="on" data-f="aktiv">Aktiv</button>
       <button data-f="lieferung">Lieferung</button>
@@ -648,9 +642,6 @@
 </div>
 
 <div class="ex-overlay" id="exOverlay"><div class="ex-sheet" id="exSheet"></div></div>
-<div class="wait-overlay" id="waitOverlay">
-  <div class="wait-page" id="waitPage"></div>
-</div>
 
 <script>
 /* ============ LIVE DATA CONFIG ============
@@ -698,7 +689,9 @@ function filterPlaces(raw){
 
 /* ===== Live data from Google Sheets (mapped into teaser shapes) ===== */
 let CONFIG_OPTS = [];   // per-category customization options
-let SETTINGS = {ofen:8,backzeit:10,lieferfenster:30,prepOther:8,warnMin:45};
+let SETTINGS = {ofen:8,backzeit:10,lieferfenster:30,prepOther:8,warnMin:45,puffer:5,prepProPizza:2,
+  openFrom:17*60,openTo:21*60+30,takt:15,pizzenProTakt:10,
+  fahrtVon:17*60+30,fahrtBis:21*60+30,fahrtTakt:30,autos:2};
 const _truthy = v => ['ja','true','1','yes','x'].includes(String(v).trim().toLowerCase());
 const _num = v => { const n=parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.')); return isNaN(n)?0:n; };
 function _csvUrl(tab){ return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`; }
@@ -763,14 +756,55 @@ function _parseSettings(rows){
     puffer:g('Puffer für Kundenzeit (Minuten)',5),
     prepProPizza:g('Vorbereitung pro Pizza (Minuten)',2),
     openFrom:gt('Öffnung von (Uhr)',17*60),      // opening time, minutes-of-day
-    openTo:gt('Öffnung bis (Uhr)',21*60+30)};     // closing time
+    openTo:gt('Öffnung bis (Uhr)',21*60+30),     // closing time
+    takt:g('Back-Takt (Minuten)',15)||15,        // one baking cycle
+    pizzenProTakt:g('Pizzen pro Takt',10)||10,   // the gold number: 10 pizzas / 15 min
+    fahrtVon:gt('Erste Fahrt (Uhr)',17*60+30),   // first delivery departure
+    fahrtBis:gt('Letzte Fahrt (Uhr)',21*60+30),  // last delivery departure
+    fahrtTakt:g('Abstand Fahrten (Minuten)',30)||30,
+    autos:g('Autos',2)||2};
 }
-// per-order prep+bake duration in minutes (its own time footprint)
-function orderDuration(loadUnits){
-  const pizzas=loadUnits; // load ~ pizza-equivalents
-  const prep=pizzas*(SETTINGS.prepProPizza||2);
-  const bake=Math.ceil(pizzas/SETTINGS.ofen)*SETTINGS.backzeit;
-  return Math.max(SETTINGS.prepOther, prep+bake);
+// per-order oven time: whole baking cycles at 10 pizzas per 15-min Takt
+function orderDuration(pizzas){
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
+  return Math.max(T, Math.ceil(Math.max(pizzas,0)/cap)*T);
+}
+// delivery departures: 17:30, 18:00 … 21:30
+function departureSlots(){
+  const out=[]; const step=SETTINGS.fahrtTakt||30;
+  for(let m=SETTINGS.fahrtVon; m<=SETTINGS.fahrtBis; m+=step) out.push(m);
+  return out;
+}
+function taktsPerSlot(){ return Math.max(1, Math.round((SETTINGS.fahrtTakt||30)/(SETTINGS.takt||15))); }
+function slotCapacity(){ return (SETTINGS.pizzenProTakt||10)*taktsPerSlot(); }
+// pizzas an order occupies (Pizzen column, else the older Last value)
+function orderPizzas(o){
+  const p=parseFloat(o.Pizzen);
+  if(!isNaN(p)) return p;
+  return orderUnits(o);
+}
+// pizzas booked per baking Takt: an order fills the Takte right before its target time
+function taktLoad(orders){
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10, m={};
+  (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig').forEach(o=>{
+    const z=hhmmToMin(o.Zielzeit); if(z===null) return;
+    let p=orderPizzas(o), t=Math.floor((z-1)/T)*T;
+    while(p>0){ const take=Math.min(p,cap); m[t]=(m[t]||0)+take; p-=take; t-=T; }
+  });
+  return m;
+}
+// free pizza places for one departure (its own Takte only, so slots never overlap)
+function slotFree(slotMin, load){
+  const T=SETTINGS.takt||15; let used=0;
+  for(let i=1;i<=taktsPerSlot();i++) used+=(load[slotMin-i*T]||0);
+  return slotCapacity()-used;
+}
+// first departure that still fits `pizzas`, and isn't in the past
+function nextFreeSlot(pizzas, orders){
+  const load=taktLoad(orders);
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const lead=orderDuration(pizzas);
+  return departureSlots().find(m => m>=nowMin+lead && slotFree(m,load)>=Math.max(pizzas,1)) ?? null;
 }
 // customer-facing wait = internal estimate + safety buffer (kitchen sees the raw internal one)
 function customerWait(internalMin){ return internalMin + (SETTINGS.puffer||0); }
@@ -820,6 +854,8 @@ function nextOrderCode(){
 // capacity weight: pizza=1, salad/pasta=0.5, drinks=0
 function itemLoadWeight(cat){ const c=String(cat||'').toLowerCase(); if(c.includes('getr'))return 0; if(c==='pizza')return 1; return 0.5; }
 function cartLoadWeight(){ return cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0); }
+// pizza count for the kitchen Takt (salads/pasta count as half an oven place)
+function cartPizzas(){ return Math.ceil(cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0)); }
 
 
 async function loadLiveData(){
@@ -946,6 +982,7 @@ let currentMin = 0; // active minimum order for the entered place
 let triedSend = false; // becomes true once the user taps send, to surface fields
 let fieldsRevealed = false; // once contact fields are shown, keep them shown
 let cart = []; // à-la-carte lines: {key,n,base,gf,q}
+let sentInfo = null; // last sent order: {code, zielzeit, isPickup}
 let activePkg = null; // package being built: {def, slots:[{filled:[{n,base,gf}]}]}
 
 const eur = v => v.toFixed(2).replace('.',',') + ' €';
@@ -1044,7 +1081,7 @@ document.addEventListener('click', e=>{
 function updateAddrVisibility(){ /* top address block removed; contact lives at the ticket now */ }
 
 // ---------- contact fields (at the ticket) ----------
-const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:false}, Time:{req:false}, Note:{req:false} };
+const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:true}, Time:{req:false}, Note:{req:false} };
 const form = { Street:'', Name:'', Phone:'', Time:'', Note:'' };
 
 // Opening hours come from the sheet (Einstellungen), defaults 17:00–21:30. Mon closed.
@@ -1090,30 +1127,35 @@ function computeTargetTime(waitMin, wishedHHMM){
   return minToHHMM(target);
 }
 
-// populate the Time <select>; ASAP option only while open, else preselect opening time.
-// Called from boot() after the sheet settings are loaded. Today only, no past slots.
+// Delivery times are the driver's departures (17:30, 18:00 … 21:30).
+// Only departures that still have oven places for this cart are offered;
+// a full one simply isn't listed, so the next free time is preselected.
 function buildTimeOptions(){
- document.querySelectorAll('select.af[data-field="Time"]').forEach(sel=>{
-  sel.innerHTML='';
-  const openNow = isOpenNow();
+  const sel=document.querySelector('select.af[data-field="Time"]'); if(!sel) return;
+  const load=taktLoad(_liveOrders);
+  const pizzas=Math.max(cartPizzas(),1);
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  if(openNow){
+  const lead=orderDuration(pizzas);
+  const free=departureSlots().map(m=>({m, free:slotFree(m,load)}))
+    .filter(s=>s.m>=nowMin+lead && s.free>=pizzas);
+  const prev=form.Time;
+  sel.innerHTML='';
+  if(!free.length){
     const o=document.createElement('option');
-    o.value=''; o.textContent='so bald wie möglich';
+    o.value=''; o.textContent='heute ausgebucht — bitte anrufen';
     sel.appendChild(o);
+    form.Time=''; sel.value=''; syncFieldUI(); return;
   }
-  for(let m=openFrom(); m<=openTo(); m+=15){
-    if(openNow && m<nowMin) continue;
-    const h=String(Math.floor(m/60)).padStart(2,'0');
-    const mm=String(m%60).padStart(2,'0');
+  free.forEach(s=>{
     const o=document.createElement('option');
-    o.value=`${h}:${mm}`; o.textContent=`${h}:${mm} Uhr`;
+    o.value=minToHHMM(s.m);
+    o.textContent=`${minToHHMM(s.m)} Uhr${s.free<=Math.max(3,pizzas)?' · fast voll':''}`;
     sel.appendChild(o);
-  }
-  // default selection
-  if(!openNow){ const ft=minToHHMM(openFrom()); sel.value=ft; form.Time=ft; }
-  else { sel.value=''; form.Time=''; }
- });
+  });
+  const keep=free.some(s=>minToHHMM(s.m)===prev);
+  const pick=keep?prev:minToHHMM(free[0].m);
+  sel.value=pick; form.Time=pick;
+  syncFieldUI();
 }
 
 // wire all field copies: editing one updates shared state + all mirrors
@@ -1518,6 +1560,7 @@ function packageDiscountTotal(){
 }
 
 function render(){
+  if(cart.length) sentInfo=null;   // a new selection replaces the confirmation
   const cartBox=document.getElementById('cartBox');
   const cartLines=document.getElementById('cartLines');
   const sub = cart.reduce((s,c)=>s+lineTotal(c),0);
@@ -1576,7 +1619,16 @@ function render(){
 
   // ticket bubble
   const host=document.getElementById('bubbleHost');
-  if(!cart.length){
+  if(sentInfo && !cart.length){
+    host.innerHTML=`<div class="sent-ok">
+        <div class="so-t">✓ Bestellung ${sentInfo.code} ist raus</div>
+        <div class="so-s">${sentInfo.isPickup?'Abholung ca.':'Der Fahrer startet um'} <b>${sentInfo.zielzeit} Uhr</b><br>
+        Bitte schick die WhatsApp-Nachricht ab, falls sich das Fenster nicht geöffnet hat.</div>
+        <button class="so-new" id="newOrderBtn">Neue Bestellung</button></div>`;
+    const nb=document.getElementById('newOrderBtn');
+    if(nb) nb.onclick=()=>{ sentInfo=null; render(); };
+  }
+  else if(!cart.length){
     host.innerHTML='<div class="empty"><span>🧾</span>Noch nichts ausgewählt.<br>Tipp links etwas an — hier entsteht der Zettel.</div>';
   } else {
     let lines = cartGroups().map(g=>{
@@ -1595,7 +1647,7 @@ function render(){
       if(addr.street) parts.push(addr.street);
       if(selectedPlace) parts.push(`${selectedPlace.name} · ${selectedPlace.plz}`);
       if(addr.phone) parts.push('Tel: '+addr.phone);
-      parts.push('Wunschzeit: '+(addr.time?addr.time+' Uhr':'so bald wie möglich'));
+      parts.push('Abfahrt Fahrer: '+(addr.time?addr.time+' Uhr':'—'));
       if(addr.note) parts.push('Hinweis: '+addr.note);
       if(parts.length) block = '\n'+'—'.repeat(18)+'\n'+parts.join('\n');
     } else {
@@ -1626,8 +1678,9 @@ function render(){
   if(!cart.length){ blocked=true; }
   else if(mode==='delivery'){
     if(inArea!==true){ blocked=true; hint='Bitte oben deinen Ort aus der Liste wählen.'; }
+    else if(!form.Time){ blocked=true; hint='Für heute sind alle Fahrten ausgebucht — bitte kurz anrufen.'; }
     else if(tot < currentMin){ blocked=true; hint=`Mindestbestellwert für ${selectedPlace?selectedPlace.name:'diesen Ort'}: ${eur(currentMin)} — noch ${eur(currentMin-tot)}.`; }
-    else if(!addr.street || !addr.name){ needContact=true; } // not blocked: click reveals fields
+    else if(!addr.street || !addr.name || !addr.phone){ needContact=true; } // not blocked: click reveals fields
   }
   btn.disabled=blocked;
   document.getElementById('waStatus').textContent = cart.length ? `${count} Artikel · ${eur(tot)}` : 'Bestell-Ticket · Vorschau';
@@ -1691,9 +1744,9 @@ window.addEventListener('resize', refreshPillVisibility, {passive:true});
 document.getElementById('sendBtn').onclick=()=>{
   triedSend = true;
   // if required contact info is missing, reveal + focus it here instead of sending
-  if(mode==='delivery' && (!form.Street.trim() || !form.Name.trim())){
+  if(mode==='delivery' && (!form.Street.trim() || !form.Name.trim() || !form.Phone.trim())){
     render(); // ensures tickFields are shown
-    const first = !form.Street.trim() ? 'Street' : 'Name';
+    const first = !form.Street.trim() ? 'Street' : (!form.Name.trim() ? 'Name' : 'Phone');
     const el = document.querySelector(`#tickFields .af[data-field="${first}"]`)
             || document.querySelector(`.af[data-field="${first}"]`);
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>el.focus(),300); }
@@ -1717,7 +1770,7 @@ document.getElementById('sendBtn').onclick=()=>{
     if(form.Street.trim()) txt += `\n${form.Street.trim()}`;
     if(selectedPlace) txt += `\n${selectedPlace.name} · ${selectedPlace.plz}`;
     if(form.Phone.trim()) txt += `\nTel: ${form.Phone.trim()}`;
-    txt += `\nWunschzeit: ${form.Time?form.Time+' Uhr':'so bald wie möglich'}`;
+    txt += `\nAbfahrt Fahrer: ${form.Time} Uhr`;
     if(form.Note.trim()) txt += `\nHinweis: ${form.Note.trim()}`;
   } else {
     txt += `\n${'-'.repeat(18)}\nAbholung: Enzstr. 2`;
@@ -1730,19 +1783,17 @@ document.getElementById('sendBtn').onclick=()=>{
     if(g.pkgName){ return `[${g.pkgName}] `+g.lines.map(c=>`${c.q}x ${c.n}`).join(', '); }
     return g.lines.map(c=>`${c.q}x ${c.n}${c.gf?' (glutenfrei)':''}${c.opts&&c.opts.length?' ('+c.opts.map(o=>o.name).join(', ')+')':''}${c.note?' ['+c.note+']':''}`).join('; ');
   }).join('; ');
-  // TARGET clock time: max(now+wait, Wunschzeit), clamped to opening hours
+  // target time: the driver's departure for delivery, the ready time for pickup
   const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
-  let waitMin = customerWait(scheduleAwareWait(myLoad, _liveOrders));
-  if(mode==='delivery'){ const win=SETTINGS.lieferfenster; waitMin=Math.ceil(waitMin/win)*win; }
-  const wished = (mode==='delivery' && form.Time) ? form.Time : '';
-  const targetEta = computeTargetTime(waitMin, wished);   // "HH:MM"
+  const waitMin = customerWait(scheduleAwareWait(myLoad, _liveOrders));
+  const targetEta = mode==='delivery' ? form.Time : computeTargetTime(waitMin,'');
   const sendBtnEl=document.getElementById('sendBtn');
   sendBtnEl.disabled=true; sendBtnEl.textContent='wird gesendet…';
   const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
   const orderObj={
     code, modus:(mode==='pickup'?'Abholung':'Lieferung'), status:'neu',
-    artikel, summe:eur(tot), last:cartLoadWeight(), zielzeit:targetEta,
-    wunschzeit: mode==='delivery' ? (form.Time?form.Time+' Uhr':'baldmöglich') : 'Abholung',
+    artikel, summe:eur(tot), last:cartLoadWeight(), pizzen:cartPizzas(), zielzeit:targetEta,
+    wunschzeit: mode==='delivery' ? 'Abfahrt '+form.Time+' Uhr' : 'Abholung',
     name: form.Name.trim(),
     adresse: mode==='delivery' ? [form.Street.trim(), selectedPlace?`${selectedPlace.name} ${selectedPlace.plz}`:''].filter(Boolean).join(', ') : '',
     telefon: form.Phone.trim(), notiz: form.Note.trim()
@@ -1752,8 +1803,8 @@ document.getElementById('sendBtn').onclick=()=>{
   // 3) write order, then show the waiting page with the returned id
   OrderStore.create(orderObj).then(id=>{
     sendBtnEl.disabled=false; sendBtnEl.textContent='Per WhatsApp senden';
-    cart=[]; render();
-    showWaitingPage({...orderObj, Bestell_ID:id||('local'+Date.now()), Zeit:new Date().toISOString(), Status:'neu', Code:code, Zielzeit:targetEta});
+    sentInfo={code, zielzeit:targetEta, isPickup:mode==='pickup'};
+    cart=[]; triedSend=false; _loadFetchedAt=0; render();
   });
 };
 // clock time (HH:MM) that is `mins` from now
@@ -1813,27 +1864,20 @@ async function updateWaitHint(){
   const myLoad=cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
   const wait=customerWait(scheduleAwareWait(myLoad, _liveOrders));
   const isPickup = (typeof mode!=='undefined' && mode==='pickup');
-  // same calculation as the order that gets sent: max(now+wait, Wunschzeit), inside opening hours
-  const win=SETTINGS.lieferfenster;
-  const waitShown = isPickup ? wait : Math.ceil(wait/win)*win;
-  const wished = (!isPickup && form.Time) ? form.Time : '';
-  const target = computeTargetTime(waitShown, wished);
-  const scheduled = !!wished || !isOpenNow();       // a fixed clock time, not "in X Min"
-  const wishMissed = !!wished && target!==wished;   // wished time is earlier than possible
-  const ok = scheduled ? !wishMissed : wait<SETTINGS.warnMin;
+  if(!isPickup) buildTimeOptions();          // departures depend on the current cart
+  const target = isPickup ? computeTargetTime(wait,'') : form.Time;
+  const ok = isPickup ? wait<SETTINGS.warnMin : !!target;
   if(!isOpenDay()){ el.textContent='Heute Ruhetag'; }
-  else if(scheduled){ el.textContent = isPickup ? `⏱ Abholbereit heute um ${target} Uhr` : `🛵 Lieferung heute um ${target} Uhr`; }
-  else if(isPickup){ el.textContent=`⏱ Voraussichtlich fertig in ca. ${wait} Min`; }
-  else { el.textContent=`🛵 Voraussichtliche Lieferung in ca. ${waitShown} Min`; }
+  else if(isPickup){ el.textContent=`⏱ Abholbereit ca. ${target} Uhr`; }
+  else if(target){ el.textContent=`🛵 Der Fahrer startet um ${target} Uhr`; }
+  else { el.textContent='🛵 Heute leider ausgebucht — bitte anrufen'; }
   el.className='wait-hint'+(ok?' ok':'');
   // mirror into the send-button summary
   const ss=document.getElementById('sendSummary');
   if(ss){
     const modeLbl = isPickup ? 'Abholung' : 'Lieferung';
-    let waitLbl;
-    if(wishMissed) waitLbl = `frühestens ${target} Uhr`;
-    else if(scheduled) waitLbl = `${isPickup?'fertig':'Lieferung'} um ${target} Uhr`;
-    else waitLbl = isPickup ? `fertig ca. ${wait} Min (${target} Uhr)` : `Lieferung ca. ${waitShown} Min (${target} Uhr)`;
+    const waitLbl = isPickup ? `fertig ca. ${target} Uhr`
+                  : (target ? `Abfahrt ${target} Uhr` : 'heute ausgebucht');
     ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${ok?' ok':''}">⏱ ${waitLbl}</span>`;
   }
 }
@@ -1894,48 +1938,69 @@ async function loadOpOrders(){
     if(dot && !/Stand:/.test(dot.textContent)) dot.textContent='—';
   }finally{ _opSyncing=false; }
 }
-let _tlAutoScrolled=false;
+let _tlAutoScrolled=false, _tlPick=null;
 function renderTimeline(){
   const el=document.getElementById('timeline'); if(!el)return;
   const prev=document.getElementById('tlScroll'); const prevLeft=prev?prev.scrollLeft:null;
   const active=(opOrders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig');
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  const PX=4; // pixels per minute
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
+  const PX=5; // pixels per minute
   const items=active.map(o=>{
     const ziel=hhmmToMin(o.Zielzeit); if(ziel===null) return null;
-    const dur=Math.max(6, orderDuration(orderUnits(o)));
-    return {o, start:ziel-dur, end:ziel};
+    const pizzas=orderPizzas(o);
+    return {o, pizzas, start:ziel-orderDuration(pizzas), end:ziel};
   }).filter(Boolean).sort((a,b)=>a.start-b.start);
-  // range: whole service day, widened for any order outside it
-  let from=openFrom()-30, to=openTo()+30;
+  // range: the whole service day, widened for anything outside it
+  let from=Math.min(openFrom(), SETTINGS.fahrtVon)-30, to=Math.max(openTo(), SETTINGS.fahrtBis)+15;
   items.forEach(it=>{ from=Math.min(from,it.start-15); to=Math.max(to,it.end+15); });
-  from=Math.floor(from/30)*30; to=Math.ceil(to/30)*30;
+  from=Math.floor(from/T)*T; to=Math.ceil(to/T)*T;
   const x=m=>(m-from)*PX;
-  // overlapping orders go into separate lanes so none hides another
-  const laneEnd=[];
-  items.forEach(it=>{ let l=laneEnd.findIndex(e=>e<=it.start); if(l<0){ l=laneEnd.length; laneEnd.push(0); } laneEnd[l]=it.start+Math.max(88/PX, it.end-it.start)+1; it.lane=l; });
-  const H=16+Math.max(1,laneEnd.length)*26+18;
+  // parallel orders go into their own lane so every block stays readable
+  const laneEnd=[]; const MINW=74;
+  items.forEach(it=>{
+    let l=laneEnd.findIndex(e=>e<=it.start); if(l<0){ l=laneEnd.length; laneEnd.push(0); }
+    laneEnd[l]=it.start+Math.max(MINW/PX, it.end-it.start)+2; it.lane=l;
+  });
+  const lanes=Math.max(1,laneEnd.length);
+  const H=20+lanes*38+18;
   let grid='';
-  for(let m=from; m<=to; m+=30){
+  for(let m=from; m<=to; m+=T){
     grid += (m%60===0)
       ? `<div class="tl-hour" style="left:${x(m)}px"><span>${minToHHMM(m)}</span></div>`
       : `<div class="tl-half" style="left:${x(m)}px"></div>`;
   }
-  const blocks=items.map(it=>{
-    const o=it.o; const w=Math.max(88,(it.end-it.start)*PX);
-    return `<div class="tl-block s-${o.Status}" style="left:${x(it.start)}px;width:${w}px;top:${16+it.lane*26}px" title="${o.Code||''} · ${o.Zielzeit} Uhr">${o.Code||''} · ${o.Zielzeit}</div>`;
+  // pizzas per Takt against the 10-per-15-min rule
+  const load=taktLoad(active);
+  let takts='';
+  for(let m=from; m<to; m+=T){
+    const n=load[m]||0; if(!n) continue;
+    const cls=n>cap?'over':(n>=cap*0.7?'busy':'');
+    takts+=`<div class="tl-takt ${cls}" style="left:${x(m)+1}px;width:${T*PX-2}px">${n}/${cap}</div>`;
+  }
+  const blocks=items.map((it,k)=>{
+    const o=it.o; const w=Math.max(MINW,(it.end-it.start)*PX);
+    const sel=_tlPick===o.Bestell_ID?' sel':'';
+    return `<button class="tl-block s-${o.Status}${sel}" data-id="${o.Bestell_ID}" style="left:${x(it.start)}px;width:${w}px;top:${20+it.lane*38}px">
+      🍕 ${it.pizzas}<small>${o.Zielzeit}</small></button>`;
   }).join('');
   const nowIn = nowMin>=from && nowMin<=to;
   const nowLine = nowIn ? `<div class="tl-now" style="left:${x(nowMin)}px"></div>` : '';
-  const sub = nowIn ? '' : `<span>jetzt ${minToHHMM(nowMin)}</span>`;
-  el.innerHTML=`<div class="tl-title">Zeitplan heute · ${minToHHMM(from)}–${minToHHMM(to)}${sub}</div>`+
-    `<div class="tl-scroll" id="tlScroll"><div class="tl-track" style="width:${(to-from)*PX}px;height:${H}px">${grid}${blocks}${nowLine}</div></div>`+
-    (items.length?'':`<div class="tl-empty">Heute noch keine geplanten Bestellungen</div>`);
+  const totalPizzas=items.reduce((s,it)=>s+it.pizzas,0);
+  const pick=items.find(it=>it.o.Bestell_ID===_tlPick);
+  const det=pick?`<div class="tl-det"><b>${pick.o.Code||'—'}</b> · ${pick.o.Modus||''} · 🍕 ${pick.pizzas} · Zielzeit <b>${pick.o.Zielzeit}</b><br>
+      ${String(pick.o.Artikel||'').replace(/;/g,' · ')}<br>${pick.o.Adresse?pick.o.Adresse+'<br>':''}${pick.o.Telefon||''} ${pick.o.Notiz?'· '+pick.o.Notiz:''}</div>`:'';
+  el.innerHTML=`<div class="tl-title"><span style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">Zeitplan heute</span>
+      <span>🍕 ${totalPizzas} offen · ${cap} pro ${T} Min${nowIn?'':' · jetzt '+minToHHMM(nowMin)}</span></div>`+
+    `<div class="tl-scroll" id="tlScroll"><div class="tl-track" style="width:${(to-from)*PX}px;height:${H}px">${grid}${takts}${blocks}${nowLine}</div></div>`+
+    (items.length?det+`<div class="tl-legend">Block antippen für Details</div>`:`<div class="tl-empty">Heute noch keine geplanten Bestellungen</div>`);
+  el.querySelectorAll('.tl-block').forEach(b=>{
+    b.onclick=()=>{ _tlPick = _tlPick===b.dataset.id ? null : b.dataset.id; renderTimeline(); };
+  });
   const sc=document.getElementById('tlScroll');
   if(prevLeft!==null && _tlAutoScrolled){ sc.scrollLeft=prevLeft; }
   else {
-    // first view: jump to "jetzt" during service, otherwise to the first order (or opening time)
-    const focus = nowIn ? nowMin : (items[0] ? items[0].start : openFrom());
+    const focus = nowIn ? nowMin : (items[0] ? items[0].start : SETTINGS.fahrtVon);
     sc.scrollLeft=Math.max(0, x(focus)-60);
     _tlAutoScrolled=true;
   }
@@ -1943,15 +2008,19 @@ function renderTimeline(){
 function renderOpQueue(){
   renderTimeline();
   // opOrders holds today's orders only (see OrderStore.list)
-  const nowLoad=competingLoad(opOrders);      // due within the next minutes
-  const dayLoad=loadFromOrders(opOrders);     // everything still open today
-  const wait=waitFromLoad(nowLoad);
-  const pct=Math.min(100,Math.round(nowLoad/SETTINGS.ofen*100));
-  const warn=wait>=SETTINGS.warnMin;
+  // today's orders only (see OrderStore.list) — measured in pizzas per Takt
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
+  const load=taktLoad(opOrders);
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const nowTakt=load[Math.floor(nowMin/T)*T]||0;
+  const dayPizzas=(opOrders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit')
+    .reduce((s,o)=>s+orderPizzas(o),0);
+  const pct=Math.min(100,Math.round(nowTakt/cap*100));
+  const warn=nowTakt>=cap;
   document.getElementById('capBar').innerHTML=`
-    <div class="cap-head"><div class="cap-title">Küchen-Auslastung jetzt</div><div class="cap-eta ${warn?'warn':'ok'}">≈ ${wait} Min</div></div>
-    <div class="cap-meter"><div class="cap-fill ${pct>=100?'full':(warn?'warn':'')}" style="width:${pct}%"></div></div>
-    <div class="cap-stats"><div><b>${Math.round(nowLoad*10)/10}</b> Last jetzt</div><div><b>${Math.round(dayLoad*10)/10}</b> heute offen</div><div><b>${opOrders.filter(o=>o.Status==='neu').length}</b> neu</div><div><b>${opOrders.filter(o=>o.Status==='arbeit').length}</b> in Arbeit</div><div><b>${SETTINGS.ofen}</b> pro Ofen</div></div>`;
+    <div class="cap-head"><div class="cap-title">Ofen jetzt</div><div class="cap-eta ${warn?'warn':'ok'}">${nowTakt}/${cap} Pizzen</div></div>
+    <div class="cap-meter"><div class="cap-fill ${pct>=100?'full':(pct>=70?'warn':'')}" style="width:${pct}%"></div></div>
+    <div class="cap-stats"><div><b>${dayPizzas}</b> Pizzen offen</div><div><b>${opOrders.filter(o=>o.Status==='neu').length}</b> neu</div><div><b>${opOrders.filter(o=>o.Status==='arbeit').length}</b> in Arbeit</div><div><b>${SETTINGS.autos}</b> Autos</div></div>`;
   const list=document.getElementById('opQueue');list.innerHTML='';
   let shown=opOrders.slice();
   if(opFilter==='aktiv')shown=shown.filter(o=>o.Status!=='abgeschlossen');
@@ -1964,7 +2033,7 @@ function renderOpQueue(){
     const t=orderDate(o);const hhmm=isNaN(t)?'':t.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     const el=document.createElement('div');el.className='oq s-'+st;
     const ziel=fmtHHMM(o.Zielzeit||o.zielzeit);
-    el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
+    el.innerHTML=`<div class="oq-top"><span class="oq-code">${o.Code||'—'} · 🍕 ${orderPizzas(o)}</span><span class="oq-mode ${m}">${m==='lieferung'?'Lieferung':'Abholung'}</span><span class="oq-time">${hhmm}</span></div>
       <div class="oq-items">${String(o.Artikel||'').replace(/;/g,'<br>')}</div>
       <div class="oq-meta">${o.Summe?`<b>${o.Summe}</b> · `:''}${o.Adresse?o.Adresse+' · ':''}${o.Notiz?o.Notiz:''}</div>
       <div class="oq-eta">🎯 Zielzeit
@@ -2005,68 +2074,6 @@ async function opAdjustEta(id,delta){
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>mark.addEventListener(ev,()=>clearTimeout(ht)));
 })();
 
-/* ---------- customer waiting page ---------- */
-const WFLOW=['neu','arbeit','fertig','abgeschlossen'];
-const WLABEL={neu:'Eingegangen',arbeit:'In Zubereitung',fertig:'Fertig',abgeschlossen:'Abgeschlossen'};
-let waitId=null, waitTimer=null;
-function showWaitingPage(order){
-  waitId=order.Bestell_ID; _waitHash='';
-  document.getElementById('waitOverlay').classList.add('show');
-  renderWaitingPage(order);
-  // remember on device so a re-scan returns here
-  try{ localStorage.setItem('pinnas_mywait', JSON.stringify({id:waitId, ts:Date.now()})); }catch(e){}
-  if(waitTimer)clearInterval(waitTimer);
-  waitTimer=setInterval(pollWaiting, 5000);
-}
-let _waitHash='';
-async function pollWaiting(){
-  if(!waitId)return;
-  try{
-    const orders=await OrderStore.list(); const o=orders.find(x=>x.Bestell_ID===waitId);
-    if(o){
-      const h=String(o.Status)+'|'+String(o.Zielzeit||'');
-      if(h!==_waitHash){ _waitHash=h; renderWaitingPage(o); }
-    }
-  }catch(e){}
-}
-function renderWaitingPage(o){
-  const st=String(o.Status||o.status||'neu'); const idx=WFLOW.indexOf(st);
-  const eta=fmtHHMM(o.Zielzeit||o.zielzeit);
-  const modus=String(o.Modus||o.modus||'');
-  const isPickup = modus.toLowerCase()==='abholung';
-  const steps=WFLOW.map((s,i)=>{
-    const cls=i<idx?'done':(i===idx?'cur':''); const ic=i<idx?'✓':(i===idx?'●':'○');
-    return `<div class="wp-step ${cls}"><div class="wp-dot">${ic}</div><div class="wp-lbl">${WLABEL[s]}</div></div>`;
-  }).join('');
-  const ready = st==='fertig';
-  const done = st==='abgeschlossen';
-  document.getElementById('waitPage').innerHTML=`
-    <div class="wp-code">${o.Code||o.code||'—'}</div>
-    <div class="wp-sub">Deine Bestellnummer${modus?' · '+modus:''}</div>
-    ${eta?`<div class="wp-eta">${isPickup?'Fertig':'Lieferung'} ca. <b>${eta} Uhr</b></div>`:''}
-    ${ready?`<div class="wp-ready">🎉 Fertig! ${isPickup?'Bitte abholen':'Kommt zu dir'}</div>`:''}
-    ${done?`<div class="wp-ready" style="background:var(--panel);color:var(--muted)">Abgeschlossen — danke!</div>`:''}
-    <div class="wp-track">${steps}</div>
-    <button class="wp-check" id="wpCheck">↻ Status aktualisieren</button>
-    ${isPickup?`<a class="wp-nav" id="wpNav" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent('Pinnas Pizza, Enzstr. 2, 74321 Bietigheim-Bissingen')}" target="_blank" rel="noopener">🧭 Route zur Abholung</a>`:''}
-    <div class="wp-note">Der Status aktualisiert sich von selbst.<br>Fragen? <a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">WhatsApp</a> · <a href="tel:+4971479299682">07147 9299682</a></div>
-    <button class="wp-new" id="wpNew">Neue Bestellung</button>`;
-  const cb=document.getElementById('wpCheck');
-  if(cb) cb.onclick=()=>{
-    cb.textContent='⏳ prüfe …'; cb.disabled=true;
-    _waitHash=''; // force refresh even if unchanged
-    Promise.resolve(pollWaiting()).finally(()=>setTimeout(()=>{ const b2=document.getElementById('wpCheck'); if(b2){b2.textContent='↻ Status aktualisieren'; b2.disabled=false;} },500));
-  };
-  const nb=document.getElementById('wpNew');
-  if(nb) nb.onclick=()=>{ closeWaitingPage(); };
-}
-function closeWaitingPage(){
-  document.getElementById('waitOverlay').classList.remove('show');
-  if(waitTimer){clearInterval(waitTimer);waitTimer=null;}
-  waitId=null;
-  try{ localStorage.removeItem('pinnas_mywait'); }catch(e){}
-}
-
 async function boot(){
   const flag=document.getElementById('srcFlag');
   if(SHEET_ID && flag) flag.textContent='Menü wird geladen …';
@@ -2076,7 +2083,6 @@ async function boot(){
     else if(res.live) flag.innerHTML='Menü live aus Google Sheets';
     else flag.innerHTML='⚠ Konnte Google Sheet nicht laden — Standard-Menü aktiv';
   }
-  buildTimeOptions();
   buildTabs();
   renderMenu();
   syncFieldUI();
