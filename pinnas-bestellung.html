@@ -42,6 +42,8 @@
     letter-spacing:.03em;color:var(--muted2);font-weight:500;
   }
   .demo-flag b{color:var(--muted)}
+  .build{font-variant-numeric:tabular-nums;color:#7f7f85}
+  .build.stale{color:var(--amber)}
 
   /* header bar mimicking flyer top strip */
   header{
@@ -366,7 +368,8 @@
   .op-unlock{width:100%;background:var(--red);border:0;color:#fff;padding:14px;border-radius:12px;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer;margin-top:12px}
   .op-close{width:100%;background:transparent;border:0;color:var(--muted);padding:12px;font-family:inherit;font-size:14px;cursor:pointer;margin-top:4px}
   .op-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:640px;margin:0 auto 10px}
-  .op-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .op-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;line-height:1.3}
+  .op-title .build{font-size:10px;font-weight:600;text-transform:none;letter-spacing:0}
   .op-nav{background:var(--slate2);border:1px solid var(--line);color:var(--ink);padding:9px 14px;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
   .cap-bar{max-width:640px;margin:0 auto 12px;background:var(--slate2);border:1px solid var(--line);border-radius:12px;padding:14px}
   .cap-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
@@ -630,7 +633,7 @@
   <div id="opPanel" style="display:none">
     <div class="op-topbar">
       <button class="op-nav" id="opExit">✕ Schließen</button>
-      <span class="op-title">Küche</span>
+      <span class="op-title">Küche<br><span class="build" id="buildOp"></span></span>
       <button class="op-nav" id="opRefresh">↻</button>
     </div>
     <div class="timeline" id="timeline"></div>
@@ -656,6 +659,10 @@
 const SHEET_ID = "1FtOmzDLCAXBPXgubCLQxHMkwaj--XscRtPaUWqxMTXk";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVHlB10Ajm4FX4w0uawYvFWw0ce-2P_I5nWrA_Va996P5eN4yABJ0uPegPPN9XLL0/exec";
 const OPERATOR_PIN = "1234"; // ← change to your own
+/* Build marker — bumped with every file I hand over. Shown in the top bar and
+ * in the kitchen, so you can tell at a glance whether the browser already
+ * serves the newly uploaded file or still a cached one. */
+const BUILD = "2026-09-25 · 16";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -696,7 +703,7 @@ function filterPlaces(raw){
 let CONFIG_OPTS = [];   // per-category customization options
 let SETTINGS = {ofen:8,backzeit:10,lieferfenster:30,prepOther:8,warnMin:45,puffer:5,prepProPizza:2,
   openFrom:17*60,openTo:21*60+30,takt:15,pizzenProTakt:10,
-  fahrtVon:17*60+30,fahrtBis:21*60+30,fahrtTakt:30,autos:2};
+  fahrtVon:17*60+30,fahrtBis:21*60+30,fahrtTakt:30,vorlaufTakte:2,autos:2};
 const _truthy = v => ['ja','true','1','yes','x'].includes(String(v).trim().toLowerCase());
 const _num = v => { const n=parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.')); return isNaN(n)?0:n; };
 function _csvUrl(tab){ return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`; }
@@ -767,6 +774,7 @@ function _parseSettings(rows){
     fahrtVon:gt('Erste Fahrt (Uhr)',17*60+30),   // first delivery departure
     fahrtBis:gt('Letzte Fahrt (Uhr)',21*60+30),  // last delivery departure
     fahrtTakt:g('Abstand Fahrten (Minuten)',30)||30,
+    vorlaufTakte:g('Max Vorlauf (Takte)',2)||2,   // how early an order may be baked
     autos:g('Autos',2)||2};
 }
 // per-order oven time: whole baking cycles at 10 pizzas per 15-min Takt
@@ -798,38 +806,27 @@ function taktLoad(orders){
   });
   return m;
 }
-// free pizza places for one departure (its own Takte only, so slots never overlap)
-function slotFree(slotMin, load){
-  const T=SETTINGS.takt||15; let used=0;
-  for(let i=1;i<=taktsPerSlot();i++) used+=(load[slotMin-i*T]||0);
-  return slotCapacity()-used;
+// How far back an order may be baked before its time: normally 2 Takte (30 min),
+// more only if the order itself needs more oven cycles.
+function lookbackTakte(pizzas){
+  const cap=SETTINGS.pizzenProTakt||10;
+  return Math.max(SETTINGS.vorlaufTakte||taktsPerSlot(), Math.ceil(Math.max(pizzas,1)/cap));
 }
-// oven places still free in the k Takte right before time t
-function taktFreeBefore(t, load, k){
+// Free oven places before a given time — the SAME check for a departure and a
+// pickup, so both modes always report the same capacity. Every Takt is capped
+// at 10 pizzas on its own, so a full Takt can never be topped up.
+function freeBefore(t, load, pizzas){
   const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
   let free=0;
-  for(let i=1;i<=k;i++) free+=Math.max(0, cap-(load[t-i*T]||0));
+  for(let i=1;i<=lookbackTakte(pizzas);i++) free+=Math.max(0, cap-(load[t-i*T]||0));
   return free;
-}
-// pickup times: every Takt (15 min) that can still bake this order before it
-function pickupSlots(pizzas, orders){
-  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
-  const load=taktLoad(orders);
-  const k=Math.max(1, Math.ceil(Math.max(pizzas,1)/cap));
-  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  const earliest=Math.max(nowMin+orderDuration(pizzas), openFrom());
-  const out=[];
-  for(let m=Math.ceil(earliest/T)*T; m<=openTo(); m+=T){
-    if(taktFreeBefore(m, load, k) >= Math.max(pizzas,1)) out.push(m);
-  }
-  return out;
 }
 // first departure that still fits `pizzas`, and isn't in the past
 function nextFreeSlot(pizzas, orders){
   const load=taktLoad(orders);
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
   const lead=orderDuration(pizzas);
-  return departureSlots().find(m => m>=nowMin+lead && slotFree(m,load)>=Math.max(pizzas,1)) ?? null;
+  return departureSlots().find(m => m>=nowMin+lead && freeBefore(m,load,pizzas)>=Math.max(pizzas,1)) ?? null;
 }
 // customer-facing wait = internal estimate + safety buffer (kitchen sees the raw internal one)
 function customerWait(internalMin){ return internalMin + (SETTINGS.puffer||0); }
@@ -1171,9 +1168,8 @@ function buildTimeOptions(){
   const times=[];
   if(isPickup){ for(let m=openFrom(); m<=openTo(); m+=T) times.push(m); }
   else times.push(...departureSlots());
-  const k=Math.max(1, Math.ceil(pizzas/cap));
   const rows=times.map(m=>{
-    const free = isPickup ? taktFreeBefore(m, load, k) : slotFree(m, load);
+    const free = freeBefore(m, load, pizzas);   // identical check for both modes
     let reason='';
     if(m < nowMin) reason='vorbei';
     else if(m < nowMin+lead) reason='zu kurzfristig';
@@ -1941,6 +1937,8 @@ async function updateWaitHint(){
 }
 function openOperator(){
   document.getElementById('opOverlay').classList.add('show');
+  const bo=document.getElementById('buildOp');
+  if(bo) bo.textContent=`Build ${BUILD} · Datei ${fileStamp()}`;
   if(opUnlocked){ document.getElementById('opLock').style.display='none'; document.getElementById('opPanel').style.display='block'; startOpPoll(); }
   else { document.getElementById('opLock').style.display='block'; document.getElementById('opPanel').style.display='none'; }
 }
@@ -2132,14 +2130,20 @@ async function opAdjustEta(id,delta){
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>mark.addEventListener(ev,()=>clearTimeout(ht)));
 })();
 
+// when the served file was last changed (GitHub Pages sends Last-Modified)
+function fileStamp(){
+  const d=new Date(document.lastModified);
+  return isNaN(d)?'unbekannt':d.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
 async function boot(){
   const flag=document.getElementById('srcFlag');
   if(SHEET_ID && flag) flag.textContent='Menü wird geladen …';
   const res = await loadLiveData();
   if(flag){
-    if(!SHEET_ID) flag.style.display='none';
-    else if(res.live) flag.innerHTML='Menü live aus Google Sheets';
-    else flag.innerHTML='⚠ Konnte Google Sheet nicht laden — Standard-Menü aktiv';
+    flag.style.display='';
+    const base = !SHEET_ID ? 'Offline-Demo'
+      : (res.live ? 'Menü live aus Google Sheets' : '⚠ Konnte Google Sheet nicht laden — Standard-Menü aktiv');
+    flag.innerHTML = `${base} · <span class="build" id="buildFlag" title="Datei-Stand laut Server: ${fileStamp()}">Build ${BUILD}</span>`;
   }
   buildTabs();
   renderMenu();
