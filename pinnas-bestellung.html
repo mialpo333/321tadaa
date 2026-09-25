@@ -432,6 +432,7 @@
   .tl-block small{font-size:9.5px;font-weight:700;opacity:.85}
   .tl-block.s-neu{background:#4a90d9}.tl-block.s-arbeit{background:var(--amber);color:#3a2c08}.tl-block.s-fertig{background:var(--wa);color:#04231a}
   .tl-block.sel{outline:2px solid var(--ink);outline-offset:1px}
+  .tl-block.over{box-shadow:0 0 0 2px var(--red-bright)}
   .tl-empty{font-size:12px;color:var(--muted2);text-align:center;padding:16px}
   .tl-det{margin-top:9px;background:var(--slate);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--muted);line-height:1.5}
   .tl-det b{color:var(--ink)}
@@ -667,7 +668,7 @@ const OPERATOR_PIN = "1234"; // ← change to your own
 /* Build marker — bumped with every file I hand over. Shown in the top bar and
  * in the kitchen, so you can tell at a glance whether the browser already
  * serves the newly uploaded file or still a cached one. */
-const BUILD = "2026-09-25 · 20";
+const BUILD = "2026-09-25 · 21";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -805,25 +806,28 @@ function orderPizzas(o){
 // Books every open order into the baking Takte, earliest target first.
 // An order fills the Takt right before its time and spills into earlier ones
 // only where places are actually free, so a Takt never goes past its 10.
-function taktLoad(orders){
-  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10, m={};
+// Returns both the per-Takt load and the split of each order across Takte.
+function bookOrders(orders){
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10, load={}, placements=[];
   (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig')
-    .map(o=>({z:hhmmToMin(o.Zielzeit), p:orderPizzas(o),
+    .map(o=>({o, z:hhmmToMin(o.Zielzeit), p:orderPizzas(o),
               pickup:String(o.Modus||'').toLowerCase()==='abholung'}))
-    .filter(o=>o.z!==null && o.p>0)
+    .filter(x=>x.z!==null && x.p>0)
     .sort((a,b)=>a.z-b.z)
-    .forEach(o=>{
-      const last=Math.floor((o.z-1)/T)*T;
-      let need=o.p, t=last;
-      for(let i=0;i<lookbackTakte(o.p,o.pickup) && need>0;i++,t-=T){
-        const take=Math.min(need, Math.max(0, cap-(m[t]||0)));
-        if(take>0){ m[t]=(m[t]||0)+take; need-=take; }
+    .forEach(x=>{
+      const last=Math.floor((x.z-1)/T)*T;
+      let need=x.p, t=last; const segs=[];
+      for(let i=0;i<lookbackTakte(x.p,x.pickup) && need>0;i++,t-=T){
+        const take=Math.min(need, Math.max(0, cap-(load[t]||0)));
+        if(take>0){ load[t]=(load[t]||0)+take; segs.push({t, n:take}); need-=take; }
       }
       // no room left: show the rest as an overload on the last Takt
-      if(need>0) m[last]=(m[last]||0)+need;
+      if(need>0){ load[last]=(load[last]||0)+need; segs.push({t:last, n:need, over:true}); }
+      placements.push({o:x.o, z:x.z, pizzas:x.p, segs:segs.sort((a,b)=>a.t-b.t)});
     });
-  return m;
+  return {load, placements};
 }
+function taktLoad(orders){ return bookOrders(orders).load; }
 // How far back an order may be baked before its time.
 // Pickup: only the Takt right before it — the guest wants it fresh at that minute.
 // Delivery: the Takte of its trip window (30 min), since the trip is boxed anyway.
@@ -2042,21 +2046,21 @@ function renderTimeline(){
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
   const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
   const PX=5; // pixels per minute
-  const items=active.map(o=>{
-    const ziel=hhmmToMin(o.Zielzeit); if(ziel===null) return null;
-    const pizzas=orderPizzas(o);
-    return {o, pizzas, start:ziel-orderDuration(pizzas), end:ziel};
-  }).filter(Boolean).sort((a,b)=>a.start-b.start);
+  const booking=bookOrders(active);
+  const items=booking.placements.map(pl=>({
+    o:pl.o, pizzas:pl.pizzas, segs:pl.segs,
+    start:pl.segs.length?pl.segs[0].t:pl.z-T, end:pl.z
+  })).sort((a,b)=>a.start-b.start);
   // range: the whole service day, widened for anything outside it
   let from=Math.min(openFrom(), SETTINGS.fahrtVon)-30, to=Math.max(openTo(), SETTINGS.fahrtBis)+15;
   items.forEach(it=>{ from=Math.min(from,it.start-15); to=Math.max(to,it.end+15); });
   from=Math.floor(from/T)*T; to=Math.ceil(to/T)*T;
   const x=m=>(m-from)*PX;
-  // parallel orders go into their own lane so every block stays readable
-  const laneEnd=[]; const MINW=74;
+  // parallel orders get their own lane so every block stays readable
+  const laneEnd=[];
   items.forEach(it=>{
     let l=laneEnd.findIndex(e=>e<=it.start); if(l<0){ l=laneEnd.length; laneEnd.push(0); }
-    laneEnd[l]=it.start+Math.max(MINW/PX, it.end-it.start)+2; it.lane=l;
+    laneEnd[l]=it.end+2; it.lane=l;
   });
   const lanes=Math.max(1,laneEnd.length);
   const H=20+lanes*38+18;
@@ -2067,24 +2071,30 @@ function renderTimeline(){
       : `<div class="tl-half" style="left:${x(m)}px"></div>`;
   }
   // pizzas per Takt against the 10-per-15-min rule
-  const load=taktLoad(active);
+  const load=booking.load;
   let takts='';
   for(let m=from; m<to; m+=T){
     const n=load[m]||0; if(!n) continue;
     const cls=n>cap?'over':(n>=cap*0.7?'busy':'');
     takts+=`<div class="tl-takt ${cls}" style="left:${x(m)+1}px;width:${T*PX-2}px">${n}/${cap}</div>`;
   }
-  const blocks=items.map((it,k)=>{
-    const o=it.o; const w=Math.max(MINW,(it.end-it.start)*PX);
-    const sel=_tlPick===o.Bestell_ID?' sel':'';
-    return `<button class="tl-block s-${o.Status}${sel}" data-id="${o.Bestell_ID}" style="left:${x(it.start)}px;width:${w}px;top:${20+it.lane*38}px">
-      🍕 ${it.pizzas}<small>${o.Zielzeit}</small></button>`;
+  // one block per baking Takt: an order split over two Takte shows both parts
+  const blocks=items.map(it=>{
+    const o=it.o; const sel=_tlPick===o.Bestell_ID?' sel':'';
+    return it.segs.map((sg,k)=>{
+      const lastSeg = k===it.segs.length-1;
+      return `<button class="tl-block s-${o.Status}${sel}${sg.over?' over':''}" data-id="${o.Bestell_ID}"
+        style="left:${x(sg.t)+1}px;width:${T*PX-3}px;top:${20+it.lane*38}px"
+        title="${o.Code||''} · ${sg.n} von ${it.pizzas} Pizzen · Zielzeit ${o.Zielzeit}">
+        🍕 ${sg.n}<small>${lastSeg?o.Zielzeit:'vorab'}</small></button>`;
+    }).join('');
   }).join('');
   const nowIn = nowMin>=from && nowMin<=to;
   const nowLine = nowIn ? `<div class="tl-now" style="left:${x(nowMin)}px"></div>` : '';
   const totalPizzas=items.reduce((s,it)=>s+it.pizzas,0);
   const pick=items.find(it=>it.o.Bestell_ID===_tlPick);
-  const det=pick?`<div class="tl-det"><b>${pick.o.Code||'—'}</b> · ${pick.o.Modus||''} · 🍕 ${pick.pizzas} · Zielzeit <b>${pick.o.Zielzeit}</b><br>
+  const det=pick?`<div class="tl-det"><b>${pick.o.Code||'—'}</b> · ${pick.o.Modus||''} · 🍕 ${pick.pizzas} · Zielzeit <b>${pick.o.Zielzeit}</b>
+      ${pick.segs.length>1?'<br>Ofen: '+pick.segs.map(g=>`${g.n}× um ${minToHHMM(g.t)}`).join(' + '):''}<br>
       ${String(pick.o.Artikel||'').replace(/;/g,' · ')}<br>${pick.o.Adresse?pick.o.Adresse+'<br>':''}${pick.o.Telefon||''} ${pick.o.Notiz?'· '+pick.o.Notiz:''}</div>`:'';
   el.innerHTML=`<div class="tl-title"><span style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">Zeitplan heute</span>
       <span>🍕 ${totalPizzas} offen · ${cap} pro ${T} Min${nowIn?'':' · jetzt '+minToHHMM(nowMin)}</span></div>`+
