@@ -799,6 +799,26 @@ function slotFree(slotMin, load){
   for(let i=1;i<=taktsPerSlot();i++) used+=(load[slotMin-i*T]||0);
   return slotCapacity()-used;
 }
+// oven places still free in the k Takte right before time t
+function taktFreeBefore(t, load, k){
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
+  let free=0;
+  for(let i=1;i<=k;i++) free+=Math.max(0, cap-(load[t-i*T]||0));
+  return free;
+}
+// pickup times: every Takt (15 min) that can still bake this order before it
+function pickupSlots(pizzas, orders){
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
+  const load=taktLoad(orders);
+  const k=Math.max(1, Math.ceil(Math.max(pizzas,1)/cap));
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const earliest=Math.max(nowMin+orderDuration(pizzas), openFrom());
+  const out=[];
+  for(let m=Math.ceil(earliest/T)*T; m<=openTo(); m+=T){
+    if(taktFreeBefore(m, load, k) >= Math.max(pizzas,1)) out.push(m);
+  }
+  return out;
+}
 // first departure that still fits `pizzas`, and isn't in the past
 function nextFreeSlot(pizzas, orders){
   const load=taktLoad(orders);
@@ -996,6 +1016,8 @@ document.getElementById('modeSeg').addEventListener('click', e=>{
   document.getElementById('areaHint').style.display = mode==='delivery' ? 'block':'none';
   refreshComboState();
   updateAddrVisibility();
+  form.Time='';          // times differ per mode — pick a fresh one
+  buildTimeOptions();
   updateWaitHint();
   render();
 });
@@ -1081,7 +1103,9 @@ document.addEventListener('click', e=>{
 function updateAddrVisibility(){ /* top address block removed; contact lives at the ticket now */ }
 
 // ---------- contact fields (at the ticket) ----------
-const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:true}, Time:{req:false}, Note:{req:false} };
+const FIELD_META = { Street:{req:true}, Name:{req:true}, Phone:{req:true}, Time:{req:true}, Note:{req:false} };
+// street is only needed for delivery; everything else applies to both modes
+function fieldRequired(f){ return f==='Street' ? mode==='delivery' : !!FIELD_META[f].req; }
 const form = { Street:'', Name:'', Phone:'', Time:'', Note:'' };
 
 // Opening hours come from the sheet (Einstellungen), defaults 17:00–21:30. Mon closed.
@@ -1136,8 +1160,13 @@ function buildTimeOptions(){
   const pizzas=Math.max(cartPizzas(),1);
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
   const lead=orderDuration(pizzas);
-  const free=departureSlots().map(m=>({m, free:slotFree(m,load)}))
-    .filter(s=>s.m>=nowMin+lead && s.free>=pizzas);
+  const free = mode==='pickup'
+    ? pickupSlots(pizzas, _liveOrders).map(m=>({m, free:taktFreeBefore(m, load, Math.max(1,Math.ceil(pizzas/(SETTINGS.pizzenProTakt||10))))}))
+    : departureSlots().map(m=>({m, free:slotFree(m,load)})).filter(s=>s.m>=nowMin+lead && s.free>=pizzas);
+  // label follows the mode: departure for delivery, collection time for pickup
+  const lab=document.querySelector('.fld[data-for="Time"] .fld-lab');
+  if(lab) lab.innerHTML = mode==='pickup'
+    ? 'Abholzeit <em>Pflicht</em>' : 'Abfahrt des Fahrers <i>Lieferzeit</i>';
   const prev=form.Time;
   sel.innerHTML='';
   if(!free.length){
@@ -1169,7 +1198,7 @@ function syncFieldUI(){
     const wrap = el.closest('.fld');
     if(!wrap) return;
     const filled = form[f].trim().length>0;
-    const req = FIELD_META[f].req;
+    const req = fieldRequired(f);
     wrap.classList.toggle('filled', filled);
     wrap.classList.toggle('req-empty', req && !filled);
   });
@@ -1622,7 +1651,7 @@ function render(){
   if(sentInfo && !cart.length){
     host.innerHTML=`<div class="sent-ok">
         <div class="so-t">✓ Bestellung ${sentInfo.code} ist raus</div>
-        <div class="so-s">${sentInfo.isPickup?'Abholung ca.':'Der Fahrer startet um'} <b>${sentInfo.zielzeit} Uhr</b><br>
+        <div class="so-s">${sentInfo.isPickup?'Abholbereit um':'Der Fahrer startet um'} <b>${sentInfo.zielzeit} Uhr</b><br>
         Bitte schick die WhatsApp-Nachricht ab, falls sich das Fenster nicht geöffnet hat.</div>
         <button class="so-new" id="newOrderBtn">Neue Bestellung</button></div>`;
     const nb=document.getElementById('newOrderBtn');
@@ -1652,7 +1681,9 @@ function render(){
       if(parts.length) block = '\n'+'—'.repeat(18)+'\n'+parts.join('\n');
     } else {
       block = '\n'+'—'.repeat(18)+'\nAbholung: Enzstr. 2';
+      block += '\nAbholzeit: '+(addr.time?addr.time+' Uhr':'—');
       if(addr.name) block += '\nName: '+addr.name;
+      if(addr.phone) block += '\nTel: '+addr.phone;
     }
     host.innerHTML=`<div class="bubble"><span class="bt">🍕 NEUE BESTELLUNG · ${modeLine}</span>${lines}\n${'—'.repeat(18)}\nSumme: ${eur(tot)}${block}\n\n<i style="color:#a7d7cf">— gesendet über die Bestell-Demo</i></div>`;
   }
@@ -1682,6 +1713,10 @@ function render(){
     else if(tot < currentMin){ blocked=true; hint=`Mindestbestellwert für ${selectedPlace?selectedPlace.name:'diesen Ort'}: ${eur(currentMin)} — noch ${eur(currentMin-tot)}.`; }
     else if(!addr.street || !addr.name || !addr.phone){ needContact=true; } // not blocked: click reveals fields
   }
+  else { // pickup
+    if(!form.Time){ blocked=true; hint='Für heute ist die Küche ausgebucht — bitte kurz anrufen.'; }
+    else if(!addr.name || !addr.phone){ needContact=true; }
+  }
   btn.disabled=blocked;
   document.getElementById('waStatus').textContent = cart.length ? `${count} Artikel · ${eur(tot)}` : 'Bestell-Ticket · Vorschau';
   if(hint){minHint.style.display='block';minHint.textContent=hint;} else minHint.style.display='none';
@@ -1691,14 +1726,17 @@ function render(){
   // info is needed (or the user tapped send). Once shown, stay shown for the
   // rest of the session so filling the 2nd field never yanks focus away.
   const tickFields = document.getElementById('tickFields');
-  const deliverable = mode==='delivery' && cart.length>0 && inArea===true && tot>=currentMin;
-  if(deliverable && (needContact || triedSend)) fieldsRevealed = true;
-  if(mode!=='delivery' || cart.length===0) fieldsRevealed = false; // reset when not relevant
-  const showTickFields = deliverable && fieldsRevealed;
+  const orderable = cart.length>0 && (mode==='pickup' || (inArea===true && tot>=currentMin));
+  if(orderable && (needContact || triedSend)) fieldsRevealed = true;
+  if(cart.length===0) fieldsRevealed = false; // reset when not relevant
+  const showTickFields = orderable && fieldsRevealed;
   tickFields.style.display = showTickFields ? 'block' : 'none';
+  const streetFld = document.querySelector('#tickFields .fld[data-for="Street"]');
+  if(streetFld) streetFld.style.display = mode==='delivery' ? '' : 'none';
   const tfHead = document.getElementById('tfHead');
-  if(showTickFields) tfHead.textContent = needContact
-        ? 'Noch kurz für die Lieferung:' : 'Angaben für die Lieferung:';
+  if(showTickFields) tfHead.textContent = mode==='pickup'
+        ? (needContact ? 'Noch kurz für die Abholung:' : 'Angaben für die Abholung:')
+        : (needContact ? 'Noch kurz für die Lieferung:' : 'Angaben für die Lieferung:');
 
   // floating pill (mobile)
   const pill=document.getElementById('pill');
@@ -1744,9 +1782,10 @@ window.addEventListener('resize', refreshPillVisibility, {passive:true});
 document.getElementById('sendBtn').onclick=()=>{
   triedSend = true;
   // if required contact info is missing, reveal + focus it here instead of sending
-  if(mode==='delivery' && (!form.Street.trim() || !form.Name.trim() || !form.Phone.trim())){
+  const missing = ['Street','Name','Phone'].filter(f=>fieldRequired(f) && !form[f].trim());
+  if(missing.length){
     render(); // ensures tickFields are shown
-    const first = !form.Street.trim() ? 'Street' : (!form.Name.trim() ? 'Name' : 'Phone');
+    const first = missing[0];
     const el = document.querySelector(`#tickFields .af[data-field="${first}"]`)
             || document.querySelector(`.af[data-field="${first}"]`);
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>el.focus(),300); }
@@ -1774,7 +1813,9 @@ document.getElementById('sendBtn').onclick=()=>{
     if(form.Note.trim()) txt += `\nHinweis: ${form.Note.trim()}`;
   } else {
     txt += `\n${'-'.repeat(18)}\nAbholung: Enzstr. 2`;
+    txt += `\nAbholzeit: ${form.Time} Uhr`;
     if(form.Name.trim()) txt += `\nName: ${form.Name.trim()}`;
+    if(form.Phone.trim()) txt += `\nTel: ${form.Phone.trim()}`;
   }
   // 1) generate the order code and prepend it (for easy correlation with the kitchen)
   const code = nextOrderCode();
@@ -1786,14 +1827,14 @@ document.getElementById('sendBtn').onclick=()=>{
   // target time: the driver's departure for delivery, the ready time for pickup
   const myLoad = cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
   const waitMin = customerWait(scheduleAwareWait(myLoad, _liveOrders));
-  const targetEta = mode==='delivery' ? form.Time : computeTargetTime(waitMin,'');
+  const targetEta = form.Time;   // departure (delivery) or collection time (pickup)
   const sendBtnEl=document.getElementById('sendBtn');
   sendBtnEl.disabled=true; sendBtnEl.textContent='wird gesendet…';
   const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(txt)}`;
   const orderObj={
     code, modus:(mode==='pickup'?'Abholung':'Lieferung'), status:'neu',
     artikel, summe:eur(tot), last:cartLoadWeight(), pizzen:cartPizzas(), zielzeit:targetEta,
-    wunschzeit: mode==='delivery' ? 'Abfahrt '+form.Time+' Uhr' : 'Abholung',
+    wunschzeit: (mode==='delivery' ? 'Abfahrt ' : 'Abholung ')+form.Time+' Uhr',
     name: form.Name.trim(),
     adresse: mode==='delivery' ? [form.Street.trim(), selectedPlace?`${selectedPlace.name} ${selectedPlace.plz}`:''].filter(Boolean).join(', ') : '',
     telefon: form.Phone.trim(), notiz: form.Note.trim()
@@ -1864,20 +1905,20 @@ async function updateWaitHint(){
   const myLoad=cart.reduce((s,c)=>s+itemLoadWeight(c.cat)*c.q,0);
   const wait=customerWait(scheduleAwareWait(myLoad, _liveOrders));
   const isPickup = (typeof mode!=='undefined' && mode==='pickup');
-  if(!isPickup) buildTimeOptions();          // departures depend on the current cart
-  const target = isPickup ? computeTargetTime(wait,'') : form.Time;
-  const ok = isPickup ? wait<SETTINGS.warnMin : !!target;
+  buildTimeOptions();                        // free times depend on the current cart
+  const target = form.Time;
+  const ok = !!target;
   if(!isOpenDay()){ el.textContent='Heute Ruhetag'; }
-  else if(isPickup){ el.textContent=`⏱ Abholbereit ca. ${target} Uhr`; }
-  else if(target){ el.textContent=`🛵 Der Fahrer startet um ${target} Uhr`; }
-  else { el.textContent='🛵 Heute leider ausgebucht — bitte anrufen'; }
+  else if(!target){ el.textContent='Heute leider ausgebucht — bitte anrufen'; }
+  else if(isPickup){ el.textContent=`⏱ Abholbereit um ${target} Uhr`; }
+  else { el.textContent=`🛵 Der Fahrer startet um ${target} Uhr`; }
   el.className='wait-hint'+(ok?' ok':'');
   // mirror into the send-button summary
   const ss=document.getElementById('sendSummary');
   if(ss){
     const modeLbl = isPickup ? 'Abholung' : 'Lieferung';
-    const waitLbl = isPickup ? `fertig ca. ${target} Uhr`
-                  : (target ? `Abfahrt ${target} Uhr` : 'heute ausgebucht');
+    const waitLbl = !target ? 'heute ausgebucht'
+                  : (isPickup ? `Abholung ${target} Uhr` : `Abfahrt ${target} Uhr`);
     ss.innerHTML=`<span class="ss-mode">${modeLbl}</span><span class="ss-wait${ok?' ok':''}">⏱ ${waitLbl}</span>`;
   }
 }
