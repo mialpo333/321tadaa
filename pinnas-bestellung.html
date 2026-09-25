@@ -196,6 +196,9 @@
   .tickfields .fld.req-empty .fld-lab em{background:rgba(230,180,80,.22);color:#f0d29a}
   /* filled → green confirm */
   .tickfields .fld.filled .af{border-color:rgba(37,211,102,.6);background:rgba(37,211,102,.07)}
+  .seg-sm{margin-bottom:11px;background:#0b141a;border-color:#264039}
+  .seg-sm button{padding:6px 12px;font-size:12.5px;color:#8fb3a8}
+  .seg-sm button.on{background:var(--red);color:#fff}
 
   /* floating total pill */
   .pill{
@@ -504,7 +507,7 @@
 </head>
 <body>
 
-<div class="demo-flag" id="srcFlag">DEMO / KONZEPT — <b>321tadaa</b> · nicht mit Pinna's Pizza verbunden · echte Preise &amp; Karte, Beispiel-Bestellablauf</div>
+<div class="demo-flag" id="srcFlag"></div>
 
 <header>
   <div class="wrap barrow">
@@ -528,17 +531,15 @@
   <div class="wrap hero-in">
     <div>
       <div class="kicker">Bestellen ohne Warteschleife</div>
-      <h2>Deine Bestellung<br>wird zum fertigen<br>Zettel<span class="dot">.</span></h2>
-      <p class="sub">Kein durchgeklingeltes Telefon in der Stoßzeit. Der Gast tippt, ihr bekommt einen sauberen Ticket per WhatsApp — mit Adresse, Allergenen und Summe.</p>
-      <p class="hero-note">Gedacht als Ergänzung, nicht als Ersatz fürs Telefon. Zahlung bleibt wie gehabt: bar oder kontaktlos (SumUp) bei Lieferung.</p>
+      <h2>Frisch aus dem Ofen.<br>Direkt zu dir<span class="dot">.</span></h2>
     </div>
     <div class="herocard">
       <h3>So läuft's</h3>
       <div class="flow">
-        <div class="flowstep"><div class="n">1</div><div>Gast wählt Lieferung oder Abholung und prüft kurz die PLZ.</div></div>
-        <div class="flowstep"><div class="n">2</div><div>Tippt Pizzen &amp; Pakete an — eine Größe, ein Tap.</div></div>
-        <div class="flowstep"><div class="n">3</div><div>Ihr bekommt einen fertig formatierten WhatsApp-Zettel.</div></div>
-        <div class="flowstep"><div class="n last">✓</div><div>Ihr lest ab statt mitzuschreiben. Kein verpasster Anruf.</div></div>
+        <div class="flowstep"><div class="n">1</div><div>Lieferung oder Abholung wählen — bei Lieferung kurz den Ort angeben.</div></div>
+        <div class="flowstep"><div class="n">2</div><div>Pizzen, Salate &amp; Pakete antippen.</div></div>
+        <div class="flowstep"><div class="n">3</div><div>Freie Zeit wählen — du siehst sofort, wann die Küche kann.</div></div>
+        <div class="flowstep"><div class="n last">✓</div><div>Per WhatsApp abschicken. Zahlung wie gewohnt bar oder per Karte.</div></div>
       </div>
     </div>
   </div>
@@ -594,6 +595,10 @@
 
           <div class="tickfields" id="tickFields" style="display:none">
             <div class="tf-head" id="tfHead">Noch kurz für die Lieferung:</div>
+            <div class="seg seg-sm" id="modeSeg2">
+              <button class="on" data-mode="delivery">Lieferung</button>
+              <button data-mode="pickup">Abholung · −5%</button>
+            </div>
             <div class="addrgrid">
               <label class="fld full" data-for="Street"><span class="fld-lab">Straße &amp; Hausnummer <em>Pflicht</em></span>
                 <input class="af" data-field="Street" placeholder="z. B. Hauptstraße 12" autocomplete="off"></label>
@@ -618,8 +623,8 @@
 </div>
 
 <footer>
-  <p class="disc">Unverbindliche Konzept-Demo, gebaut von <a class="egg" href="https://321tadaa.com" target="_blank" rel="noopener"><b>321tadaa</b></a>. Speisekarte, Preise und Liefergebiete Stand der öffentlichen Website (pinnas-pizza.de). Kein echter Bestellvorgang — der WhatsApp-Button zeigt nur, wie das Ticket beim Betrieb ankäme.</p>
-  <p><a class="egg" href="https://321tadaa.com" target="_blank" rel="noopener"><b>Making ideas work.</b></a></p>
+  <p class="disc">Pinna's Pizza · Enzstr. 2 · 74321 Bietigheim-Bissingen · <a class="egg" href="tel:+4971479299682"><b>07147 9299682</b></a></p>
+  <p><a class="egg" href="https://321tadaa.com" target="_blank" rel="noopener"><b>321tadaa</b> — Making ideas work.</a></p>
 </footer>
 
 <div class="op-overlay" id="opOverlay">
@@ -662,7 +667,7 @@ const OPERATOR_PIN = "1234"; // ← change to your own
 /* Build marker — bumped with every file I hand over. Shown in the top bar and
  * in the kitchen, so you can tell at a glance whether the browser already
  * serves the newly uploaded file or still a cached one. */
-const BUILD = "2026-09-25 · 17";
+const BUILD = "2026-09-25 · 19";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -1021,10 +1026,9 @@ let activePkg = null; // package being built: {def, slots:[{filled:[{n,base,gf}]
 const eur = v => v.toFixed(2).replace('.',',') + ' €';
 
 /* ---------- mode + area ---------- */
-document.getElementById('modeSeg').addEventListener('click', e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  mode = b.dataset.mode;
-  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on', x===b));
+function setMode(m){
+  mode = m;
+  syncModeButtons();
   document.getElementById('areaRow').style.display = mode==='delivery' ? 'flex':'none';
   document.getElementById('areaHint').style.display = mode==='delivery' ? 'block':'none';
   refreshComboState();
@@ -1033,6 +1037,23 @@ document.getElementById('modeSeg').addEventListener('click', e=>{
   buildTimeOptions();
   updateWaitHint();
   render();
+  // switching to delivery without a place: send them to the place picker
+  if(mode==='delivery' && inArea!==true){
+    const combo=document.getElementById('plz');
+    combo.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>combo.focus(),300);
+  }
+}
+function syncModeButtons(){
+  document.querySelectorAll('#modeSeg button, #modeSeg2 button').forEach(b=>
+    b.classList.toggle('on', b.dataset.mode===mode));
+}
+['modeSeg','modeSeg2'].forEach(id=>{
+  const el=document.getElementById(id); if(!el) return;
+  el.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    setMode(b.dataset.mode);
+  });
 });
 
 const plz = document.getElementById('plz');
@@ -1755,6 +1776,7 @@ function render(){
   if(cart.length===0) fieldsRevealed = false; // reset when not relevant
   const showTickFields = orderable && fieldsRevealed;
   tickFields.style.display = showTickFields ? 'block' : 'none';
+  syncModeButtons();
   const streetFld = document.querySelector('#tickFields .fld[data-for="Street"]');
   if(streetFld) streetFld.style.display = mode==='delivery' ? '' : 'none';
   const tfHead = document.getElementById('tfHead');
@@ -1932,7 +1954,8 @@ async function updateWaitHint(){
   buildTimeOptions();                        // free times depend on the current cart
   const target = form.Time;
   const ok = !!target;
-  if(!isOpenDay()){ el.textContent='Heute Ruhetag'; }
+  if(!cart.length){ el.textContent=''; }   // an empty cart has no time to show
+  else if(!isOpenDay()){ el.textContent='Heute Ruhetag'; }
   else if(!target){ el.textContent='Heute leider ausgebucht — bitte anrufen'; }
   else if(isPickup){ el.textContent=`⏱ Abholbereit um ${target} Uhr`; }
   else { el.textContent=`🛵 Der Fahrer startet um ${target} Uhr`; }
@@ -2152,9 +2175,8 @@ async function boot(){
   const res = await loadLiveData();
   if(flag){
     flag.style.display='';
-    const base = !SHEET_ID ? 'Offline-Demo'
-      : (res.live ? 'Menü live aus Google Sheets' : '⚠ Konnte Google Sheet nicht laden — Standard-Menü aktiv');
-    flag.innerHTML = `${base} · <span class="build" id="buildFlag" title="Datei-Stand laut Server: ${fileStamp()}">Build ${BUILD}</span>`;
+    const warn = (SHEET_ID && !res.live) ? '⚠ Menü konnte nicht geladen werden — Standardkarte aktiv · ' : '';
+    flag.innerHTML = `${warn}<span class="build" id="buildFlag" title="Datei-Stand laut Server: ${fileStamp()}">Build ${BUILD}</span>`;
   }
   buildTabs();
   renderMenu();
