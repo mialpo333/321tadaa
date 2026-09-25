@@ -662,7 +662,7 @@ const OPERATOR_PIN = "1234"; // ← change to your own
 /* Build marker — bumped with every file I hand over. Shown in the top bar and
  * in the kitchen, so you can tell at a glance whether the browser already
  * serves the newly uploaded file or still a cached one. */
-const BUILD = "2026-09-25 · 16";
+const BUILD = "2026-09-25 · 17";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -796,14 +796,25 @@ function orderPizzas(o){
   if(!isNaN(p)) return p;
   return orderUnits(o);
 }
-// pizzas booked per baking Takt: an order fills the Takte right before its target time
+// Books every open order into the baking Takte, earliest target first.
+// An order fills the Takt right before its time and spills into earlier ones
+// only where places are actually free, so a Takt never goes past its 10.
 function taktLoad(orders){
   const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10, m={};
-  (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig').forEach(o=>{
-    const z=hhmmToMin(o.Zielzeit); if(z===null) return;
-    let p=orderPizzas(o), t=Math.floor((z-1)/T)*T;
-    while(p>0){ const take=Math.min(p,cap); m[t]=(m[t]||0)+take; p-=take; t-=T; }
-  });
+  (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig')
+    .map(o=>({z:hhmmToMin(o.Zielzeit), p:orderPizzas(o)}))
+    .filter(o=>o.z!==null && o.p>0)
+    .sort((a,b)=>a.z-b.z)
+    .forEach(o=>{
+      const last=Math.floor((o.z-1)/T)*T;
+      let need=o.p, t=last;
+      for(let i=0;i<lookbackTakte(o.p) && need>0;i++,t-=T){
+        const take=Math.min(need, Math.max(0, cap-(m[t]||0)));
+        if(take>0){ m[t]=(m[t]||0)+take; need-=take; }
+      }
+      // no room left: show the rest as an overload on the last Takt
+      if(need>0) m[last]=(m[last]||0)+need;
+    });
   return m;
 }
 // How far back an order may be baked before its time: normally 2 Takte (30 min),
