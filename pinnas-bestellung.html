@@ -667,7 +667,7 @@ const OPERATOR_PIN = "1234"; // ← change to your own
 /* Build marker — bumped with every file I hand over. Shown in the top bar and
  * in the kitchen, so you can tell at a glance whether the browser already
  * serves the newly uploaded file or still a cached one. */
-const BUILD = "2026-09-25 · 19";
+const BUILD = "2026-09-25 · 20";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -708,7 +708,7 @@ function filterPlaces(raw){
 let CONFIG_OPTS = [];   // per-category customization options
 let SETTINGS = {ofen:8,backzeit:10,lieferfenster:30,prepOther:8,warnMin:45,puffer:5,prepProPizza:2,
   openFrom:17*60,openTo:21*60+30,takt:15,pizzenProTakt:10,
-  fahrtVon:17*60+30,fahrtBis:21*60+30,fahrtTakt:30,vorlaufTakte:2,autos:2};
+  fahrtVon:17*60+30,fahrtBis:21*60+30,fahrtTakt:30,vorlaufAbholung:1,vorlaufLieferung:2,autos:2};
 const _truthy = v => ['ja','true','1','yes','x'].includes(String(v).trim().toLowerCase());
 const _num = v => { const n=parseFloat(String(v).replace(/[^\d.,-]/g,'').replace(',','.')); return isNaN(n)?0:n; };
 function _csvUrl(tab){ return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`; }
@@ -779,7 +779,8 @@ function _parseSettings(rows){
     fahrtVon:gt('Erste Fahrt (Uhr)',17*60+30),   // first delivery departure
     fahrtBis:gt('Letzte Fahrt (Uhr)',21*60+30),  // last delivery departure
     fahrtTakt:g('Abstand Fahrten (Minuten)',30)||30,
-    vorlaufTakte:g('Max Vorlauf (Takte)',2)||2,   // how early an order may be baked
+    vorlaufAbholung:g('Vorlauf Abholung (Takte)',1)||1,  // how early an order may be baked
+    vorlaufLieferung:g('Vorlauf Lieferung (Takte)',2)||2,
     autos:g('Autos',2)||2};
 }
 // per-order oven time: whole baking cycles at 10 pizzas per 15-min Takt
@@ -807,13 +808,14 @@ function orderPizzas(o){
 function taktLoad(orders){
   const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10, m={};
   (orders||[]).filter(o=>o.Status==='neu'||o.Status==='arbeit'||o.Status==='fertig')
-    .map(o=>({z:hhmmToMin(o.Zielzeit), p:orderPizzas(o)}))
+    .map(o=>({z:hhmmToMin(o.Zielzeit), p:orderPizzas(o),
+              pickup:String(o.Modus||'').toLowerCase()==='abholung'}))
     .filter(o=>o.z!==null && o.p>0)
     .sort((a,b)=>a.z-b.z)
     .forEach(o=>{
       const last=Math.floor((o.z-1)/T)*T;
       let need=o.p, t=last;
-      for(let i=0;i<lookbackTakte(o.p) && need>0;i++,t-=T){
+      for(let i=0;i<lookbackTakte(o.p,o.pickup) && need>0;i++,t-=T){
         const take=Math.min(need, Math.max(0, cap-(m[t]||0)));
         if(take>0){ m[t]=(m[t]||0)+take; need-=take; }
       }
@@ -822,19 +824,23 @@ function taktLoad(orders){
     });
   return m;
 }
-// How far back an order may be baked before its time: normally 2 Takte (30 min),
-// more only if the order itself needs more oven cycles.
-function lookbackTakte(pizzas){
+// How far back an order may be baked before its time.
+// Pickup: only the Takt right before it — the guest wants it fresh at that minute.
+// Delivery: the Takte of its trip window (30 min), since the trip is boxed anyway.
+// Bigger orders always get as many Takte as they need.
+function lookbackTakte(pizzas, isPickup){
   const cap=SETTINGS.pizzenProTakt||10;
-  return Math.max(SETTINGS.vorlaufTakte||taktsPerSlot(), Math.ceil(Math.max(pizzas,1)/cap));
+  const base = isPickup ? (SETTINGS.vorlaufAbholung||1)
+                        : (SETTINGS.vorlaufLieferung||taktsPerSlot());
+  return Math.max(base, Math.ceil(Math.max(pizzas,1)/cap));
 }
 // Free oven places before a given time — the SAME check for a departure and a
 // pickup, so both modes always report the same capacity. Every Takt is capped
 // at 10 pizzas on its own, so a full Takt can never be topped up.
-function freeBefore(t, load, pizzas){
+function freeBefore(t, load, pizzas, isPickup){
   const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
   let free=0;
-  for(let i=1;i<=lookbackTakte(pizzas);i++) free+=Math.max(0, cap-(load[t-i*T]||0));
+  for(let i=1;i<=lookbackTakte(pizzas,isPickup);i++) free+=Math.max(0, cap-(load[t-i*T]||0));
   return free;
 }
 // first departure that still fits `pizzas`, and isn't in the past
@@ -842,7 +848,7 @@ function nextFreeSlot(pizzas, orders){
   const load=taktLoad(orders);
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
   const lead=orderDuration(pizzas);
-  return departureSlots().find(m => m>=nowMin+lead && freeBefore(m,load,pizzas)>=Math.max(pizzas,1)) ?? null;
+  return departureSlots().find(m => m>=nowMin+lead && freeBefore(m,load,pizzas,false)>=Math.max(pizzas,1)) ?? null;
 }
 // customer-facing wait = internal estimate + safety buffer (kitchen sees the raw internal one)
 function customerWait(internalMin){ return internalMin + (SETTINGS.puffer||0); }
@@ -1201,7 +1207,7 @@ function buildTimeOptions(){
   if(isPickup){ for(let m=openFrom(); m<=openTo(); m+=T) times.push(m); }
   else times.push(...departureSlots());
   const rows=times.map(m=>{
-    const free = freeBefore(m, load, pizzas);   // identical check for both modes
+    const free = freeBefore(m, load, pizzas, isPickup);
     let reason='';
     if(m < nowMin) reason='vorbei';
     else if(m < nowMin+lead) reason='zu kurzfristig';
