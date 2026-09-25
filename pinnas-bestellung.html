@@ -18,7 +18,12 @@
     --muted:#9a9a9f;
     --muted2:#6e6e73;
     --amber:#e6b450;
+    color-scheme:dark;
   }
+  select.af option{background:var(--slate2);color:var(--ink)}
+  select.af option:disabled{color:var(--muted2)}
+  .tickfields select.af option{background:#16242b;color:#eafff6}
+  .tickfields select.af option:disabled{color:#6f8a83}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
@@ -1156,32 +1161,44 @@ function computeTargetTime(waitMin, wishedHHMM){
 // a full one simply isn't listed, so the next free time is preselected.
 function buildTimeOptions(){
   const sel=document.querySelector('select.af[data-field="Time"]'); if(!sel) return;
+  const T=SETTINGS.takt||15, cap=SETTINGS.pizzenProTakt||10;
   const load=taktLoad(_liveOrders);
   const pizzas=Math.max(cartPizzas(),1);
   const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
-  const lead=orderDuration(pizzas);
-  const free = mode==='pickup'
-    ? pickupSlots(pizzas, _liveOrders).map(m=>({m, free:taktFreeBefore(m, load, Math.max(1,Math.ceil(pizzas/(SETTINGS.pizzenProTakt||10))))}))
-    : departureSlots().map(m=>({m, free:slotFree(m,load)})).filter(s=>s.m>=nowMin+lead && s.free>=pizzas);
+  const lead=orderDuration(pizzas);          // oven time this cart needs
+  const isPickup = mode==='pickup';
+  // all times of the day, each with its own verdict
+  const times=[];
+  if(isPickup){ for(let m=openFrom(); m<=openTo(); m+=T) times.push(m); }
+  else times.push(...departureSlots());
+  const k=Math.max(1, Math.ceil(pizzas/cap));
+  const rows=times.map(m=>{
+    const free = isPickup ? taktFreeBefore(m, load, k) : slotFree(m, load);
+    let reason='';
+    if(m < nowMin) reason='vorbei';
+    else if(m < nowMin+lead) reason='zu kurzfristig';
+    else if(free<=0) reason='voll';
+    else if(free<pizzas) reason=`nur noch ${free} Pizzen frei`;
+    return {m, free, reason, ok:!reason};
+  });
   // label follows the mode: departure for delivery, collection time for pickup
   const lab=document.querySelector('.fld[data-for="Time"] .fld-lab');
-  if(lab) lab.innerHTML = mode==='pickup'
+  if(lab) lab.innerHTML = isPickup
     ? 'Abholzeit <em>Pflicht</em>' : 'Abfahrt des Fahrers <i>Lieferzeit</i>';
   const prev=form.Time;
   sel.innerHTML='';
-  if(!free.length){
+  rows.forEach(r=>{
     const o=document.createElement('option');
-    o.value=''; o.textContent='heute ausgebucht — bitte anrufen';
-    sel.appendChild(o);
-    form.Time=''; sel.value=''; syncFieldUI(); return;
-  }
-  free.forEach(s=>{
-    const o=document.createElement('option');
-    o.value=minToHHMM(s.m);
-    o.textContent=`${minToHHMM(s.m)} Uhr${s.free<=Math.max(3,pizzas)?' · fast voll':''}`;
+    o.value=r.ok?minToHHMM(r.m):'';
+    o.disabled=!r.ok;
+    const tight = r.ok && r.free<=Math.max(3,pizzas) ? ' · fast voll' : '';
+    o.textContent=`${minToHHMM(r.m)} Uhr${r.reason?' · '+r.reason:tight}`;
     sel.appendChild(o);
   });
-  const keep=free.some(s=>minToHHMM(s.m)===prev);
+  const free=rows.filter(r=>r.ok);
+  if(!free.length){ form.Time=''; sel.value=''; syncFieldUI(); return; }
+  // keep the customer's choice while it still works, otherwise take the next free time
+  const keep=free.some(r=>minToHHMM(r.m)===prev);
   const pick=keep?prev:minToHHMM(free[0].m);
   sel.value=pick; form.Time=pick;
   syncFieldUI();
