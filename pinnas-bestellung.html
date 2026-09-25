@@ -426,9 +426,12 @@
   .tl-takt.busy{color:#3a2c08;background:rgba(230,180,80,.85);border-radius:3px}
   .tl-takt.over{color:#fff;background:var(--red-bright);border-radius:3px}
   /* an order block: the pizza count is the message */
-  .tl-block{position:absolute;height:34px;border-radius:6px;display:flex;align-items:center;gap:6px;padding:0 8px;
+  .tl-block{position:absolute;height:34px;border-radius:6px;display:flex;align-items:stretch;padding:0;
     font-size:15px;font-weight:900;color:#fff;overflow:hidden;white-space:nowrap;z-index:2;cursor:pointer;
     box-shadow:0 1px 3px rgba(0,0,0,.35);border:0;font-family:inherit}
+  .tl-part{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+    border-right:1px dashed rgba(0,0,0,.28)}
+  .tl-part:last-child{border-right:0}
   .tl-block small{font-size:9.5px;font-weight:700;opacity:.85}
   .tl-block.s-neu{background:#4a90d9}.tl-block.s-arbeit{background:var(--amber);color:#3a2c08}.tl-block.s-fertig{background:var(--wa);color:#04231a}
   .tl-block.sel{outline:2px solid var(--ink);outline-offset:1px}
@@ -668,7 +671,7 @@ const OPERATOR_PIN = "1234"; // ← change to your own
 /* Build marker — bumped with every file I hand over. Shown in the top bar and
  * in the kitchen, so you can tell at a glance whether the browser already
  * serves the newly uploaded file or still a cached one. */
-const BUILD = "2026-09-25 · 21";
+const BUILD = "2026-09-25 · 22";
 /* ========================================== */
 
 const WA_NUMBER = "4915756492424"; // Pinna's WhatsApp
@@ -2078,16 +2081,17 @@ function renderTimeline(){
     const cls=n>cap?'over':(n>=cap*0.7?'busy':'');
     takts+=`<div class="tl-takt ${cls}" style="left:${x(m)+1}px;width:${T*PX-2}px">${n}/${cap}</div>`;
   }
-  // one block per baking Takt: an order split over two Takte shows both parts
+  // one block per order, stretched over the Takte it bakes in — the parts inside
+  // keep their own pizza count, so a split order stays one thing on screen
   const blocks=items.map(it=>{
     const o=it.o; const sel=_tlPick===o.Bestell_ID?' sel':'';
-    return it.segs.map((sg,k)=>{
-      const lastSeg = k===it.segs.length-1;
-      return `<button class="tl-block s-${o.Status}${sel}${sg.over?' over':''}" data-id="${o.Bestell_ID}"
-        style="left:${x(sg.t)+1}px;width:${T*PX-3}px;top:${20+it.lane*38}px"
-        title="${o.Code||''} · ${sg.n} von ${it.pizzas} Pizzen · Zielzeit ${o.Zielzeit}">
-        🍕 ${sg.n}<small>${lastSeg?o.Zielzeit:'vorab'}</small></button>`;
-    }).join('');
+    const over=it.segs.some(g=>g.over)?' over':'';
+    const first=it.segs[0].t, span=it.segs.length;
+    const parts=it.segs.map((sg,k)=>
+      `<span class="tl-part">🍕 ${sg.n}<small>${k===it.segs.length-1?o.Zielzeit:'vorab'}</small></span>`).join('');
+    return `<button class="tl-block s-${o.Status}${sel}${over}" data-id="${o.Bestell_ID}"
+      style="left:${x(first)+1}px;width:${span*T*PX-3}px;top:${20+it.lane*38}px"
+      title="${o.Code||''} · 🍕 ${it.pizzas} · Zielzeit ${o.Zielzeit}">${parts}</button>`;
   }).join('');
   const nowIn = nowMin>=from && nowMin<=to;
   const nowLine = nowIn ? `<div class="tl-now" style="left:${x(nowMin)}px"></div>` : '';
