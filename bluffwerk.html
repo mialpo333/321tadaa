@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121A22">
+<title>BLUFFWERK</title>
+<style>
+  :root{
+    --ink:#121A22;
+    --ink-2:#0B1017;
+    --paper:#EFE9DC;
+    --paper-ink:#1B2530;
+    --brass:#C99A3F;
+    --red:#BE3B2C;
+    --muted:#8496A4;
+    --line:#243240;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.5;
+    overscroll-behavior:none;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  #app{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    padding:
+      calc(env(safe-area-inset-top) + 28px)
+      22px
+      calc(env(safe-area-inset-bottom) + 24px);
+    max-width:520px;
+    margin:0 auto;
+  }
+
+  .screen{display:none;flex:1;flex-direction:column}
+  .screen.on{display:flex}
+
+  /* ---------- type ---------- */
+  h1{
+    font-size:clamp(2.6rem,13vw,3.6rem);
+    font-weight:800;
+    letter-spacing:-0.045em;
+    line-height:.95;
+    margin:0;
+  }
+  .tagline{
+    color:var(--muted);
+    font-size:1.05rem;
+    margin:14px 0 0;
+    max-width:22ch;
+  }
+  .step{
+    color:var(--muted);
+    font-size:.95rem;
+    margin:0;
+  }
+  .lead{
+    font-size:clamp(1.5rem,7vw,2rem);
+    font-weight:700;
+    letter-spacing:-0.03em;
+    line-height:1.1;
+    margin:6px 0 0;
+  }
+  .note{color:var(--muted);font-size:.95rem;margin:12px 0 0;max-width:30ch}
+
+  /* ---------- controls ---------- */
+  .field{margin-top:30px}
+  .field > span{
+    display:block;
+    color:var(--muted);
+    font-size:.9rem;
+    margin-bottom:10px;
+  }
+
+  .langs{display:flex;gap:8px}
+  .lang{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    font:inherit;
+    font-weight:600;
+    padding:12px 0;
+    border-radius:11px;
+    cursor:pointer;
+  }
+  .lang[aria-pressed="true"]{
+    border-color:var(--brass);
+    color:var(--brass);
+    background:rgba(201,154,63,.08);
+  }
+
+  .stepper{display:flex;align-items:center;gap:18px}
+  .stepper button{
+    width:56px;height:56px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--paper);
+    font:inherit;font-size:1.7rem;font-weight:400;
+    line-height:1;
+    cursor:pointer;
+  }
+  .stepper button:disabled{opacity:.3;cursor:default}
+  .count{
+    font-size:2.4rem;font-weight:700;
+    letter-spacing:-0.03em;
+    min-width:2ch;text-align:center;
+  }
+
+  .spacer{flex:1;min-height:28px}
+
+  .btn{
+    display:block;width:100%;
+    background:var(--brass);
+    color:#1A1206;
+    border:none;border-radius:13px;
+    font:inherit;font-weight:700;font-size:1.1rem;
+    padding:18px;
+    cursor:pointer;
+  }
+  .btn.ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-weight:600;
+    padding:15px;
+    margin-top:10px;
+  }
+  .btn:active{transform:translateY(1px)}
+
+  :focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+
+  /* ---------- ticket ---------- */
+  .ticket-wrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:26px 0;
+  }
+  .ticket{
+    position:relative;
+    width:100%;
+    aspect-ratio:3/4;
+    max-height:56vh;
+    background:var(--paper);
+    color:var(--paper-ink);
+    border-radius:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:26px;
+    text-align:center;
+    border:none;
+    font:inherit;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  /* punched stub notches */
+  .ticket::before,.ticket::after{
+    content:"";
+    position:absolute;
+    top:calc(50% - 15px);
+    width:30px;height:30px;
+    border-radius:50%;
+    background:var(--ink);
+  }
+  .ticket::before{left:-15px}
+  .ticket::after{right:-15px}
+
+  .ticket .cat{
+    position:absolute;top:22px;left:0;right:0;
+    color:#7C8794;
+    font-size:.9rem;
+    font-weight:600;
+    letter-spacing:.02em;
+  }
+  .ticket .word{
+    font-size:clamp(2rem,11vw,3.4rem);
+    font-weight:800;
+    letter-spacing:-0.04em;
+    line-height:1.02;
+    overflow-wrap:anywhere;
+  }
+  .ticket .word.faker{color:var(--red);font-size:clamp(1.7rem,9vw,2.7rem)}
+  .ticket .hint{
+    position:absolute;bottom:22px;left:0;right:0;
+    color:#7C8794;font-size:.9rem;
+  }
+
+  /* covered state */
+  .ticket.covered{
+    background:var(--ink-2);
+    color:var(--muted);
+    border:1px dashed var(--line);
+  }
+  .ticket.covered::before,.ticket.covered::after{background:var(--ink)}
+  .ticket.covered .word{
+    font-size:1.25rem;font-weight:600;letter-spacing:normal;
+    color:var(--muted);max-width:18ch;
+  }
+
+  .reveal-anim{animation:pop .18s ease-out}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .reveal-anim{animation:none}
+    .btn:active{transform:none}
+  }
+
+  /* ---------- result ---------- */
+  .result-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    gap:14px;
+    padding:16px 0;
+    border-top:1px solid var(--line);
+  }
+  .result-row .k{color:var(--muted);font-size:.95rem}
+  .result-row .v{font-size:1.25rem;font-weight:700;letter-spacing:-0.02em;text-align:right}
+  .result-row .v.faker{color:var(--red)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SETUP -->
+  <section class="screen on" id="s-setup">
+    <h1>BLUFFWERK</h1>
+    <p class="tagline" id="tagline">Ein Wort. Ein Betrüger.</p>
+
+    <div class="field">
+      <span id="lbl-lang">Sprache</span>
+      <div class="langs">
+        <button class="lang" data-lang="de" aria-pressed="true">Deutsch</button>
+        <button class="lang" data-lang="en" aria-pressed="false">English</button>
+        <button class="lang" data-lang="ro" aria-pressed="false">Română</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span id="lbl-players">Spieler</span>
+      <div class="stepper">
+        <button id="minus" aria-label="−">−</button>
+        <div class="count" id="count">4</div>
+        <button id="plus" aria-label="+">+</button>
+      </div>
+    </div>
+
+    <p class="note" id="rules">Jeder sieht dasselbe Wort — außer einem. Reihum sagt jeder ein einziges Wort dazu. Dann zeigen alle gleichzeitig auf den Betrüger.</p>
+
+    <div class="spacer"></div>
+    <button class="btn" id="start">Spiel starten</button>
+  </section>
+
+  <!-- PASS -->
+  <section class="screen" id="s-pass">
+    <p class="step" id="pass-step">Spieler 1 von 4</p>
+    <p class="lead" id="pass-lead">Handy an Spieler 1</p>
+    <p class="note" id="pass-note">Nur diese Person schaut jetzt hin.</p>
+    <div class="spacer"></div>
+    <button class="btn" id="pass-go">Ich bin dran</button>
+  </section>
+
+  <!-- REVEAL -->
+  <section class="screen" id="s-reveal">
+    <p class="step" id="rev-step">Spieler 1 von 4</p>
+    <div class="ticket-wrap">
+      <button class="ticket covered" id="ticket">
+        <span class="cat" id="t-cat"></span>
+        <span class="word" id="t-word">Gedrückt halten</span>
+        <span class="hint" id="t-hint"></span>
+      </button>
+    </div>
+    <button class="btn" id="rev-next" disabled>Weitergeben</button>
+  </section>
+
+  <!-- DISCUSS -->
+  <section class="screen" id="s-discuss">
+    <p class="step" id="disc-step">Runde 1</p>
+    <p class="lead" id="disc-lead">Spieler 3 fängt an.</p>
+    <p class="note" id="disc-note">Ein Wort pro Person, reihum. Danach diskutieren und gleichzeitig zeigen.</p>
+    <div class="spacer"></div>
+    <button class="btn" id="disc-go">Auflösen</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="s-result">
+    <p class="step" id="res-step">Runde 1</p>
+    <div class="ticket-wrap">
+      <div class="ticket" id="res-ticket">
+        <span class="cat" id="r-cat"></span>
+        <span class="word" id="r-word"></span>
+      </div>
+    </div>
+    <div class="result-row">
+      <span class="k" id="r-label">Der Betrüger war</span>
+      <span class="v faker" id="r-faker">Spieler 2</span>
+    </div>
+    <button class="btn" id="res-again">Neue Runde</button>
+    <button class="btn ghost" id="res-home">Zurück zum Start</button>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- data ---------------- */
+
+const CATS = {
+  animal:{de:"Tier",       en:"Animal",  ro:"Animal"},
+  place: {de:"Ort",        en:"Place",   ro:"Loc"},
+  food:  {de:"Essen",      en:"Food",    ro:"Mâncare"},
+  thing: {de:"Gegenstand", en:"Object",  ro:"Obiect"},
+  job:   {de:"Beruf",      en:"Job",     ro:"Meserie"},
+  nature:{de:"Natur",      en:"Nature",  ro:"Natură"},
+  sport: {de:"Sport",      en:"Sport",   ro:"Sport"}
+};
+
+const WORDS = [
+  ["animal","Pinguin","Penguin","Pinguin"],
+  ["job","Zahnarzt","Dentist","Dentist"],
+  ["place","Bahnhof","Train station","Gară"],
+  ["food","Pizza","Pizza","Pizza"],
+  ["thing","Regenschirm","Umbrella","Umbrelă"],
+  ["nature","Vulkan","Volcano","Vulcan"],
+  ["sport","Torwart","Goalkeeper","Portar"],
+  ["food","Kaugummi","Chewing gum","Gumă de mestecat"],
+  ["place","Achterbahn","Roller coaster","Montagne russe"],
+  ["animal","Krokodil","Crocodile","Crocodil"],
+  ["job","Feuerwehrmann","Firefighter","Pompier"],
+  ["thing","Schneemann","Snowman","Om de zăpadă"],
+  ["place","Bibliothek","Library","Bibliotecă"],
+  ["animal","Spinne","Spider","Păianjen"],
+  ["thing","Waschmaschine","Washing machine","Mașină de spălat"],
+  ["nature","Mond","Moon","Lună"],
+  ["food","Popcorn","Popcorn","Popcorn"],
+  ["job","Zauberer","Magician","Magician"],
+  ["thing","Fahrrad","Bicycle","Bicicletă"],
+  ["nature","Wüste","Desert","Deșert"],
+  ["sport","Schach","Chess","Șah"],
+  ["animal","Fledermaus","Bat","Liliac"],
+  ["place","Flughafen","Airport","Aeroport"],
+  ["thing","Staubsauger","Vacuum cleaner","Aspirator"],
+  ["food","Honig","Honey","Miere"],
+  ["job","Pirat","Pirate","Pirat"],
+  ["nature","Gewitter","Thunderstorm","Furtună"],
+  ["sport","Tennis","Tennis","Tenis"],
+  ["animal","Igel","Hedgehog","Arici"],
+  ["place","Krankenhaus","Hospital","Spital"],
+  ["thing","Taschenlampe","Flashlight","Lanternă"],
+  ["food","Spaghetti","Spaghetti","Spaghete"],
+  ["job","Astronaut","Astronaut","Astronaut"],
+  ["nature","Regenbogen","Rainbow","Curcubeu"],
+  ["place","Schwimmbad","Swimming pool","Piscină"],
+  ["animal","Kamel","Camel","Cămilă"],
+  ["sport","Schlittschuh","Ice skate","Patină"],
+  ["food","Schokolade","Chocolate","Ciocolată"],
+  ["thing","Schlüssel","Key","Cheie"],
+  ["job","Lehrer","Teacher","Profesor"],
+  ["nature","Höhle","Cave","Peșteră"],
+  ["place","Museum","Museum","Muzeu"],
+  ["animal","Papagei","Parrot","Papagal"],
+  ["thing","Zahnbürste","Toothbrush","Periuță de dinți"],
+  ["food","Eis","Ice cream","Înghețată"],
+  ["job","Pilot","Pilot","Pilot"],
+  ["nature","Wasserfall","Waterfall","Cascadă"],
+  ["sport","Basketball","Basketball","Baschet"],
+  ["animal","Ameise","Ant","Furnică"],
+  ["place","Supermarkt","Supermarket","Supermarket"],
+  ["thing","Spiegel","Mirror","Oglindă"],
+  ["job","Koch","Chef","Bucătar"],
+  ["nature","Insel","Island","Insulă"],
+  ["place","Zirkus","Circus","Circ"],
+  ["animal","Delfin","Dolphin","Delfin"],
+  ["thing","Bohrmaschine","Drill","Bormașină"],
+  ["sport","Skifahren","Skiing","Schi"],
+  ["food","Suppe","Soup","Supă"],
+  ["job","Detektiv","Detective","Detectiv"],
+  ["thing","Zelt","Tent","Cort"]
+];
+
+const T = {
+  de:{
+    tagline:"Ein Wort. Ein Betrüger.",
+    lang:"Sprache", players:"Spieler",
+    rules:"Jeder sieht dasselbe Wort — außer einem. Reihum sagt jeder ein einziges Wort dazu. Dann zeigen alle gleichzeitig auf den Betrüger.",
+    start:"Spiel starten",
+    passStep:(i,n)=>`Spieler ${i} von ${n}`,
+    passLead:i=>`Handy an Spieler ${i}`,
+    passNote:"Nur diese Person schaut jetzt hin.",
+    passGo:"Ich bin dran",
+    hold:"Zum Ansehen gedrückt halten",
+    holdHint:"Loslassen versteckt das Wort",
+    faker:"Du bist der Betrüger",
+    next:"Weitergeben",
+    last:"Alle haben gesehen",
+    round:r=>`Runde ${r}`,
+    discLead:i=>`Spieler ${i} fängt an.`,
+    discNote:"Ein Wort pro Person, reihum. Danach diskutieren und gleichzeitig zeigen.",
+    discGo:"Auflösen",
+    wasFaker:"Der Betrüger war",
+    player:i=>`Spieler ${i}`,
+    again:"Neue Runde",
+    home:"Zurück zum Start"
+  },
+  en:{
+    tagline:"One word. One faker.",
+    lang:"Language", players:"Players",
+    rules:"Everyone sees the same word — except one player. Each person says a single word about it, in turn. Then everyone points at the faker at the same time.",
+    start:"Start game",
+    passStep:(i,n)=>`Player ${i} of ${n}`,
+    passLead:i=>`Pass the phone to player ${i}`,
+    passNote:"Only this person looks now.",
+    passGo:"That's me",
+    hold:"Press and hold to see",
+    holdHint:"Let go to hide it again",
+    faker:"You are the faker",
+    next:"Pass it on",
+    last:"Everyone has seen it",
+    round:r=>`Round ${r}`,
+    discLead:i=>`Player ${i} starts.`,
+    discNote:"One word each, going around. Then talk it over and point together.",
+    discGo:"Reveal",
+    wasFaker:"The faker was",
+    player:i=>`Player ${i}`,
+    again:"New round",
+    home:"Back to start"
+  },
+  ro:{
+    tagline:"Un cuvânt. Un impostor.",
+    lang:"Limba", players:"Jucători",
+    rules:"Toți văd același cuvânt — în afară de unul. Pe rând, fiecare spune un singur cuvânt legat de el. Apoi arătați toți deodată spre impostor.",
+    start:"Începe jocul",
+    passStep:(i,n)=>`Jucătorul ${i} din ${n}`,
+    passLead:i=>`Dă telefonul jucătorului ${i}`,
+    passNote:"Doar această persoană se uită acum.",
+    passGo:"Eu sunt",
+    hold:"Ține apăsat ca să vezi",
+    holdHint:"Dă drumul și cuvântul dispare",
+    faker:"Tu ești impostorul",
+    next:"Dă mai departe",
+    last:"Toți au văzut",
+    round:r=>`Runda ${r}`,
+    discLead:i=>`Jucătorul ${i} începe.`,
+    discNote:"Un cuvânt de fiecare, pe rând. Apoi discutați și arătați deodată.",
+    discGo:"Dezvăluie",
+    wasFaker:"Impostorul a fost",
+    player:i=>`Jucătorul ${i}`,
+    again:"Rundă nouă",
+    home:"Înapoi la start"
+  }
+};
+
+/* ---------------- state ---------------- */
+
+const $ = id => document.getElementById(id);
+
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+let lang    = store.get("bw.lang","de");
+let players = parseInt(store.get("bw.players","4"),10);
+let round   = 0;
+let used    = [];
+let entry   = null;
+let fakerIdx = 1;
+let current  = 1;
+let starter  = 1;
+
+const t = () => T[lang];
+
+/* ---------------- screens ---------------- */
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  window.scrollTo(0,0);
+}
+
+function paintSetup(){
+  document.documentElement.lang = lang;
+  $("tagline").textContent     = t().tagline;
+  $("lbl-lang").textContent    = t().lang;
+  $("lbl-players").textContent = t().players;
+  $("rules").textContent       = t().rules;
+  $("start").textContent       = t().start;
+  $("count").textContent       = players;
+  $("minus").disabled = players <= 3;
+  $("plus").disabled  = players >= 8;
+  document.querySelectorAll(".lang").forEach(b =>
+    b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false"));
+}
+
+/* ---------------- round flow ---------------- */
+
+function pickWord(){
+  if(used.length >= WORDS.length) used = [];
+  let i;
+  do { i = Math.floor(Math.random() * WORDS.length); } while (used.includes(i));
+  used.push(i);
+  const row = WORDS[i];
+  const col = {de:1, en:2, ro:3}[lang];
+  return { cat: CATS[row[0]][lang], word: row[col] };
+}
+
+function newRound(){
+  round++;
+  entry    = pickWord();
+  fakerIdx = 1 + Math.floor(Math.random() * players);
+  starter  = 1 + Math.floor(Math.random() * players);
+  current  = 1;
+  toPass();
+}
+
+function toPass(){
+  $("pass-step").textContent = t().passStep(current, players);
+  $("pass-lead").textContent = t().passLead(current);
+  $("pass-note").textContent = t().passNote;
+  $("pass-go").textContent   = t().passGo;
+  show("s-pass");
+}
+
+let seen = false;
+
+function toReveal(){
+  seen = false;
+  $("rev-step").textContent = t().passStep(current, players);
+  coverTicket();
+  const next = $("rev-next");
+  next.textContent = current < players ? t().next : t().last;
+  next.disabled = true;
+  show("s-reveal");
+}
+
+function coverTicket(){
+  const tk = $("ticket");
+  tk.classList.add("covered");
+  $("t-cat").textContent  = "";
+  $("t-word").textContent = t().hold;
+  $("t-word").className   = "word";
+  $("t-hint").textContent = "";
+}
+
+function uncoverTicket(){
+  const tk = $("ticket");
+  tk.classList.remove("covered");
+  $("t-cat").textContent  = entry.cat;
+  const w = $("t-word");
+  if(current === fakerIdx){
+    w.textContent = t().faker;
+    w.className   = "word faker reveal-anim";
+  } else {
+    w.textContent = entry.word;
+    w.className   = "word reveal-anim";
+  }
+  $("t-hint").textContent = t().holdHint;
+  seen = true;
+  $("rev-next").disabled = false;
+}
+
+function toDiscuss(){
+  $("disc-step").textContent = t().round(round);
+  $("disc-lead").textContent = t().discLead(starter);
+  $("disc-note").textContent = t().discNote;
+  $("disc-go").textContent   = t().discGo;
+  show("s-discuss");
+}
+
+function toResult(){
+  $("res-step").textContent = t().round(round);
+  $("r-cat").textContent    = entry.cat;
+  $("r-word").textContent   = entry.word;
+  $("r-label").textContent  = t().wasFaker;
+  $("r-faker").textContent  = t().player(fakerIdx);
+  $("res-again").textContent = t().again;
+  $("res-home").textContent  = t().home;
+  show("s-result");
+}
+
+/* ---------------- events ---------------- */
+
+document.querySelectorAll(".lang").forEach(b =>
+  b.addEventListener("click", () => {
+    lang = b.dataset.lang;
+    store.set("bw.lang", lang);
+    paintSetup();
+  }));
+
+$("minus").addEventListener("click", () => {
+  players = Math.max(3, players - 1);
+  store.set("bw.players", players);
+  paintSetup();
+});
+$("plus").addEventListener("click", () => {
+  players = Math.min(8, players + 1);
+  store.set("bw.players", players);
+  paintSetup();
+});
+
+$("start").addEventListener("click", () => { round = 0; used = []; newRound(); });
+$("pass-go").addEventListener("click", toReveal);
+
+const ticket = $("ticket");
+["pointerdown"].forEach(e => ticket.addEventListener(e, ev => { ev.preventDefault(); uncoverTicket(); }));
+["pointerup","pointercancel","pointerleave"].forEach(e =>
+  ticket.addEventListener(e, () => { if(seen) coverTicket(); }));
+ticket.addEventListener("keydown", ev => {
+  if((ev.key === " " || ev.key === "Enter") && !ev.repeat){ ev.preventDefault(); uncoverTicket(); }
+});
+ticket.addEventListener("keyup", ev => {
+  if(ev.key === " " || ev.key === "Enter"){ if(seen) coverTicket(); }
+});
+ticket.addEventListener("contextmenu", ev => ev.preventDefault());
+
+$("rev-next").addEventListener("click", () => {
+  if(current < players){ current++; toPass(); }
+  else toDiscuss();
+});
+
+$("disc-go").addEventListener("click", toResult);
+$("res-again").addEventListener("click", newRound);
+$("res-home").addEventListener("click", () => { paintSetup(); show("s-setup"); });
+
+paintSetup();
+</script>
+</body>
+</html>
