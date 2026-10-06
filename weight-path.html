@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F4A3C">
+<title>The Path — weight & shape tracker</title>
+<style>
+  :root{
+    --ink:#1C2B24; --moss:#2F4A3C; --sage:#6E8B7A; --mist:#DCE6DE;
+    --sand:#F3EDE1; --paper:#FBF8F1; --clay:#C46B4A; --gold:#D9A441; --line:#D9D2C4;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    max-width:480px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom);}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+  button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--clay);outline-offset:2px;}
+  .fadein{animation:fi .35s ease both;}@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;}}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:14px 16px 0;}
+  .pbar{display:flex;gap:6px;align-items:center;overflow-x:auto;flex:1;}
+  .pbar .chip{border:1px solid var(--line);background:var(--paper);color:var(--moss);
+    padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .pbar .chip.active{background:var(--moss);color:var(--paper);border-color:var(--moss);}
+  .pbar .add{border:1px dashed var(--sage);background:transparent;color:var(--sage);
+    padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap;}
+  .lang{display:flex;gap:2px;flex-shrink:0;border:1px solid var(--line);border-radius:20px;overflow:hidden;}
+  .lang button{border:none;background:transparent;color:var(--sage);padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+  .lang button.on{background:var(--moss);color:var(--paper);}
+
+  header{display:flex;justify-content:space-between;align-items:flex-end;padding:16px 20px 14px;}
+  .eyebrow{font-size:12px;letter-spacing:3px;color:var(--sage);text-transform:uppercase;}
+  h1{font-family:Georgia,serif;font-size:25px;margin:2px 0 0;letter-spacing:-.5px;}
+  .bignum{font-family:Georgia,serif;font-size:32px;color:var(--moss);line-height:1;}
+  .bignum small{font-size:15px;color:var(--sage);}
+  .subnum{font-size:11px;color:var(--sage);text-align:right;}
+
+  .ribbonwrap{padding:0 20px;}
+  .ribbon{position:relative;height:26px;background:var(--mist);border-radius:13px;overflow:hidden;}
+  .ribbon .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--sage),var(--moss));transition:width .6s ease;width:0;}
+  .ribbon .lab{position:absolute;right:12px;top:4px;font-size:12px;color:var(--moss);font-weight:700;}
+
+  nav{display:flex;gap:4px;padding:12px 16px;overflow-x:auto;}
+  nav button{border:none;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;background:transparent;color:var(--moss);transition:all .2s;}
+  nav button.active{background:var(--moss);color:var(--paper);}
+
+  main{padding:4px 16px;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(28,43,36,.04);}
+  h2{font-family:Georgia,serif;font-size:18px;margin:0 0 8px;color:var(--moss);}
+  .muted{font-size:14px;color:var(--sage);margin:0 0 12px;line-height:1.5;}
+  .ink{color:var(--ink);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;}
+  .stat .l{font-size:11px;color:var(--sage);text-transform:uppercase;letter-spacing:1px;}
+  .stat .v{font-family:Georgia,serif;font-size:24px;color:var(--moss);}
+  .stat .v small{font-size:13px;color:var(--sage);}
+
+  label.field{display:block;flex:1;margin-bottom:12px;}
+  label.field .cap{display:block;font-size:12px;color:var(--sage);margin-bottom:4px;}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:15px;background:var(--paper);color:var(--ink);font-family:inherit;}
+  .row{display:flex;gap:12px;}
+
+  .btn{width:100%;padding:12px;border-radius:12px;border:none;background:var(--moss);color:var(--paper);font-size:15px;font-weight:600;cursor:pointer;}
+  .ghost{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--sage);font-size:13px;cursor:pointer;margin-bottom:12px;}
+  .danger{color:var(--clay);border-color:var(--clay);}
+
+  .check{display:flex;gap:12px;align-items:center;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--paper);cursor:pointer;margin-bottom:8px;transition:all .15s;text-align:left;}
+  .check.on{border-color:var(--sage);background:var(--mist);}
+  .check .box{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:grid;place-items:center;border:2px solid var(--line);color:var(--paper);font-size:13px;}
+  .check.on .box{background:var(--moss);border-color:var(--moss);}
+  .check .t{display:block;color:var(--ink);font-weight:600;font-size:14px;}
+  .check .h{display:block;color:var(--sage);font-size:12px;}
+
+  .principle{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line);}
+  .principle .n{font-family:Georgia,serif;font-style:italic;color:var(--clay);font-size:13px;min-width:74px;}
+  .principle .pt{display:block;color:var(--ink);font-weight:600;font-size:14px;}
+  .principle .pd{display:block;color:var(--sage);font-size:13px;margin-top:2px;}
+
+  .logrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);}
+  .logrow .d{color:var(--sage);font-size:13px;}
+  .x{border:none;background:transparent;color:var(--sage);cursor:pointer;font-size:13px;}
+
+  .moods{display:flex;gap:8px;margin:6px 0 14px;}
+  .moods button{flex:1;font-size:24px;padding:8px 0;border-radius:10px;cursor:pointer;border:2px solid var(--line);background:var(--paper);}
+  .moods button.sel{border-color:var(--clay);background:var(--sand);}
+
+  .bar{height:8px;background:var(--mist);border-radius:6px;overflow:hidden;margin:6px 0 14px;}
+  .bar .f{height:100%;background:var(--gold);width:0;}
+
+  .infobox{background:var(--sand);border-radius:10px;padding:14px;margin:10px 0;font-size:14px;color:var(--moss);line-height:1.5;}
+  .week{display:flex;gap:6px;margin-bottom:10px;}
+  .week .d{flex:1;height:34px;border-radius:7px;background:var(--mist);}
+  .week .d.on{background:var(--sage);}
+
+  svg.spark{width:100%;background:var(--sand);border-radius:10px;display:block;}
+  .empty{display:flex;align-items:center;justify-content:center;color:var(--sage);font-size:13px;background:var(--sand);border-radius:10px;}
+
+  footer{text-align:center;font-size:11px;color:var(--sage);padding:10px 30px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+const $ = (id)=>document.getElementById(id);
+const today = ()=>new Date().toISOString().slice(0,10);
+const MOODS = ["😞","😕","😐","🙂","😄"];
+const KEY = "path_v2";
+
+// ── i18n ──────────────────────────────────────────────
+const STR = {
+  en:{
+    eyebrow:"A steady journey", pathWord:"Path", ofGoal:(g)=>`of ${g}kg goal`,
+    tabs:{home:"Overview",weigh:"Weight",nutrition:"Nutrition",move:"Movement",mind:"Mindset"},
+    footer:"Not medical advice. For larger goals, a doctor's check (thyroid, bloodwork, blood pressure) and safe pacing matter.",
+    add:"+ Add", profileFallback:"Profile",
+    // onboarding
+    welcome:"Welcome", newProfile:"New profile", setStart:"Set the starting point",
+    onboardIntro:"Each profile keeps its own goal, data, and tailoring. Stored on this device only.",
+    name:"Name", namePh:"e.g. Mihai", curWeight:"Current weight (kg)", height:"Height (cm)",
+    goalQ:"Goal — how many kg to lose?", goalPh:"e.g. 30, or 8",
+    ageRange:"Age range", sex:"Sex",
+    ages:{under40:"Under 40","40-54":"40–54","55-69":"55–69","70+":"70+"},
+    sexes:{female:"Female",male:"Male",unset:"Prefer not to set"},
+    measTitle:"Track measurements too", measHint:'Chest & waist — better for a "fit into clothes" goal than the scale alone',
+    goalInfoEmpty:"Enter a goal to see the estimated timeline.",
+    goalInfo:(g,t)=>`Goal <b>−${g}kg</b>. At a healthy pace, roughly <b>${t}</b>. Protein & pace tailor to age/sex.`,
+    addProfile:"Add profile", saveBegin:"Save & begin", cancel:"Cancel",
+    fewWeeks:"a few weeks", months:(lo,hi)=>`${lo}–${hi} months`,
+    // overview
+    stCurrent:"Current", stTarget:"Target", stLost:"Lost so far", stPace:"Avg pace",
+    kg:"kg", kgwk:"kg/wk",
+    whereTitle:"Where things stand",
+    whereEmpty:"Log the first weigh-in and a few daily habits — the picture builds from there.",
+    whereProgress:(l,r,e)=>`You've lost <b>${l}kg</b> — ${r}kg to go. At this pace, roughly <b>${e} weeks</b> remain. Small and steady wins this.`,
+    whereDone:"Goal reached — a real achievement. The work now shifts to holding it.",
+    tailoredFor:(a,s)=>`Tailored for ${a}, ${s}`,
+    smallGoal:(m)=>`A goal this size is as much about <b>shape as weight</b>. Strength training and ${m} tell the story better than the scale alone.`,
+    measPhrase:"your chest/waist measurements", clothesPhrase:"how clothes fit",
+    pProtein:"Protein", pProteinV:(g)=>`~${g} g/day`, pProteinD:"Anchor every meal — protects muscle & bone during loss.",
+    pPace:"Pace", pSteps:"Steps", pStepsV:(s)=>`${s}/day`, pStepsD:"Low-impact base; joints and recovery favor walking.",
+    pStrength:"Strength", pStrengthV:"2–3× / week", pStrengthD:"The biggest lever for keeping (or building) muscle.",
+    rhythmTitle:"This week's rhythm", rhythm:(n)=>`${n} of the last 7 days had a habit logged. Consistency beats intensity.`,
+    editProfile:"Edit this profile's details", delProfile:"Delete this profile",
+    delConfirm:(n)=>`Delete ${n} and all its data?`, thisProfile:"this profile",
+    // edit
+    editTitle:"Edit details", startWeight:"Start weight (kg)", goalKg:"Goal (kg to lose)",
+    measTitleShort:"Track measurements too", measHintShort:"Chest & waist", save:"Save",
+    // weigh
+    logWeigh:"Log a weigh-in",
+    weighIntro:"Weigh once a week, same time, same conditions. Daily numbers bounce — the trend is what's real.",
+    date:"Date", weightKg:"Weight (kg)", saveWeigh:"Save weigh-in",
+    weightTrend:"Weight trend", noWeigh:"No weigh-ins yet.", needTwo:"Need 2+ weigh-ins to draw the trend",
+    measurements:"Measurements", measIntro:"For a shape goal, the tape measure is more honest than the scale.",
+    chest:"Chest (cm)", waist:"Waist (cm)", saveMeas:"Save measurement", noMeas:"No measurements yet.",
+    // nutrition
+    plateTitle:"Today's plate", plateIntro:"The deficit lives here — roughly 70–80% of results. Tick what held true today.",
+    nProtein:"Protein at every meal", nProteinH:(g)=>`Target ~${g} g/day — muscle & hunger control`,
+    nVeg:"Vegetables filled half the plate", nVegH:"Volume + fiber, low calories",
+    nSugar:"No liquid calories", nSugarH:"Soda, juice, alcohol — easiest big win",
+    nWater:"Drank enough water", nWaterH:"Thirst masquerades as hunger",
+    frameTitle:"The framework, not a diet",
+    fDeficit:"Deficit", fDeficitV:"500–750 kcal below maintenance", fDeficitD:"Enough to lose steadily without misery. Crash diets rebound.",
+    fProteinV:"Anchor every meal", fProteinD:(g)=>`~${g} g/day. Eggs, fish, chicken, legumes, dairy, tofu.`,
+    fSwap:"Swap", fSwapV:"Change one thing at a time", fSwapD:"Sugary drink → water. Fried → baked. Small habits stick.",
+    fNoBans:"No bans", fNoBansV:"Nothing is forbidden", fNoBansD:"Whole food groups aren't the enemy. Restriction breeds bingeing.",
+    // movement
+    moveTitle:"Today's movement", steps:"Steps", stepsPh:(s)=>`e.g. ${s}`,
+    mStrength:"Strength session done", mStrengthH:"2–3×/week — the top lever for keeping muscle",
+    howMove:"How to move (heaviest first)",
+    mWalk:"Walk", mWalkV:(s)=>`${s} steps/day`, mWalkD:"Underrated, joint-friendly, huge cumulative burn. Start here.",
+    mLift:"Lift", mLiftV:"2–3× / week, full body", mLiftD:"Protects muscle so the loss is fat, not strength. Bodyweight counts.",
+    mCardio:"Cardio", mCardioV:"Supporting act", mCardioD:"Bike, swim, brisk walk. Good for the heart; can't out-train the fork.",
+    mRecover:"Recover", mRecoverV:"Sleep 7–8h", mRecoverD:"Poor sleep raises hunger hormones and stalls loss. Non-negotiable.",
+    // mind
+    checkIn:"Check in with yourself", checkInIntro:"The part that decides success. Motivation fades; noticing patterns lasts.",
+    notePh:"What went well? What was hard? A win to remember?", saveEntry:"Save entry",
+    anchors:"Anchors for the hard days",
+    aSystems:"Systems", aSystemsV:"Trust routines over willpower", aSystemsD:"Willpower is finite. A repeatable routine isn't.",
+    aBeyond:"Beyond scale", aBeyondV:"Photos, measurements, energy", aBeyondD:"Weight lies day to day. Track how clothes fit and how you feel.",
+    aPlateau:"Plateaus", aPlateauV:"Normal, not failure", aPlateauD:"The body adapts. Hold the line — it breaks eventually.",
+    aSupport:"Support", aSupportV:"You're not alone in this", aSupportD:"One supportive person changes the odds. Lean on them.",
+    journal:"Journal",
+    // pace strings
+    paceFull:"The full healthy range is available.",
+    pace4054f:"Perimenopause window — protecting muscle and bone pays off. Steady beats fast.",
+    pace4054m:"Steady pace; strength work keeps the loss fat, not muscle.",
+    pace5569:"Slower is safer; muscle and bone protection take priority.",
+    pace70:"Gentle pace, strength work, and a doctor's oversight matter most.",
+  },
+  ro:{
+    eyebrow:"O călătorie constantă", pathWord:"Drum", ofGoal:(g)=>`din obiectivul de ${g}kg`,
+    tabs:{home:"Rezumat",weigh:"Greutate",nutrition:"Nutriție",move:"Mișcare",mind:"Mental"},
+    footer:"Nu este sfat medical. Pentru obiective mari, un control la medic (tiroidă, analize de sânge, tensiune) și un ritm sigur contează.",
+    add:"+ Adaugă", profileFallback:"Profil",
+    welcome:"Bun venit", newProfile:"Profil nou", setStart:"Stabilește punctul de pornire",
+    onboardIntro:"Fiecare profil își păstrează propriul obiectiv, date și personalizare. Salvate doar pe acest dispozitiv.",
+    name:"Nume", namePh:"ex. Mihai", curWeight:"Greutate actuală (kg)", height:"Înălțime (cm)",
+    goalQ:"Obiectiv — câte kg de slăbit?", goalPh:"ex. 30 sau 8",
+    ageRange:"Grupa de vârstă", sex:"Sex",
+    ages:{under40:"Sub 40","40-54":"40–54","55-69":"55–69","70+":"70+"},
+    sexes:{female:"Feminin",male:"Masculin",unset:"Prefer să nu spun"},
+    measTitle:"Urmărește și măsurătorile", measHint:'Piept și talie — mai potrivit pentru obiectivul "să intru în haine" decât cântarul singur',
+    goalInfoEmpty:"Introdu un obiectiv pentru a vedea durata estimată.",
+    goalInfo:(g,t)=>`Obiectiv <b>−${g}kg</b>. Într-un ritm sănătos, aproximativ <b>${t}</b>. Proteinele și ritmul se adaptează la vârstă/sex.`,
+    addProfile:"Adaugă profil", saveBegin:"Salvează și începe", cancel:"Anulează",
+    fewWeeks:"câteva săptămâni", months:(lo,hi)=>`${lo}–${hi} luni`,
+    stCurrent:"Acum", stTarget:"Țintă", stLost:"Slăbit până acum", stPace:"Ritm mediu",
+    kg:"kg", kgwk:"kg/săpt",
+    whereTitle:"Unde te afli",
+    whereEmpty:"Înregistrează prima cântărire și câteva obiceiuri zilnice — imaginea se conturează de acolo.",
+    whereProgress:(l,r,e)=>`Ai slăbit <b>${l}kg</b> — mai sunt ${r}kg. În acest ritm, mai rămân aproximativ <b>${e} săptămâni</b>. Puțin și constant câștigă.`,
+    whereDone:"Obiectiv atins — o reușită reală. Acum urmează să menții.",
+    tailoredFor:(a,s)=>`Adaptat pentru ${a}, ${s}`,
+    smallGoal:(m)=>`Un obiectiv de această mărime ține la fel de mult de <b>formă cât de greutate</b>. Antrenamentul de forță și ${m} spun povestea mai bine decât cântarul singur.`,
+    measPhrase:"măsurătorile tale de piept/talie", clothesPhrase:"cum ți se potrivesc hainele",
+    pProtein:"Proteine", pProteinV:(g)=>`~${g} g/zi`, pProteinD:"Prezente la fiecare masă — protejează mușchii și oasele în timpul slăbirii.",
+    pPace:"Ritm", pSteps:"Pași", pStepsV:(s)=>`${s}/zi`, pStepsD:"Bază cu impact redus; articulațiile și recuperarea preferă mersul.",
+    pStrength:"Forță", pStrengthV:"2–3× / săptămână", pStrengthD:"Cea mai importantă pârghie pentru a păstra (sau construi) mușchi.",
+    rhythmTitle:"Ritmul acestei săptămâni", rhythm:(n)=>`${n} din ultimele 7 zile au avut un obicei înregistrat. Consecvența bate intensitatea.`,
+    editProfile:"Editează detaliile acestui profil", delProfile:"Șterge acest profil",
+    delConfirm:(n)=>`Ștergi ${n} și toate datele sale?`, thisProfile:"acest profil",
+    editTitle:"Editează detaliile", startWeight:"Greutate de start (kg)", goalKg:"Obiectiv (kg de slăbit)",
+    measTitleShort:"Urmărește și măsurătorile", measHintShort:"Piept și talie", save:"Salvează",
+    logWeigh:"Înregistrează o cântărire",
+    weighIntro:"Cântărește-te o dată pe săptămână, la aceeași oră, în aceleași condiții. Cifrele zilnice fluctuează — tendința e cea reală.",
+    date:"Data", weightKg:"Greutate (kg)", saveWeigh:"Salvează cântărirea",
+    weightTrend:"Tendința greutății", noWeigh:"Încă nicio cântărire.", needTwo:"Sunt necesare 2+ cântăriri pentru a trasa tendința",
+    measurements:"Măsurători", measIntro:"Pentru un obiectiv de formă, centimetrul e mai sincer decât cântarul.",
+    chest:"Piept (cm)", waist:"Talie (cm)", saveMeas:"Salvează măsurătoarea", noMeas:"Încă nicio măsurătoare.",
+    plateTitle:"Farfuria de azi", plateIntro:"Aici trăiește deficitul — cam 70–80% din rezultate. Bifează ce a fost adevărat azi.",
+    nProtein:"Proteine la fiecare masă", nProteinH:(g)=>`Țintă ~${g} g/zi — mușchi și control al foamei`,
+    nVeg:"Legumele au umplut jumătate din farfurie", nVegH:"Volum + fibre, puține calorii",
+    nSugar:"Fără calorii lichide", nSugarH:"Suc, sucuri de fructe, alcool — cel mai ușor câștig mare",
+    nWater:"Am băut destulă apă", nWaterH:"Setea se deghizează în foame",
+    frameTitle:"Cadrul, nu o dietă",
+    fDeficit:"Deficit", fDeficitV:"500–750 kcal sub necesar", fDeficitD:"Suficient pentru slăbire constantă fără chin. Dietele drastice revin.",
+    fProteinV:"Prezente la fiecare masă", fProteinD:(g)=>`~${g} g/zi. Ouă, pește, pui, leguminoase, lactate, tofu.`,
+    fSwap:"Înlocuire", fSwapV:"Schimbă câte un lucru pe rând", fSwapD:"Suc → apă. Prăjit → copt. Obiceiurile mici se prind.",
+    fNoBans:"Fără interdicții", fNoBansV:"Nimic nu e interzis", fNoBansD:"Grupele de alimente nu sunt dușmanul. Restricția duce la mâncat compulsiv.",
+    moveTitle:"Mișcarea de azi", steps:"Pași", stepsPh:(s)=>`ex. ${s}`,
+    mStrength:"Sesiune de forță făcută", mStrengthH:"2–3×/săptămână — pârghia principală pentru păstrarea mușchilor",
+    howMove:"Cum să te miști (de la cel mai important)",
+    mWalk:"Mers", mWalkV:(s)=>`${s} pași/zi`, mWalkD:"Subestimat, blând cu articulațiile, ardere cumulativă uriașă. Începe aici.",
+    mLift:"Forță", mLiftV:"2–3× / săptămână, tot corpul", mLiftD:"Protejează mușchii, ca pierderea să fie grăsime, nu forță. Greutatea corpului contează.",
+    mCardio:"Cardio", mCardioV:"Rol de sprijin", mCardioD:"Bicicletă, înot, mers alert. Bun pentru inimă; nu poți compensa alimentația slabă.",
+    mRecover:"Recuperare", mRecoverV:"Somn 7–8h", mRecoverD:"Somnul prost crește hormonii foamei și blochează slăbirea. Obligatoriu.",
+    checkIn:"Fă-ți un bilanț", checkInIntro:"Partea care decide succesul. Motivația scade; observarea tiparelor rămâne.",
+    notePh:"Ce a mers bine? Ce a fost greu? O reușită de reținut?", saveEntry:"Salvează însemnarea",
+    anchors:"Repere pentru zilele grele",
+    aSystems:"Sisteme", aSystemsV:"Bazează-te pe rutine, nu pe voință", aSystemsD:"Voința e limitată. O rutină repetabilă nu e.",
+    aBeyond:"Dincolo de cântar", aBeyondV:"Poze, măsurători, energie", aBeyondD:"Greutatea minte de la zi la zi. Urmărește cum ți se potrivesc hainele și cum te simți.",
+    aPlateau:"Platouri", aPlateauV:"Normale, nu un eșec", aPlateauD:"Corpul se adaptează. Ține linia — se sparge până la urmă.",
+    aSupport:"Sprijin", aSupportV:"Nu ești singur în asta", aSupportD:"O singură persoană care te susține schimbă șansele. Bazează-te pe ea.",
+    journal:"Jurnal",
+    paceFull:"Întreaga gamă sănătoasă îți este disponibilă.",
+    pace4054f:"Perioada de perimenopauză — protejarea mușchilor și oaselor merită. Constant bate rapid.",
+    pace4054m:"Ritm constant; antrenamentul de forță face ca pierderea să fie grăsime, nu mușchi.",
+    pace5569:"Mai lent e mai sigur; protejarea mușchilor și oaselor are prioritate.",
+    pace70:"Ritmul blând, antrenamentul de forță și supravegherea medicului contează cel mai mult.",
+  }
+};
+function T(){ return STR[DB.lang||"en"]; }
+
+// ── Store: many profiles + which is active + language ──
+let DB = { active:null, profiles:{}, lang:"en" };
+function loadDB(){ try{const r=localStorage.getItem(KEY); if(r) DB=Object.assign({lang:"en"},JSON.parse(r));}catch(e){} }
+function saveDB(){ try{localStorage.setItem(KEY, JSON.stringify(DB));}catch(e){} }
+function P(){ return DB.profiles[DB.active]; }
+function blankProfile(name){
+  return { name:name||"", startWeight:0, goalLoss:0, height:0, age:"40-54", sex:"female",
+           startDate:today(), useMeasure:false, weights:[], measures:[], habits:{}, journal:[] };
+}
+
+let tab = "home";
+
+// ── Tailoring by age/sex ──
+function tailor(p){
+  const L=T();
+  const target = p.startWeight ? +(p.startWeight - p.goalLoss).toFixed(1) : 0;
+  let perKg = 1.6;
+  if(p.age==="55-69") perKg = 1.8;
+  if(p.age==="70+")   perKg = 2.0;
+  if(p.sex==="male")  perKg += 0.1;
+  const protein = target>0 ? Math.round(target*perKg) : 0;
+  let pace="0.5–1.0 kg", paceNote=L.paceFull;
+  if(p.age==="40-54"){ pace="0.5–0.9 kg"; paceNote=p.sex==="female"?L.pace4054f:L.pace4054m; }
+  if(p.age==="55-69"){ pace="0.4–0.75 kg"; paceNote=L.pace5569; }
+  if(p.age==="70+"){ pace="0.3–0.6 kg"; paceNote=L.pace70; }
+  const paceUnit = (DB.lang==="ro"?"/săpt":"/week");
+  let steps=8000; if(p.age==="55-69")steps=7000; if(p.age==="70+")steps=6000;
+  const small = p.goalLoss>0 && p.goalLoss<=12;
+  return {target, protein, pace:pace+paceUnit, paceNote, steps, small};
+}
+
+// ── Derived ──
+function latestWeight(p){ return p.weights.length ? p.weights[p.weights.length-1].kg : p.startWeight; }
+function lost(p){ return p.startWeight ? +(p.startWeight - latestWeight(p)).toFixed(1) : 0; }
+function pct(p){ const l=lost(p); return (p.startWeight&&p.goalLoss)?Math.min(100,Math.max(0,(l/p.goalLoss)*100)):0; }
+
+// ── Language switcher markup ──
+function langSwitch(){
+  return `<div class="lang">
+    <button data-lang="en" class="${DB.lang==="en"?"on":""}">EN</button>
+    <button data-lang="ro" class="${DB.lang==="ro"?"on":""}">RO</button></div>`;
+}
+function bindLang(root){
+  root.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{DB.lang=b.dataset.lang;saveDB();render();});
+}
+
+// ── Root render ──
+function render(){
+  if(!DB.active || !P()){ renderOnboard(); return; }
+  const L=T(), p = P(), Tl = tailor(p), l = lost(p);
+  const possess = DB.lang==="ro"
+    ? `${L.pathWord} ${p.name?escapeHtml(p.name):""} ${p.goalLoss?("−"+p.goalLoss+"kg"):""}`.replace(/\s+/g," ").trim()
+    : `${p.name?escapeHtml(p.name)+"'s":"The"} ${p.goalLoss?("−"+p.goalLoss+"kg"):""} ${L.pathWord}`;
+  $("app").innerHTML = `
+    <div class="topbar">
+      <div class="pbar" id="pbar"></div>
+      ${langSwitch()}
+    </div>
+    <header>
+      <div><div class="eyebrow">${L.eyebrow}</div>
+        <h1>${possess}</h1></div>
+      <div><div class="bignum">${l>0?"−"+l:"0"}<small>kg</small></div>
+        <div class="subnum">${L.ofGoal(p.goalLoss||"—")}</div></div>
+    </header>
+    <div class="ribbonwrap"><div class="ribbon"><div class="fill" style="width:${pct(p)}%"></div><span class="lab">${Math.round(pct(p))}%</span></div></div>
+    <nav id="nav"></nav>
+    <main class="fadein" id="main"></main>
+    <footer>${L.footer}</footer>
+  `;
+  bindLang($("app"));
+  const pbar=$("pbar");
+  pbar.innerHTML = Object.keys(DB.profiles).map(id=>
+    `<button class="chip ${id===DB.active?"active":""}" data-id="${id}">${escapeHtml(DB.profiles[id].name||L.profileFallback)}</button>`
+  ).join("") + `<button class="add" id="addP">${L.add}</button>`;
+  pbar.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{DB.active=b.dataset.id;saveDB();tab="home";render();});
+  $("addP").onclick=()=>{ renderOnboard(true); };
+  const nav=$("nav");
+  nav.innerHTML=Object.keys(L.tabs).map(k=>`<button data-tab="${k}" class="${tab===k?"active":""}">${L.tabs[k]}</button>`).join("");
+  nav.querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
+  const m=$("main");
+  if(tab==="home")renderHome(m,p,Tl);
+  if(tab==="weigh")renderWeigh(m,p,Tl);
+  if(tab==="nutrition")renderNutrition(m,p,Tl);
+  if(tab==="move")renderMove(m,p,Tl);
+  if(tab==="mind")renderMind(m,p);
+}
+
+// ── Onboarding / add profile ──
+function renderOnboard(isAdd){
+  const L=T();
+  $("app").innerHTML = `
+    <div class="topbar"><div class="pbar"></div>${langSwitch()}</div>
+    <header><div><div class="eyebrow">${isAdd?L.newProfile:L.welcome}</div><h1>${L.setStart}</h1></div></header>
+    <main><div class="card">
+      <p class="muted">${L.onboardIntro}</p>
+      <label class="field"><span class="cap">${L.name}</span><input id="o_name" placeholder="${L.namePh}"></label>
+      <div class="row">
+        <label class="field"><span class="cap">${L.curWeight}</span><input id="o_w" type="number" inputmode="decimal"></label>
+        <label class="field"><span class="cap">${L.height}</span><input id="o_h" type="number" inputmode="numeric"></label>
+      </div>
+      <label class="field"><span class="cap">${L.goalQ}</span><input id="o_goal" type="number" inputmode="decimal" placeholder="${L.goalPh}"></label>
+      <div class="row">
+        <label class="field"><span class="cap">${L.ageRange}</span>
+          <select id="o_age">${["under40","40-54","55-69","70+"].map(v=>`<option value="${v}" ${v==="40-54"?"selected":""}>${L.ages[v]}</option>`).join("")}</select></label>
+        <label class="field"><span class="cap">${L.sex}</span>
+          <select id="o_sex">${["female","male","unset"].map(v=>`<option value="${v}" ${v==="female"?"selected":""}>${L.sexes[v]}</option>`).join("")}</select></label>
+      </div>
+      <button class="check" id="o_meas" type="button"><span class="box"></span><span><span class="t">${L.measTitle}</span><span class="h">${L.measHint}</span></span></button>
+      <div class="infobox" id="o_info">${L.goalInfoEmpty}</div>
+      <button class="btn" id="o_save">${isAdd?L.addProfile:L.saveBegin}</button>
+      ${isAdd?`<button class="ghost" id="o_cancel" style="margin-top:10px">${L.cancel}</button>`:""}
+    </div></main>`;
+  bindLang($("app"));
+  let meas=false;
+  $("o_meas").onclick=()=>{ meas=!meas; $("o_meas").classList.toggle("on",meas); $("o_meas").querySelector(".box").textContent=meas?"✓":""; };
+  const upd=()=>{ const g=+$("o_goal").value; $("o_info").innerHTML = g>0 ? L.goalInfo(g,estMonths(g)) : L.goalInfoEmpty; };
+  $("o_goal").oninput=upd;
+  if(isAdd&&$("o_cancel")) $("o_cancel").onclick=()=>{ render(); };
+  $("o_save").onclick=()=>{
+    const w=+$("o_w").value, g=+$("o_goal").value;
+    if(!w){ $("o_w").focus(); return; }
+    if(!g){ $("o_goal").focus(); return; }
+    const id = "p"+Date.now();
+    const prof = blankProfile($("o_name").value.trim());
+    prof.startWeight=w; prof.goalLoss=g; prof.height=+$("o_h").value||0;
+    prof.age=$("o_age").value; prof.sex=$("o_sex").value; prof.useMeasure=meas;
+    DB.profiles[id]=prof; DB.active=id; saveDB(); tab="home"; render();
+  };
+}
+function estMonths(kg){
+  const L=T();
+  const lo=Math.round(kg/1.0/4.33), hi=Math.round(kg/0.5/4.33);
+  if(hi<2) return L.fewWeeks;
+  return L.months(lo,hi);
+}
+
+// ── Overview ──
+function renderHome(m,p,Tl){
+  const L=T(), l=lost(p);
+  const weeks=Math.max(1,Math.ceil((Date.now()-new Date(p.startDate).getTime())/(7*864e5)));
+  const rate=l>0?(l/weeks).toFixed(2):"0";
+  const remaining=+(p.goalLoss-l).toFixed(1);
+  const eta=rate>0?Math.ceil(remaining/rate):null;
+  let dots="",done=0;
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const h=p.habits[d.toISOString().slice(0,10)];const on=h&&Object.values(h).some(Boolean);if(on)done++;dots+=`<div class="d ${on?"on":""}"></div>`;}
+  const sexLabel=L.sexes[p.sex]?L.sexes[p.sex].toLowerCase():L.thisProfile;
+  const ageLabel=L.ages[p.age];
+  m.innerHTML=`
+    <div class="grid2">
+      ${stat(L.stCurrent,latestWeight(p)||"—",L.kg)}
+      ${stat(L.stTarget,Tl.target||"—",L.kg)}
+      ${stat(L.stLost,l>0?"−"+l:"0",L.kg,"var(--clay)")}
+      ${stat(L.stPace,rate,L.kgwk)}
+    </div>
+    <div class="card"><h2>${L.whereTitle}</h2>
+      ${l<=0?`<p class="muted">${L.whereEmpty}</p>`
+        :`<p class="muted ink">${remaining>0?L.whereProgress(l,remaining,eta):L.whereDone}</p>`}
+      <div style="margin-top:12px">${spark(p.weights,false)}</div>
+    </div>
+    <div class="card"><h2>${L.tailoredFor(ageLabel,sexLabel)}</h2>
+      ${Tl.small?`<div class="infobox">${L.smallGoal(p.useMeasure?L.measPhrase:L.clothesPhrase)}</div>`:""}
+      ${principle(L.pProtein,L.pProteinV(Tl.protein),L.pProteinD)}
+      ${principle(L.pPace,Tl.pace,Tl.paceNote)}
+      ${principle(L.pSteps,L.pStepsV(Tl.steps.toLocaleString()),L.pStepsD)}
+      ${principle(L.pStrength,L.pStrengthV,L.pStrengthD)}
+    </div>
+    <div class="card"><h2>${L.rhythmTitle}</h2><div class="week">${dots}</div>
+      <p class="muted">${L.rhythm(done)}</p></div>
+    <button class="ghost" id="edit">${L.editProfile}</button>
+    <button class="ghost danger" id="del">${L.delProfile}</button>`;
+  $("edit").onclick=()=>editProfile(p);
+  $("del").onclick=()=>{
+    if(confirm(L.delConfirm(p.name||L.thisProfile))){
+      delete DB.profiles[DB.active];
+      DB.active=Object.keys(DB.profiles)[0]||null; saveDB(); render();
+    }
+  };
+}
+function editProfile(p){
+  const L=T(), m=$("main");
+  m.innerHTML=`<div class="card"><h2>${L.editTitle}</h2>
+    <label class="field"><span class="cap">${L.name}</span><input id="e_name" value="${escapeHtml(p.name)}"></label>
+    <div class="row">
+      <label class="field"><span class="cap">${L.startWeight}</span><input id="e_sw" type="number" value="${p.startWeight}"></label>
+      <label class="field"><span class="cap">${L.goalKg}</span><input id="e_g" type="number" value="${p.goalLoss}"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="cap">${L.ageRange}</span><select id="e_age">
+        ${["under40","40-54","55-69","70+"].map(v=>`<option value="${v}" ${p.age===v?"selected":""}>${L.ages[v]}</option>`).join("")}
+      </select></label>
+      <label class="field"><span class="cap">${L.sex}</span><select id="e_sex">
+        ${["female","male","unset"].map(v=>`<option value="${v}" ${p.sex===v?"selected":""}>${L.sexes[v]}</option>`).join("")}
+      </select></label>
+    </div>
+    <button class="check ${p.useMeasure?"on":""}" id="e_meas" type="button"><span class="box">${p.useMeasure?"✓":""}</span><span><span class="t">${L.measTitleShort}</span><span class="h">${L.measHintShort}</span></span></button>
+    <button class="btn" id="e_save" style="margin-top:6px">${L.save}</button>
+    <button class="ghost" id="e_cancel" style="margin-top:10px">${L.cancel}</button></div>`;
+  let meas=p.useMeasure;
+  $("e_meas").onclick=()=>{meas=!meas;$("e_meas").classList.toggle("on",meas);$("e_meas").querySelector(".box").textContent=meas?"✓":"";};
+  $("e_cancel").onclick=render;
+  $("e_save").onclick=()=>{
+    p.name=$("e_name").value.trim(); p.startWeight=+$("e_sw").value||p.startWeight;
+    p.goalLoss=+$("e_g").value||p.goalLoss; p.age=$("e_age").value; p.sex=$("e_sex").value; p.useMeasure=meas;
+    saveDB(); render();
+  };
+}
+
+// ── Weight (+ optional measurements) ──
+function renderWeigh(m,p,Tl){
+  const L=T();
+  const measBlock = p.useMeasure ? `
+    <div class="card"><h2>${L.measurements}</h2>
+      <p class="muted">${L.measIntro}</p>
+      <div class="row">
+        <label class="field"><span class="cap">${L.chest}</span><input id="ms_chest" type="number" inputmode="decimal"></label>
+        <label class="field"><span class="cap">${L.waist}</span><input id="ms_waist" type="number" inputmode="decimal"></label>
+      </div>
+      <button class="btn" id="ms_add">${L.saveMeas}</button>
+      <div id="ms_list" style="margin-top:12px;max-height:150px;overflow-y:auto"></div>
+    </div>`:"";
+  m.innerHTML=`
+    <div class="card"><h2>${L.logWeigh}</h2>
+      <p class="muted">${L.weighIntro}</p>
+      <div class="row">
+        <label class="field"><span class="cap">${L.date}</span><input id="w_date" type="date" value="${today()}"></label>
+        <label class="field"><span class="cap">${L.weightKg}</span><input id="w_val" type="number" inputmode="decimal"></label>
+      </div>
+      <button class="btn" id="w_add">${L.saveWeigh}</button>
+    </div>
+    <div class="card"><h2>${L.weightTrend}</h2>${spark(p.weights,true)}
+      <div id="w_list" style="margin-top:12px;max-height:180px;overflow-y:auto"></div></div>
+    ${measBlock}`;
+  $("w_add").onclick=()=>{
+    const v=+$("w_val").value,d=$("w_date").value; if(!v){$("w_val").focus();return;}
+    p.weights=p.weights.filter(w=>w.date!==d); p.weights.push({date:d,kg:v});
+    p.weights.sort((a,b)=>a.date.localeCompare(b.date)); saveDB(); render();
+  };
+  const list=$("w_list");
+  list.innerHTML=p.weights.slice().reverse().map(w=>`<div class="logrow"><span class="d">${w.date}</span><span style="font-weight:600">${w.kg} kg</span><button class="x" data-d="${w.date}">✕</button></div>`).join("")||`<p class="muted">${L.noWeigh}</p>`;
+  list.querySelectorAll(".x").forEach(b=>b.onclick=()=>{p.weights=p.weights.filter(w=>w.date!==b.dataset.d);saveDB();render();});
+  if(p.useMeasure){
+    $("ms_add").onclick=()=>{
+      const c=+$("ms_chest").value,wa=+$("ms_waist").value; if(!c&&!wa)return;
+      const d=today(); p.measures=p.measures.filter(x=>x.date!==d);
+      p.measures.push({date:d,chest:c||null,waist:wa||null});
+      p.measures.sort((a,b)=>a.date.localeCompare(b.date)); saveDB(); render();
+    };
+    const ml=$("ms_list");
+    ml.innerHTML=p.measures.slice().reverse().map(x=>`<div class="logrow"><span class="d">${x.date}</span><span style="font-weight:600">${x.chest?("C "+x.chest):""} ${x.waist?("W "+x.waist):""}</span><button class="x" data-d="${x.date}">✕</button></div>`).join("")||`<p class="muted">${L.noMeas}</p>`;
+    ml.querySelectorAll(".x").forEach(b=>b.onclick=()=>{p.measures=p.measures.filter(x=>x.date!==b.dataset.d);saveDB();render();});
+  }
+}
+
+// ── Nutrition ──
+function renderNutrition(m,p,Tl){
+  const L=T(), d=today(),h=p.habits[d]||{};
+  m.innerHTML=`
+    <div class="card"><h2>${L.plateTitle}</h2>
+      <p class="muted">${L.plateIntro}</p>
+      ${check("protein",h.protein,L.nProtein,L.nProteinH(Tl.protein))}
+      ${check("veg",h.veg,L.nVeg,L.nVegH)}
+      ${check("noSugar",h.noSugar,L.nSugar,L.nSugarH)}
+      ${check("water",h.water,L.nWater,L.nWaterH)}
+    </div>
+    <div class="card"><h2>${L.frameTitle}</h2>
+      ${principle(L.fDeficit,L.fDeficitV,L.fDeficitD)}
+      ${principle(L.pProtein,L.fProteinV,L.fProteinD(Tl.protein))}
+      ${principle(L.fSwap,L.fSwapV,L.fSwapD)}
+      ${principle(L.fNoBans,L.fNoBansV,L.fNoBansD)}
+    </div>`;
+  bindChecks(m,p,d,h);
+}
+
+// ── Movement ──
+function renderMove(m,p,Tl){
+  const L=T(), d=today(),h=p.habits[d]||{};
+  m.innerHTML=`
+    <div class="card"><h2>${L.moveTitle}</h2>
+      <label class="field"><span class="cap">${L.steps}</span><input id="mv_steps" type="number" inputmode="numeric" value="${h.steps||""}" placeholder="${L.stepsPh(Tl.steps)}"></label>
+      <div class="bar"><div class="f" style="width:${Math.min(100,((h.steps||0)/Tl.steps)*100)}%"></div></div>
+      ${check("strength",h.strength,L.mStrength,L.mStrengthH)}
+    </div>
+    <div class="card"><h2>${L.howMove}</h2>
+      ${principle(L.mWalk,L.mWalkV(Tl.steps.toLocaleString()),L.mWalkD)}
+      ${principle(L.mLift,L.mLiftV,L.mLiftD)}
+      ${principle(L.mCardio,L.mCardioV,L.mCardioD)}
+      ${principle(L.mRecover,L.mRecoverV,L.mRecoverD)}
+    </div>`;
+  $("mv_steps").oninput=(e)=>{p.habits[d]={...(p.habits[d]||{}),steps:+e.target.value};saveDB();
+    m.querySelector(".bar .f").style.width=Math.min(100,((+e.target.value||0)/Tl.steps)*100)+"%";};
+  bindChecks(m,p,d,h);
+}
+
+// ── Mindset ──
+function renderMind(m,p){
+  const L=T();
+  let mood=3;
+  m.innerHTML=`
+    <div class="card"><h2>${L.checkIn}</h2>
+      <p class="muted">${L.checkInIntro}</p>
+      <div class="moods" id="moods">${MOODS.map((e,i)=>`<button data-m="${i+1}" class="${i+1===3?"sel":""}">${e}</button>`).join("")}</div>
+      <textarea id="mind_note" style="min-height:70px;resize:vertical" placeholder="${L.notePh}"></textarea>
+      <button class="btn" id="mind_save" style="margin-top:10px">${L.saveEntry}</button>
+    </div>
+    <div class="card"><h2>${L.anchors}</h2>
+      ${principle(L.aSystems,L.aSystemsV,L.aSystemsD)}
+      ${principle(L.aBeyond,L.aBeyondV,L.aBeyondD)}
+      ${principle(L.aPlateau,L.aPlateauV,L.aPlateauD)}
+      ${principle(L.aSupport,L.aSupportV,L.aSupportD)}
+    </div>
+    ${p.journal.length?`<div class="card"><h2>${L.journal}</h2><div style="max-height:220px;overflow-y:auto">${p.journal.map(j=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;color:var(--sage)">${MOODS[j.mood-1]} ${j.date}</div>${j.note?`<p style="margin:4px 0 0;font-size:14px" class="ink">${escapeHtml(j.note)}</p>`:""}</div>`).join("")}</div></div>`:""}`;
+  m.querySelectorAll("#moods button").forEach(b=>b.onclick=()=>{mood=+b.dataset.m;m.querySelectorAll("#moods button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");});
+  $("mind_save").onclick=()=>{p.journal.unshift({date:today(),mood,note:$("mind_note").value.trim()});p.journal=p.journal.slice(0,200);saveDB();render();};
+}
+
+// ── builders ──
+function stat(l,v,u,color){return `<div class="stat"><div class="l">${l}</div><div class="v" ${color?`style="color:${color}"`:""}>${v}<small> ${u}</small></div></div>`;}
+function check(k,on,t,h){return `<button class="check ${on?"on":""}" data-k="${k}"><span class="box">${on?"✓":""}</span><span><span class="t">${t}</span><span class="h">${h}</span></span></button>`;}
+function principle(n,t,d){return `<div class="principle"><span class="n">${n}</span><span><span class="pt">${t}</span><span class="pd">${d}</span></span></div>`;}
+function bindChecks(m,p,d,h){m.querySelectorAll(".check").forEach(b=>b.onclick=()=>{p.habits[d]={...h,[b.dataset.k]:!h[b.dataset.k]};saveDB();render();});}
+function escapeHtml(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function spark(weights,tall){
+  const L=T(), H=tall?120:60;
+  if(!weights||weights.length<2)return `<div class="empty" style="height:${H}px">${L.needTwo}</div>`;
+  const kgs=weights.map(w=>w.kg),min=Math.min(...kgs),max=Math.max(...kgs),range=(max-min)||1,W=300;
+  const pts=weights.map((w,i)=>{const x=(i/(weights.length-1))*W;const y=H-((w.kg-min)/range)*(H-10)-5;return x+","+y;}).join(" ");
+  const dots=weights.map((w,i)=>{const x=(i/(weights.length-1))*W;const y=H-((w.kg-min)/range)*(H-10)-5;return `<circle cx="${x}" cy="${y}" r="3" fill="var(--moss)"/>`;}).join("");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" style="height:${H}px"><polyline points="${pts}" fill="none" stroke="var(--clay)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
+}
+
+loadDB(); render();
+</script>
+</body>
+</html>
