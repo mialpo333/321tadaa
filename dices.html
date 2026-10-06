@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Table — Dice Roller</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #0e1a0e;
+    background-image:
+      radial-gradient(ellipse at 30% 20%, #1a3a1a 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, #1a2a10 0%, transparent 60%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    padding: 24px 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg, transparent, transparent 2px,
+      rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 560px; display: flex; flex-direction: column; align-items: center; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 32px; }
+  .header-sub { font-size: 11px; letter-spacing: 0.4em; color: #c9a84c; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
+  .header h1 { font-size: 42px; font-weight: normal; color: #f5e6c0; letter-spacing: 0.05em; text-shadow: 0 2px 20px rgba(201,168,76,0.3); }
+  .header-line { height: 2px; width: 80px; background: linear-gradient(90deg, transparent, #c9a84c, transparent); margin: 12px auto 0; }
+
+  /* Presets */
+  .presets { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; }
+  .preset-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(201,168,76,0.25);
+    color: #c9a84c;
+    padding: 6px 14px; border-radius: 4px; cursor: pointer;
+    font-size: 13px; letter-spacing: 0.08em; font-family: Georgia, serif;
+    transition: all 0.2s;
+  }
+  .preset-btn.active {
+    background: linear-gradient(135deg, #c9a84c, #a07830);
+    border-color: #c9a84c; color: #0e1a0e; font-weight: bold;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex; gap: 24px; margin-bottom: 36px; align-items: center;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px; padding: 14px 24px; flex-wrap: wrap; justify-content: center;
+  }
+  .ctrl-label { font-size: 11px; color: #c9a84c; letter-spacing: 0.2em; margin-bottom: 6px; opacity: 0.7; text-align: center; }
+  .ctrl-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .ctrl-divider { width: 1px; height: 48px; background: rgba(201,168,76,0.2); }
+  .spin-btn {
+    width: 30px; height: 30px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06); color: #c9a84c;
+    font-size: 18px; cursor: pointer; font-family: Georgia, serif;
+    transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .spin-btn:hover { background: rgba(201,168,76,0.15); }
+  .dice-count { color: #f5e6c0; font-size: 22px; min-width: 28px; text-align: center; }
+  .sides-btn {
+    width: 32px; height: 30px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04); color: #888;
+    font-size: 12px; cursor: pointer; font-family: Georgia, serif;
+    transition: all 0.15s;
+  }
+  .sides-btn.active { background: rgba(201,168,76,0.25); color: #c9a84c; border-color: rgba(201,168,76,0.5); }
+  .sides-btn:hover { background: rgba(201,168,76,0.1); }
+
+  /* Dice area */
+  .dice-area {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 36px; min-height: 140px; align-items: center;
+  }
+  .die {
+    width: 120px; height: 120px;
+    background: linear-gradient(145deg, #f5f0e8 0%, #e8dcc8 60%, #d4c4a0 100%);
+    border-radius: 20px; position: relative;
+    box-shadow: 6px 6px 0px #8b6914, 4px 4px 0px #a07820, 2px 2px 0px #b08828,
+                inset 0 2px 0 rgba(255,255,255,0.7), inset 0 -2px 0 rgba(0,0,0,0.15);
+    border: 1px solid rgba(139,105,20,0.3);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s;
+  }
+  .die.rolling {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .die.rolling.even { animation: roll-even 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+  .die.rolling.odd  { animation: roll-odd  0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+  @keyframes roll-even { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(0.85) rotate(20deg)} }
+  @keyframes roll-odd  { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(0.85) rotate(-15deg)} }
+
+  .dot {
+    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #5a1a1a, #2d0a0a);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.1);
+    transform: translate(-50%, -50%);
+  }
+  .die-num {
+    font-size: 44px; font-weight: bold; color: #2d0a0a;
+    font-family: Georgia, serif; line-height: 1; user-select: none;
+  }
+  .die-num.big { font-size: 38px; }
+
+  /* Total */
+  .total { text-align: center; margin-bottom: 28px; }
+  .total-label { font-size: 11px; color: #c9a84c; letter-spacing: 0.3em; margin-bottom: 4px; opacity: 0.7; }
+  .total-value { font-size: 56px; color: #f5e6c0; font-weight: normal; line-height: 1; text-shadow: 0 0 30px rgba(201,168,76,0.4); transition: all 0.3s; }
+
+  /* Roll button */
+  .roll-btn {
+    padding: 18px 64px; font-size: 16px; letter-spacing: 0.25em;
+    font-family: Georgia, serif;
+    background: linear-gradient(135deg, #c9a84c 0%, #a07830 50%, #c9a84c 100%);
+    color: #0e1a0e; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
+    box-shadow: 0 4px 0 #6b4a10, 0 6px 20px rgba(201,168,76,0.3);
+    transition: all 0.15s; text-transform: uppercase;
+  }
+  .roll-btn:hover { filter: brightness(1.1); }
+  .roll-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #6b4a10; }
+  .roll-btn:disabled {
+    background: rgba(201,168,76,0.15); color: #c9a84c;
+    box-shadow: none; transform: translateY(4px); cursor: not-allowed;
+  }
+
+  /* History */
+  .history-wrap { margin-top: 28px; width: 100%; }
+  .history-toggle {
+    background: none; border: none; color: #c9a84c; font-size: 12px;
+    letter-spacing: 0.2em; cursor: pointer; opacity: 0.6;
+    display: block; margin: 0 auto; font-family: Georgia, serif;
+  }
+  .history-list {
+    margin-top: 12px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.15); border-radius: 6px;
+    padding: 12px 16px; max-height: 200px; overflow-y: auto;
+    display: none;
+  }
+  .history-list.open { display: block; }
+  .history-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .h-time  { color: #666; font-size: 11px; }
+  .h-vals  { color: #bba060; }
+  .h-sum   { color: #f5e6c0; font-weight: bold; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-sub">✦ Roll the Dice ✦</div>
+    <h1>The Table</h1>
+    <div class="header-line"></div>
+  </div>
+
+  <!-- Presets -->
+  <div class="presets" id="presets">
+    <button class="preset-btn" data-count="1" data-sides="6">1d6</button>
+    <button class="preset-btn active" data-count="2" data-sides="6">2d6</button>
+    <button class="preset-btn" data-count="3" data-sides="6">3d6</button>
+    <button class="preset-btn" data-count="4" data-sides="6">4d6</button>
+    <button class="preset-btn" data-count="2" data-sides="10">2d10</button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div>
+      <div class="ctrl-label">DICE</div>
+      <div class="ctrl-row">
+        <button class="spin-btn" id="dec-dice">−</button>
+        <span class="dice-count" id="dice-count">2</span>
+        <button class="spin-btn" id="inc-dice">+</button>
+      </div>
+    </div>
+    <div class="ctrl-divider"></div>
+    <div>
+      <div class="ctrl-label">SIDES</div>
+      <div class="ctrl-row" id="sides-row">
+        <button class="sides-btn" data-sides="4">4</button>
+        <button class="sides-btn active" data-sides="6">6</button>
+        <button class="sides-btn" data-sides="8">8</button>
+        <button class="sides-btn" data-sides="10">10</button>
+        <button class="sides-btn" data-sides="12">12</button>
+        <button class="sides-btn" data-sides="20">20</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dice area -->
+  <div class="dice-area" id="dice-area"></div>
+
+  <!-- Total -->
+  <div class="total" id="total-block">
+    <div class="total-label">TOTAL</div>
+    <div class="total-value" id="total-value">8</div>
+  </div>
+
+  <!-- Roll -->
+  <button class="roll-btn" id="roll-btn">Roll</button>
+
+  <!-- History -->
+  <div class="history-wrap hidden" id="history-wrap">
+    <button class="history-toggle" id="history-toggle">▼ SHOW HISTORY</button>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+</div>
+
+<script>
+  const DOT_POS = {
+    1: [[50,50]],
+    2: [[28,28],[72,72]],
+    3: [[28,28],[50,50],[72,72]],
+    4: [[28,28],[72,28],[28,72],[72,72]],
+    5: [[28,28],[72,28],[50,50],[28,72],[72,72]],
+    6: [[28,22],[72,22],[28,50],[72,50],[28,78],[72,78]],
+  };
+
+  let diceCount = 2;
+  let sides = 6;
+  let values = [3, 5];
+  let rolling = false;
+  let history = [];
+  let historyOpen = false;
+
+  const diceArea    = document.getElementById('dice-area');
+  const totalBlock  = document.getElementById('total-block');
+  const totalValue  = document.getElementById('total-value');
+  const rollBtn     = document.getElementById('roll-btn');
+  const diceCountEl = document.getElementById('dice-count');
+  const historyWrap = document.getElementById('history-wrap');
+  const historyList = document.getElementById('history-list');
+  const histToggle  = document.getElementById('history-toggle');
+
+  function rand(s) { return Math.floor(Math.random() * s) + 1; }
+  function randAll(n, s) { return Array.from({length: n}, () => rand(s)); }
+
+  function renderDice(isRolling) {
+    diceArea.innerHTML = '';
+    values.forEach((v, i) => {
+      const die = document.createElement('div');
+      die.className = 'die' + (isRolling ? (' rolling ' + (i % 2 === 0 ? 'even' : 'odd')) : '');
+
+      if (sides === 6) {
+        (DOT_POS[v] || []).forEach(([cx, cy]) => {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          dot.style.left = cx + '%';
+          dot.style.top  = cy + '%';
+          die.appendChild(dot);
+        });
+      } else {
+        const num = document.createElement('div');
+        num.className = 'die-num' + (v >= 10 ? ' big' : '');
+        num.textContent = v;
+        die.appendChild(num);
+      }
+      diceArea.appendChild(die);
+    });
+
+    const total = values.reduce((a, b) => a + b, 0);
+    if (diceCount > 1) {
+      totalBlock.classList.remove('hidden');
+      totalValue.textContent = total;
+    } else {
+      totalBlock.classList.add('hidden');
+    }
+  }
+
+  function updatePresets() {
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active',
+        +b.dataset.count === diceCount && +b.dataset.sides === sides);
+    });
+  }
+
+  function updateSidesBtns() {
+    document.querySelectorAll('.sides-btn').forEach(b => {
+      b.classList.toggle('active', +b.dataset.sides === sides);
+    });
+  }
+
+  function updateDiceCountEl() {
+    diceCountEl.textContent = diceCount;
+  }
+
+  function addHistory(vals, s) {
+    const sum = vals.reduce((a, b) => a + b, 0);
+    const time = new Date().toLocaleTimeString();
+    history.unshift({ vals, sum, sides: s, time });
+    if (history.length > 20) history.pop();
+    historyWrap.classList.remove('hidden');
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyList.innerHTML = '';
+    history.forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML =
+        `<span class="h-time">${h.time}</span>` +
+        `<span class="h-vals">[${h.vals.join(', ')}] d${h.sides}</span>` +
+        `<span class="h-sum">${h.vals.length > 1 ? '= ' + h.sum : h.sum}</span>`;
+      historyList.appendChild(row);
+    });
+  }
+
+  function doRoll() {
+    if (rolling) return;
+    rolling = true;
+    rollBtn.disabled = true;
+    rollBtn.textContent = 'Rolling…';
+
+    let ticks = 0;
+    const maxTicks = 10;
+    const iv = setInterval(() => {
+      values = randAll(diceCount, sides);
+      renderDice(true);
+      ticks++;
+      if (ticks >= maxTicks) {
+        clearInterval(iv);
+        values = randAll(diceCount, sides);
+        renderDice(false);
+        addHistory([...values], sides);
+        rolling = false;
+        rollBtn.disabled = false;
+        rollBtn.textContent = 'Roll';
+      }
+    }, 60);
+  }
+
+  // Events
+  rollBtn.addEventListener('click', doRoll);
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); doRoll(); }
+  });
+
+  document.getElementById('dec-dice').addEventListener('click', () => {
+    if (diceCount <= 1) return;
+    diceCount--;
+    values = randAll(diceCount, sides);
+    updateDiceCountEl(); updatePresets(); renderDice(false);
+  });
+
+  document.getElementById('inc-dice').addEventListener('click', () => {
+    if (diceCount >= 8) return;
+    diceCount++;
+    values = randAll(diceCount, sides);
+    updateDiceCountEl(); updatePresets(); renderDice(false);
+  });
+
+  document.getElementById('sides-row').addEventListener('click', e => {
+    const btn = e.target.closest('.sides-btn');
+    if (!btn) return;
+    sides = +btn.dataset.sides;
+    values = randAll(diceCount, sides);
+    updateSidesBtns(); updatePresets(); renderDice(false);
+  });
+
+  document.getElementById('presets').addEventListener('click', e => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    diceCount = +btn.dataset.count;
+    sides     = +btn.dataset.sides;
+    values    = randAll(diceCount, sides);
+    updateDiceCountEl(); updatePresets(); updateSidesBtns(); renderDice(false);
+  });
+
+  histToggle.addEventListener('click', () => {
+    historyOpen = !historyOpen;
+    historyList.classList.toggle('open', historyOpen);
+    histToggle.textContent = historyOpen ? '▲ HIDE HISTORY' : '▼ SHOW HISTORY';
+  });
+
+  // Init
+  renderDice(false);
+</script>
+</body>
+</html>
