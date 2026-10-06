@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bottle Sort</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#d9e4f0; --bg2:#c4d3e6; --ink:#1d2a44; --muted:#5b6b86;
+  --glass:rgba(255,255,255,.55); --glass-edge:rgba(29,42,68,.35);
+  --btn:#ffffff; --btn-ink:#1d2a44; --accent:#3e63dd;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2540; --bg2:#253157; --ink:#eef2fb; --muted:#9fb0d0;
+    --glass:rgba(255,255,255,.08); --glass-edge:rgba(220,230,255,.45);
+    --btn:#2c3964; --btn-ink:#eef2fb; --accent:#8fa8ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2540; --bg2:#253157; --ink:#eef2fb; --muted:#9fb0d0;
+  --glass:rgba(255,255,255,.08); --glass-edge:rgba(220,230,255,.45);
+  --btn:#2c3964; --btn-ink:#eef2fb; --accent:#8fa8ff;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;
+  background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg) 70%);
+  background-color:var(--bg);
+  color:var(--ink);font-family:"Baloo 2",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+  overflow-x:hidden;
+}
+main{max-width:720px;margin:0 auto;padding:18px 16px 32px;display:flex;flex-direction:column;min-height:100vh}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-size:clamp(1.9rem,6vw,2.6rem);font-weight:800;margin:0;line-height:1;letter-spacing:-.01em}
+.level{font-size:1.15rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.sub{margin:6px 0 0;color:var(--muted);font-size:1rem}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 0}
+.shelf{
+  --bw:min(48px,calc((100vw - 32px)/7 - 12px));
+  display:grid;gap:34px 12px;justify-content:center;
+}
+.bottle{
+  width:var(--bw);height:calc(var(--bw)*3.5);
+  padding:0;border:0;background:none;cursor:pointer;position:relative;
+  transition:transform .22s cubic-bezier(.3,.7,.4,1.2);
+  transform-origin:50% 0;
+}
+.bottle:focus-visible{outline:3px solid var(--accent);outline-offset:6px;border-radius:10px}
+.bottle.sel{transform:translateY(-18px)}
+.glass{
+  position:absolute;inset:0;
+  border:3px solid var(--glass-edge);border-top:0;
+  border-radius:4px 4px calc(var(--bw)/2) calc(var(--bw)/2);
+  background:var(--glass);overflow:hidden;
+  display:flex;flex-direction:column-reverse;
+}
+.glass::after{ /* glass highlight */
+  content:"";position:absolute;top:8%;bottom:10%;left:16%;width:12%;
+  border-radius:99px;background:rgba(255,255,255,.35);pointer-events:none;
+}
+.bottle::before{ /* rim */
+  content:"";position:absolute;top:-4px;left:-5px;right:-5px;height:7px;
+  border-radius:4px;background:var(--glass-edge);z-index:1;
+}
+.seg{height:22%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--bw)*.38);color:rgba(0,0,0,.45);line-height:1}
+.seg + .seg{box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
+.bottle.done .glass{border-color:var(--accent)}
+.stream{position:fixed;width:6px;border-radius:3px;z-index:20;pointer-events:none;
+  transform-origin:top;transform:scaleY(0);transition:transform .16s ease-out}
+.bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.bar button,.card button{
+  font:inherit;font-weight:700;font-size:1.02rem;
+  background:var(--btn);color:var(--btn-ink);border:2px solid var(--glass-edge);
+  border-radius:14px;padding:9px 16px;cursor:pointer;min-height:44px;
+}
+.bar button:disabled{opacity:.4;cursor:default}
+.bar button:focus-visible,.card button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.moves{text-align:center;color:var(--muted);margin:0 0 12px;font-size:1rem}
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(15,22,40,.45);z-index:30;padding:20px}
+.overlay.show{display:flex}
+.card{background:var(--bg);color:var(--ink);border-radius:22px;padding:26px 28px;text-align:center;
+  max-width:320px;width:100%;border:2px solid var(--glass-edge)}
+.card h2{margin:0 0 4px;font-size:1.8rem;font-weight:800;line-height:1.1}
+.card p{margin:0 0 18px;color:var(--muted)}
+.card button{background:var(--accent);color:#fff;border-color:transparent;width:100%}
+.help{max-width:52ch;margin:18px auto 0;color:var(--muted);font-size:.95rem;text-align:center;line-height:1.45}
+@media (prefers-reduced-motion:reduce){.bottle,.stream{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Bottle Sort</h1>
+    <div class="level" id="levelLabel">Level 1</div>
+  </header>
+  <p class="sub">Pour until every bottle holds one color.</p>
+
+  <div class="stage"><div class="shelf" id="shelf"></div></div>
+
+  <p class="moves" id="moves">0 moves</p>
+  <div class="bar">
+    <button id="undoBtn">Undo</button>
+    <button id="restartBtn">Restart</button>
+    <button id="addBtn">Add bottle</button>
+    <button id="symBtn" aria-pressed="false">Symbols</button>
+    <button id="sndBtn" aria-pressed="true">Sound on</button>
+  </div>
+  <p class="help">Tap a bottle, then tap where to pour. Liquid only lands on the same color or in an empty bottle. You get one extra bottle per level if you get stuck.</p>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="card">
+    <h2 id="winTitle">Sorted!</h2>
+    <p id="winText">Level 1 in 0 moves</p>
+    <button id="nextBtn">Next level</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CAP = 4;
+  const COLORS = [
+    ["#e5484d","●"],["#f78c2b","▲"],["#f5d90a","■"],["#8bd13e","◆"],
+    ["#2e9e5b","★"],["#18b5b0","✚"],["#4cb4f5","♥"],["#3e63dd","✕"],
+    ["#8e4ec6","◯"],["#e93d82","△"],["#8d5b3e","□"],["#c8c8d0","◇"]
+  ];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const $ = id => document.getElementById(id);
+  const shelf = $("shelf");
+  let level = 1, bottles = [], history = [], selected = null, moves = 0, extraUsed = false, busy = false, symbols = false, sound = true;
+
+  // ---------- storage ----------
+  function load(){
+    try{
+      const l = parseInt(localStorage.getItem("bs-level"),10); if(l>0) level = l;
+      symbols = localStorage.getItem("bs-sym") === "1";
+      sound = localStorage.getItem("bs-snd") !== "0";
+    }catch(e){}
+  }
+  function save(){
+    try{ localStorage.setItem("bs-level", String(level)); localStorage.setItem("bs-sym", symbols?"1":"0"); localStorage.setItem("bs-snd", sound?"1":"0"); }catch(e){}
+  }
+
+  // ---------- sound (generated, no files needed) ----------
+  let actx = null;
+  function ctx(){
+    if(!sound) return null;
+    try{
+      if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if(actx.state === "suspended") actx.resume();
+    }catch(e){ return null; }
+    return actx;
+  }
+  function tone(freq, dur, opts={}){
+    const a = ctx(); if(!a) return;
+    const t0 = a.currentTime + (opts.delay||0);
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = opts.type || "sine";
+    o.frequency.setValueAtTime(freq, t0);
+    if(opts.slide) o.frequency.exponentialRampToValueAtTime(opts.slide, t0 + dur);
+    const v = opts.vol ?? 0.18;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(v, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  const sfx = {
+    select(){ tone(620, .09, {type:"triangle", slide:780, vol:.15}); },
+    deselect(){ tone(560, .09, {type:"triangle", slide:420, vol:.12}); },
+    bad(){ tone(150, .16, {type:"square", slide:110, vol:.07}); },
+    pour(amount, fillBefore){
+      // glugs that rise in pitch as the bottle fills up
+      const glugs = amount * 3;
+      for(let k=0;k<glugs;k++){
+        const level = fillBefore + (k+1)/3;
+        const base = 260 + level*90 + Math.random()*40;
+        tone(base, .07, {slide: base*1.6, vol:.13, delay: k*.075});
+      }
+    },
+    full(){ tone(880, .25, {vol:.12, delay:.05}); tone(1320, .35, {vol:.1, delay:.13}); },
+    win(){ [523,659,784,1047,1319].forEach((f,k)=>tone(f, .32, {type:"triangle", vol:.14, delay:k*.11})); }
+  };
+
+  // ---------- puzzle logic ----------
+  function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  const top = b => b[b.length-1];
+  function canPour(bs,i,j){
+    if(i===j) return false;
+    const s = bs[i], d = bs[j];
+    if(!s.length || d.length>=CAP) return false;
+    return !d.length || top(d)===top(s);
+  }
+  function pourAmount(bs,i,j){
+    const s = bs[i], d = bs[j], c = top(s); let n = 0;
+    for(let k=s.length-1;k>=0 && s[k]===c;k--) n++;
+    return Math.min(n, CAP-d.length);
+  }
+  function doPour(bs,i,j){
+    const n = pourAmount(bs,i,j), c = top(bs[i]);
+    for(let k=0;k<n;k++){ bs[i].pop(); bs[j].push(c); }
+    return n;
+  }
+  const isDone = b => b.length===0 || (b.length===CAP && b.every(x=>x===b[0]));
+  const isSolved = bs => bs.every(isDone);
+
+  function solvable(start){
+    const key = bs => bs.map(b=>b.join(",")).sort().join("|");
+    const seen = new Set([key(start)]);
+    const stack = [start.map(b=>b.slice())];
+    let steps = 0;
+    while(stack.length){
+      if(++steps > 40000) return true; // too big to prove; accept
+      const bs = stack.pop();
+      if(isSolved(bs)) return true;
+      for(let i=0;i<bs.length;i++){
+        if(!bs[i].length || isDone(bs[i])) continue;
+        const uniform = bs[i].every(x=>x===bs[i][0]);
+        for(let j=0;j<bs.length;j++){
+          if(!canPour(bs,i,j)) continue;
+          if(uniform && !bs[j].length) continue; // pointless move
+          const nb = bs.map(b=>b.slice()); doPour(nb,i,j);
+          const k = key(nb); if(seen.has(k)) continue;
+          seen.add(k); stack.push(nb);
+        }
+      }
+    }
+    return false;
+  }
+
+  function generate(lv){
+    const n = Math.min(3 + Math.floor((lv-1)/2), COLORS.length);
+    const r = rng(lv*9973 + 17);
+    for(let attempt=0; attempt<50; attempt++){
+      const pool = [];
+      for(let c=0;c<n;c++) for(let k=0;k<CAP;k++) pool.push(c);
+      for(let i=pool.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+      const bs = [];
+      for(let b=0;b<n;b++) bs.push(pool.slice(b*CAP,(b+1)*CAP));
+      bs.push([],[]);
+      if(bs.some(b=>b.length && isDone(b))) continue;
+      if(solvable(bs)) return bs;
+    }
+    const bs=[]; for(let c=0;c<n;c++) bs.push(Array(CAP).fill(c)); bs.push([],[]); return bs;
+  }
+
+  function startLevel(){
+    bottles = generate(level); history = []; selected = null; moves = 0; extraUsed = false;
+    $("overlay").classList.remove("show");
+    render();
+  }
+
+  // ---------- rendering ----------
+  function render(){
+    const count = bottles.length;
+    const perRow = count <= 7 ? count : Math.ceil(count/2);
+    shelf.style.gridTemplateColumns = `repeat(${perRow}, var(--bw))`;
+    shelf.innerHTML = "";
+    bottles.forEach((b,i) => {
+      const el = document.createElement("button");
+      el.className = "bottle" + (selected===i ? " sel" : "") + (b.length===CAP && isDone(b) ? " done" : "");
+      el.dataset.i = i;
+      el.setAttribute("aria-label", `Bottle ${i+1}, ${b.length} of ${CAP} filled`);
+      const g = document.createElement("div"); g.className = "glass";
+      b.forEach(c => {
+        const s = document.createElement("div"); s.className = "seg";
+        s.style.background = COLORS[c][0];
+        if(symbols) s.textContent = COLORS[c][1];
+        g.appendChild(s);
+      });
+      el.appendChild(g);
+      el.addEventListener("click", () => tap(i));
+      shelf.appendChild(el);
+    });
+    $("levelLabel").textContent = `Level ${level}`;
+    $("moves").textContent = `${moves} move${moves===1?"":"s"}`;
+    $("undoBtn").disabled = !history.length;
+    $("addBtn").disabled = extraUsed;
+    $("symBtn").setAttribute("aria-pressed", String(symbols));
+    $("sndBtn").setAttribute("aria-pressed", String(sound));
+    $("sndBtn").textContent = sound ? "Sound on" : "Sound off";
+  }
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const bottleEl = i => shelf.querySelector(`[data-i="${i}"]`);
+
+  async function animatePour(i,j,color){
+    const s = bottleEl(i), t = bottleEl(j);
+    const sr = s.getBoundingClientRect(), tr = t.getBoundingClientRect();
+    const dir = tr.left >= sr.left ? 1 : -1;
+    const dx = (tr.left + tr.width/2) - (sr.left + sr.width/2) - dir*tr.width*0.55;
+    const dy = (tr.top - 34) - sr.top;
+    const tilt = `translate(${dx}px,${dy}px) rotate(${dir*72}deg)`;
+    s.style.zIndex = 10;
+    s.style.transition = "transform .28s ease-in-out";
+    s.style.transform = tilt;
+    await sleep(280);
+    // stream
+    const st = document.createElement("div"); st.className = "stream";
+    st.style.background = COLORS[color][0];
+    const fill = bottles[j].length;
+    const surface = tr.bottom - tr.height*0.22*fill - 3;
+    st.style.left = (tr.left + tr.width/2 - 3) + "px";
+    st.style.top = (tr.top - 30) + "px";
+    st.style.height = Math.max(10, surface - tr.top + 30) + "px";
+    document.body.appendChild(st);
+    requestAnimationFrame(() => st.style.transform = "scaleY(1)");
+    sfx.pour(pourAmount(bottles,i,j), fill);
+    await sleep(260);
+    return { tilt, st };
+  }
+
+  async function tap(i){
+    if(busy) return;
+    if(selected===null){
+      if(!bottles[i].length || isDone(bottles[i]) && bottles[i].length===CAP) {
+        if(bottles[i].length && !isDone(bottles[i])) {} else return;
+      }
+      selected = i; sfx.select(); render(); return;
+    }
+    if(selected===i){ selected = null; sfx.deselect(); render(); return; }
+    if(!canPour(bottles,selected,i)){
+      // switch selection to the tapped bottle if it has liquid
+      const canSwitch = bottles[i].length && !(bottles[i].length===CAP && isDone(bottles[i]));
+      if(canSwitch){ selected = i; sfx.select(); } else { selected = null; sfx.bad(); }
+      render(); return;
+    }
+    const from = selected, color = top(bottles[from]);
+    busy = true;
+    let anim = null;
+    if(!reduceMotion) anim = await animatePour(from,i,color);
+    else sfx.pour(pourAmount(bottles,from,i), bottles[i].length);
+    history.push(bottles.map(b=>b.slice()));
+    doPour(bottles,from,i);
+    moves++; selected = null;
+    render();
+    if(anim){
+      anim.st.remove();
+      const s = bottleEl(from);
+      s.style.transition = "none"; s.style.transform = anim.tilt; s.style.zIndex = 10;
+      s.getBoundingClientRect();
+      s.style.transition = "transform .28s ease-in-out"; s.style.transform = "";
+      await sleep(290);
+      s.style.zIndex = "";
+    }
+    busy = false;
+    if(isSolved(bottles)) win();
+    else if(bottles[i].length===CAP && isDone(bottles[i])) sfx.full();
+  }
+
+  function win(){
+    $("winTitle").textContent = "Sorted!";
+    $("winText").textContent = `Level ${level} in ${moves} move${moves===1?"":"s"}`;
+    $("overlay").classList.add("show");
+    sfx.win();
+    $("nextBtn").focus();
+  }
+
+  // ---------- controls ----------
+  $("undoBtn").onclick = () => { if(busy||!history.length) return; bottles = history.pop(); moves = Math.max(0,moves-1); selected=null; render(); };
+  $("restartBtn").onclick = () => { if(!busy) startLevel(); };
+  $("addBtn").onclick = () => { if(busy||extraUsed) return; bottles.push([]); extraUsed = true; selected=null; render(); };
+  $("sndBtn").onclick = () => { sound = !sound; save(); render(); if(sound) sfx.select(); };
+  $("symBtn").onclick = () => { symbols = !symbols; save(); render(); };
+  $("nextBtn").onclick = () => { level++; save(); startLevel(); };
+
+  load();
+  startLevel();
+})();
+</script>
+</body>
+</html>
