@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Șah à la Sultan</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<style>
+  @font-face{font-family:'Sultan Hand';src:url(data:font/woff2;base64,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) format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+  :root{
+    --bg:#1b2a2e; --panel:#f4ecdb; --panel2:#e6dcc4;
+    /* Board: warmer, brighter woods with clearer light/dark separation */
+    --light:#f0dcb4; --dark:#b5793f; --edge:#6b4526;
+    --ink:#22201c; --accent:#2f8f83; --gold:#e0b355;
+    --sel:#3fb6a8;                         /* selection ring: teal, cool vs the wood */
+    --dot:rgba(47,143,131,.45);            /* legal-move dots: teal */
+    --cap:#e0653f;                         /* capture / check ring: warm coral */
+    --last:rgba(74,200,186,.20);           /* last-move tint: light teal glaze */
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(140% 120% at 50% -10%,#2e4c50,#16252a 60%,#0f1a1e);
+    color:var(--panel);font-family:'Georgia','Times New Roman',serif;
+    height:100dvh;overflow:hidden;overscroll-behavior:none;
+  }
+  /* Desktop: three-column app shell (controls | board | history), locked to
+     the viewport height. Side columns take a proportion of the available width
+     (not fixed pixels) and scroll independently; the center board fills the
+     full window height as a centered square. */
+  .app{
+    height:100dvh;display:grid;
+    grid-template-columns:minmax(160px,1fr) auto minmax(160px,1fr);
+    align-items:stretch;
+    gap:16px;padding:16px;
+  }
+  .col{min-height:0;display:flex;flex-direction:column}
+  /* side columns scroll on their own if their content is taller than the window */
+  .col.left,.col.right{overflow-y:auto;overflow-x:hidden;gap:10px;padding-right:4px}
+  .col.left::-webkit-scrollbar,.col.right::-webkit-scrollbar{width:8px}
+  .col.left::-webkit-scrollbar-thumb,.col.right::-webkit-scrollbar-thumb{background:rgba(224,179,85,.22);border-radius:4px}
+  /* center column: fixed to viewport height, board centered inside */
+  .col.center{
+    align-items:center;justify-content:center;gap:8px;
+    overflow:hidden;
+  }
+
+  /* Mobile / narrow: stack everything and allow normal scrolling + pinch zoom.
+     The height lock is released so the page can grow and scroll naturally. */
+  @media(max-width:900px){
+    body{height:auto;overflow:visible;overscroll-behavior:auto}
+    .app{
+      height:auto;display:flex;flex-direction:column;
+      gap:14px;padding:14px;
+    }
+    .col.left,.col.right{overflow:visible}
+    .histList{max-height:50vh}
+    h1{align-items:center;text-align:center}
+    .col.center{order:0;overflow:visible}
+    .col.left{order:1}
+    .col.right{order:2}
+  }
+
+  h1{
+    font-size:clamp(18px,1.7vw,26px);letter-spacing:.13em;font-weight:400;
+    color:var(--gold);text-shadow:0 1px 0 rgba(0,0,0,.35),0 0 14px rgba(224,179,85,.22);
+    line-height:1.08;
+    display:flex;flex-direction:column;align-items:flex-start;gap:.02em;
+  }
+  h1 .hw{
+    font-style:normal;
+    font-family:'Sultan Hand','Segoe Script','Brush Script MT',cursive;
+    font-size:1.05em;letter-spacing:.02em;font-weight:600;
+    color:#e9c877;text-shadow:0 1px 2px rgba(0,0,0,.4);
+    transform:rotate(-3deg);margin-left:.15em;
+  }
+  h1 span{font-size:.36em;letter-spacing:.4em;color:#8db3ad;margin-top:.5em}
+
+  /* left-hand control panels — kept quiet so the board is the focus */
+  .panel{
+    background:rgba(0,0,0,.18);border:1px solid rgba(224,179,85,.10);
+    border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:6px;
+  }
+  .ctlLabel{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7f9694;margin:3px 2px 0}
+  /* choices sit side by side on one line (wrapping if needed); the category
+     labels above them remain stacked vertically. */
+  .seg.vert{display:flex;flex-flow:row wrap;background:rgba(0,0,0,.22);border-radius:8px;padding:3px;gap:3px}
+  .seg.vert button{
+    font-family:inherit;font-size:12px;letter-spacing:.01em;text-align:center;
+    background:transparent;color:#c2b393;border:none;padding:7px 8px;border-radius:5px;cursor:pointer;
+    flex:1 1 auto;white-space:nowrap;
+  }
+  .seg.vert button.on{background:var(--gold);color:#2a2320;box-shadow:0 2px 5px rgba(0,0,0,.3)}
+  .actions{gap:8px}
+  .actions .act{width:100%}
+
+  .status{
+    font-size:clamp(14px,1.4vw,18px);min-height:22px;color:var(--panel);
+    text-align:center;letter-spacing:.03em;flex:0 0 auto;margin-top:4px;
+  }
+  .status b{color:var(--gold)}
+
+  /* Center layout: black lamp on top, board in the middle, white lamp below.
+     The board takes essentially the full window height. */
+  /* Center layout: the board with a slim vertical rail to its right holding the
+     turn lamps + captured pieces. The rail takes width, never board height. */
+  .boardarea{
+    display:flex;flex-direction:row;align-items:stretch;justify-content:center;gap:10px;
+    min-height:0;
+  }
+  .rail{
+    display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;
+    padding:2px 0;flex:0 0 auto;min-width:44px;
+  }
+  /* when the board is flipped (playing Black), black sits at the bottom, so the
+     lamps swap ends to stay beside their own pieces */
+  .rail.flip{flex-direction:column-reverse}
+  .railspacer{flex:1 1 auto}
+  .railslot{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    opacity:.5;transition:opacity .2s;
+  }
+  .railslot.active{opacity:1}
+  .lampline{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .railslot .light{
+    width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.4);
+    background:#3a4a48;box-shadow:inset 0 1px 2px rgba(0,0,0,.5);transition:box-shadow .2s;
+  }
+  .railslot.white .light{background:radial-gradient(circle at 40% 35%,#fbf3e0,#c2ab7f)}
+  .railslot.black .light{background:radial-gradient(circle at 40% 35%,#4a4038,#15100c)}
+  .railslot.active .light{box-shadow:0 0 12px 3px rgba(224,179,85,.85),0 0 0 2px rgba(224,179,85,.6)}
+  /* undo symbol appears only next to the side that is to move */
+  .undoBtn{
+    font-family:inherit;font-size:18px;line-height:1;cursor:pointer;
+    width:30px;height:30px;border-radius:50%;
+    background:rgba(224,179,85,.14);color:#e0b355;border:1px solid rgba(224,179,85,.3);
+    display:none;align-items:center;justify-content:center;padding:0;
+    transition:transform .05s,background .1s;
+  }
+  .undoBtn:hover{background:rgba(224,179,85,.28)}
+  .undoBtn:active{transform:scale(.9)}
+  .railslot.active .undoBtn{display:flex}
+  /* captured pieces, stacked vertically in the rail */
+  .caps{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    font-size:20px;line-height:1;color:#e9dcc0;max-height:40vh;overflow:hidden;
+  }
+  .caps .adv{color:var(--gold);font-size:12px;margin-top:2px}
+  .caps .cg{-webkit-text-stroke:.5px rgba(0,0,0,.5);paint-order:stroke fill}
+  .caps .cg.w{color:#f8f0de}
+  .caps .cg.b{color:#3a2f26;-webkit-text-stroke:.6px #000}
+
+  /* Board sizing is driven by a single custom property --sq (square size in px). */
+  .boardwrap{
+    position:relative;padding:calc(var(--sq)*0.30);border-radius:12px;flex:0 0 auto;
+    background:
+      repeating-linear-gradient(92deg,
+        rgba(0,0,0,.10) 0 2px,rgba(0,0,0,0) 2px 7px,rgba(255,255,255,.04) 7px 8px),
+      linear-gradient(150deg,#9a6a42,#6b4526 48%,#4a2f18);
+    box-shadow:
+      0 18px 40px rgba(0,0,0,.55),
+      0 2px 0 rgba(255,255,255,.06),
+      inset 0 0 0 2px rgba(224,179,85,.35),
+      inset 0 0 22px rgba(0,0,0,.35);
+  }
+  .boardwrap::after{ /* subtle top sheen on the frame */
+    content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0) 30%);
+  }
+  /* Active-side indicator: a thin vertical gold line running along the right
+     edge of the board, on the half belonging to the side to move. */
+  .sideline{
+    position:absolute;right:calc(var(--sq)*0.30 - 6px);
+    width:4px;height:calc(var(--sq)*4);border-radius:3px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(224,179,85,.95),rgba(224,179,85,.55));
+    box-shadow:0 0 10px 2px rgba(224,179,85,.6);
+    opacity:0;transition:opacity .2s;
+  }
+  .sideline.show{opacity:1}
+  .sideline.top{top:calc(var(--sq)*0.30)}
+  .sideline.bottom{bottom:calc(var(--sq)*0.30)}
+
+  /* The board carries a single continuous wood grain across all squares. */
+  .board{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(8,var(--sq));
+    grid-template-rows:repeat(8,var(--sq));
+    width:calc(var(--sq)*8);height:calc(var(--sq)*8);
+    border:2px solid var(--edge);border-radius:4px;overflow:hidden;
+    background:
+      /* fine tight grain lines */
+      repeating-linear-gradient(88deg,
+        rgba(60,30,10,.10) 0 1px, rgba(60,30,10,0) 1px 5px),
+      /* broader cathedral figure */
+      repeating-linear-gradient(90deg,
+        rgba(120,70,30,.10) 0 6px, rgba(255,230,190,.06) 6px 13px, rgba(120,70,30,0) 13px 26px),
+      linear-gradient(180deg,#c98f52,#b07636);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset 0 2px 10px rgba(0,0,0,.30);
+  }
+  .sq{
+    width:var(--sq);height:var(--sq);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;position:relative;user-select:none;
+  }
+  /* Squares are translucent tints over the shared grain, so the wood figure
+     shows through both colors and stays continuous across the board.
+     A faint top sheen is folded into the gradient stack (not ::after) so it
+     never conflicts with the legal-move dot / capture ring pseudo-elements. */
+  .sq.l{background:
+      linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 45%),
+      linear-gradient(150deg,rgba(247,231,196,.86),rgba(236,214,168,.90));}
+  .sq.d{background:
+      linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 45%),
+      linear-gradient(150deg,rgba(150,86,36,.80),rgba(126,66,24,.86));}
+  /* Pieces: solid filled glyph. A dark outline (via text-stroke) keeps white
+     pieces crisp on light squares; a light outline defines black pieces. */
+  .sq .p{
+    font-size:calc(var(--sq)*0.76);line-height:1;position:relative;
+    width:calc(var(--sq)*0.86);height:calc(var(--sq)*0.86);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .sq .p::before{ /* soft contact shadow under the piece */
+    content:"";position:absolute;bottom:6%;left:50%;transform:translateX(-50%);
+    width:66%;height:16%;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(0,0,0,.42),rgba(0,0,0,0) 72%);
+  }
+  .sq .p.w{
+    color:#f8f0de;
+    -webkit-text-stroke:calc(var(--sq)*0.028) #4a3826;
+    text-stroke:calc(var(--sq)*0.028) #4a3826;
+    text-shadow:0 2px 3px rgba(0,0,0,.35);
+    paint-order:stroke fill;
+  }
+  .sq .p.b{
+    color:#241d17;
+    -webkit-text-stroke:calc(var(--sq)*0.022) #000;
+    text-stroke:calc(var(--sq)*0.022) #000;
+    text-shadow:0 1px 0 rgba(255,255,255,.14),0 2px 3px rgba(0,0,0,.4);
+    paint-order:stroke fill;
+  }
+  .sq.sel{box-shadow:inset 0 0 0 4px var(--sel)}
+  .sq.mv::after{
+    content:"";position:absolute;width:28%;height:28%;border-radius:50%;
+    background:var(--dot);
+  }
+  .sq.cap::after{
+    content:"";position:absolute;inset:6%;border-radius:50%;
+    border:4px solid var(--cap);opacity:.7;
+  }
+  .sq.chk{box-shadow:inset 0 0 0 4px var(--cap)}
+  /* Checkmate: the mated king square glows solid red; the attacking piece(s)
+     get a red ring. Both stay readable — the piece glyphs remain on top. */
+  .sq.mate{
+    background:radial-gradient(circle at 50% 45%,#ff5a4d,#c62a1e)!important;
+    box-shadow:inset 0 0 0 4px #ff8a7a, 0 0 22px rgba(255,70,55,.6);
+    animation:matepulse 1.1s ease-in-out infinite;
+  }
+  .sq.attacker{
+    box-shadow:inset 0 0 0 4px #ff6a52, 0 0 14px rgba(255,90,60,.5);
+  }
+  @keyframes matepulse{
+    0%,100%{box-shadow:inset 0 0 0 4px #ff8a7a,0 0 18px rgba(255,70,55,.5)}
+    50%{box-shadow:inset 0 0 0 5px #ffb0a2,0 0 30px rgba(255,90,70,.85)}
+  }
+  /* Last move: a light teal glaze in the corners + a thin inset ring, so it
+     reads clearly against the warm wood without repainting the square. */
+  .sq.last::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:var(--last);
+    box-shadow:inset 0 0 0 2.5px rgba(74,200,186,.60);
+    border-radius:2px;
+  }
+  /* Animated piece that slides from one square to another. */
+  .anim{
+    position:absolute;pointer-events:none;z-index:20;
+    width:calc(var(--sq)*0.86);height:calc(var(--sq)*0.86);
+    display:flex;align-items:center;justify-content:center;
+    font-size:calc(var(--sq)*0.76);line-height:1;
+    transition:left .42s cubic-bezier(.25,.9,.3,1),top .42s cubic-bezier(.25,.9,.3,1);
+  }
+  .anim.w{color:#f8f0de;-webkit-text-stroke:calc(var(--sq)*0.028) #4a3826;text-stroke:calc(var(--sq)*0.028) #4a3826;text-shadow:0 2px 3px rgba(0,0,0,.35);paint-order:stroke fill}
+  .anim.b{color:#241d17;-webkit-text-stroke:calc(var(--sq)*0.022) #000;text-stroke:calc(var(--sq)*0.022) #000;text-shadow:0 1px 0 rgba(255,255,255,.14),0 2px 3px rgba(0,0,0,.4);paint-order:stroke fill}
+  @media(prefers-reduced-motion:reduce){.anim{transition:none}}
+  .act{
+    font-family:inherit;font-size:14px;letter-spacing:.03em;
+    background:var(--panel);color:var(--ink);border:none;
+    padding:9px 14px;border-radius:7px;cursor:pointer;
+    box-shadow:0 3px 0 #b8a887,0 4px 8px rgba(0,0,0,.3);
+    transition:transform .05s,box-shadow .05s;
+  }
+  .act:active{transform:translateY(2px);box-shadow:0 1px 0 #b8a887}
+  /* darker amber for the main actions (new game / rotate board) */
+  .act.primary{
+    background:linear-gradient(180deg,#d9a63f,#c28f2c);color:#2a2013;font-weight:bold;
+    box-shadow:0 3px 0 #9a6f1f,0 4px 8px rgba(0,0,0,.35);
+  }
+  .act.primary:active{transform:translateY(2px);box-shadow:0 1px 0 #9a6f1f}
+  /* readable end-of-game banner, floated over the board without hiding it */
+  .endBanner{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);
+    display:none;pointer-events:none;z-index:30;text-align:center;
+    padding:16px 26px;border-radius:14px;
+    background:rgba(20,14,12,.82);
+    border:2px solid rgba(255,120,90,.7);
+    box-shadow:0 12px 40px rgba(0,0,0,.55);
+    color:#fff;font-size:calc(var(--sq)*0.42);letter-spacing:.04em;line-height:1.2;
+    backdrop-filter:blur(1px);
+    transition:opacity .25s,transform .25s;opacity:0;
+  }
+  .endBanner.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .endBanner .sub{display:block;font-size:calc(var(--sq)*0.24);color:#ffd7cc;margin-top:6px;letter-spacing:.08em}
+  .endBanner.draw{border-color:rgba(224,179,85,.7)}
+
+  /* ---- history panel (right column) ---- */
+  .histHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .histTabs{display:inline-flex;background:rgba(0,0,0,.25);border-radius:8px;padding:3px;gap:3px}
+  .histTabs button{font-family:inherit;font-size:13px;background:transparent;color:#cbb78f;border:none;padding:7px 13px;border-radius:6px;cursor:pointer}
+  .histTabs button.on{background:var(--gold);color:#2a2320}
+  .clearBtn{font-family:inherit;font-size:12px;background:transparent;color:#8db3ad;border:1px solid rgba(141,179,173,.3);padding:6px 10px;border-radius:6px;cursor:pointer}
+  .clearBtn:hover{color:#e0653f;border-color:rgba(224,101,63,.5)}
+  .tally{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+    background:rgba(0,0,0,.22);border:1px solid rgba(224,179,85,.14);border-radius:10px;padding:10px;
+  }
+  .tally .cell{text-align:center}
+  .tally .n{font-size:22px;color:var(--gold);line-height:1}
+  .tally .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8db3ad;margin-top:3px}
+  .histList{
+    flex:1;min-height:0;overflow-y:auto;
+    background:rgba(0,0,0,.18);border:1px solid rgba(224,179,85,.10);border-radius:10px;
+    padding:8px;display:flex;flex-direction:column;gap:6px;
+  }
+  .histList::-webkit-scrollbar{width:8px}
+  .histList::-webkit-scrollbar-thumb{background:rgba(224,179,85,.25);border-radius:4px}
+  .hrow{
+    display:flex;align-items:center;gap:8px;font-size:12.5px;
+    background:rgba(255,255,255,.03);border-radius:7px;padding:7px 9px;
+  }
+  .hrow .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(0,0,0,.4)}
+  .hrow .dot.w{background:radial-gradient(circle at 40% 35%,#fbf3e0,#c2ab7f)}
+  .hrow .dot.b{background:radial-gradient(circle at 40% 35%,#4a4038,#15100c)}
+  .hrow .dot.d{background:#8db3ad}
+  .hrow .main{flex:1;min-width:0}
+  .hrow .res{font-weight:bold}
+  .hrow .res.win{color:#7ad19b}.hrow .res.loss{color:#e0653f}.hrow .res.draw{color:#e0b355}
+  .hrow .meta{color:#8da2a0;font-size:11px;margin-top:2px}
+  .histEmpty{color:#6e8583;font-size:12.5px;text-align:center;padding:20px 6px}
+  .hrow-top{display:flex;align-items:flex-start;gap:8px}
+  .hbtns{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+  .mini{
+    font-family:inherit;font-size:11px;background:rgba(224,179,85,.14);color:#e0b355;
+    border:1px solid rgba(224,179,85,.25);padding:4px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;
+  }
+  .mini:hover{background:rgba(224,179,85,.24)}
+  .mini.on{background:var(--gold);color:#2a2320}
+  .movebox{
+    margin-top:8px;padding-top:8px;border-top:1px solid rgba(224,179,85,.12);
+    max-height:220px;overflow-y:auto;font-size:12px;
+  }
+  .movebox::-webkit-scrollbar{width:7px}
+  .movebox::-webkit-scrollbar-thumb{background:rgba(224,179,85,.22);border-radius:4px}
+  .mvline{display:grid;grid-template-columns:26px 1fr 1fr;gap:4px;padding:2px 0;align-items:center}
+  .mvn{color:#6e8583;font-size:11px}
+  .mvw,.mvb{color:#d7cbb0;letter-spacing:.02em}
+  .mvg{display:inline-block;width:1.1em;text-align:center;margin-right:2px;
+    -webkit-text-stroke:.4px rgba(0,0,0,.4);paint-order:stroke fill}
+  .mvg.w{color:#f8f0de}
+  .mvg.b{color:#3a2f26;-webkit-text-stroke:.5px #000}
+  .mvEmpty{color:#6e8583;font-size:12px;padding:4px}
+  .exportBar{display:flex;gap:6px;flex-wrap:wrap}
+  .exportBar button{
+    flex:1;font-family:inherit;font-size:12px;background:rgba(0,0,0,.25);color:#cbb78f;
+    border:1px solid rgba(224,179,85,.2);padding:8px 6px;border-radius:7px;cursor:pointer;
+  }
+  .exportBar button:hover{color:var(--gold);border-color:rgba(224,179,85,.45)}
+  dialog{
+    border:none;border-radius:12px;padding:0;background:transparent;
+    max-width:90vw;
+  }
+  dialog::backdrop{background:rgba(20,15,12,.7)}
+  .promo{
+    background:var(--panel);border-radius:12px;padding:18px 20px;text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);color:var(--ink);
+  }
+  .promo p{margin-bottom:12px;letter-spacing:.04em}
+  .promo .row{display:flex;gap:8px}
+  .promo .row button{font-size:34px;padding:6px 14px;background:#e4d7bd}
+  @media(max-width:380px){h1{font-size:26px}}
+
+  /* ---- coin-flip overlay (random side selection) ---- */
+  #coinOverlay{
+    position:fixed;inset:0;z-index:50;display:none;
+    align-items:center;justify-content:center;
+    background:radial-gradient(120% 120% at 50% 40%,rgba(20,32,36,.82),rgba(10,16,18,.94));
+    backdrop-filter:blur(2px);
+  }
+  #coinOverlay.show{display:flex}
+  .coinStage{display:flex;flex-direction:column;align-items:center;gap:22px}
+  .coin{
+    width:132px;height:132px;position:relative;
+    transform-style:preserve-3d;
+  }
+  .coin.spin{animation:coinspin 2s cubic-bezier(.2,.6,.2,1) forwards}
+  .coin .face{
+    position:absolute;inset:0;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:74px;line-height:1;backface-visibility:hidden;
+    box-shadow:0 10px 26px rgba(0,0,0,.5),inset 0 0 0 5px rgba(0,0,0,.18);
+    -webkit-text-stroke:2px rgba(0,0,0,.35);paint-order:stroke fill;
+  }
+  .coin .white{
+    background:radial-gradient(circle at 38% 32%,#fbf3e0,#d9c6a0 70%,#c2ab7f);
+    color:#f6ecd6;-webkit-text-stroke:2px #7a613b;
+  }
+  .coin .black{
+    background:radial-gradient(circle at 38% 32%,#4a4038,#241d17 70%,#15100c);
+    color:#2a231c;-webkit-text-stroke:2px #000;
+    transform:rotateY(180deg);
+  }
+  /* landed states hold the winning face toward the viewer */
+  .coin.land-w{transform:rotateY(0)}
+  .coin.land-b{transform:rotateY(180deg)}
+  @keyframes coinspin{
+    0%{transform:rotateY(0) translateY(0)}
+    50%{transform:rotateY(1980deg) translateY(-40px)}
+    100%{transform:rotateY(3600deg) translateY(0)}
+  }
+  .coinText{
+    font-size:20px;letter-spacing:.05em;color:var(--gold);
+    text-shadow:0 1px 3px rgba(0,0,0,.5);min-height:26px;text-align:center;
+  }
+  .coinText b{color:#fff}
+  @media(prefers-reduced-motion:reduce){
+    .coin.spin{animation-duration:.4s}
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <!-- LEFT: stacked title + controls -->
+    <aside class="col left">
+      <h1>Șah<em class="hw">à la Sultan</em><span>joc de societate</span></h1>
+
+      <div class="panel">
+        <div class="seg vert" id="mode">
+          <button data-mode="pvp">2 jucători</button>
+          <button data-mode="ai" class="on">Contra calculator</button>
+        </div>
+        <div class="ctlLabel" id="sideLabel">Culoarea ta</div>
+        <div class="seg vert" id="side">
+          <button data-side="w" class="on">Albele</button>
+          <button data-side="b">Negrele</button>
+          <button data-side="r">La sorți ♛</button>
+        </div>
+        <div class="ctlLabel" id="diffLabel">Dificultate</div>
+        <div class="seg vert" id="diff">
+          <button data-lv="1">Începător</button>
+          <button data-lv="2">Ușor</button>
+          <button data-lv="3" class="on">Mediu</button>
+          <button data-lv="4">Greu</button>
+          <button data-lv="5">Expert</button>
+        </div>
+      </div>
+
+      <div class="panel actions">
+        <button id="reset" class="act primary">Joc nou</button>
+        <button id="flip" class="act primary">Rotește tabla</button>
+      </div>
+    </aside>
+
+    <!-- CENTER: full-height board with a side rail of turn indicators -->
+    <main class="col center">
+      <div class="boardarea">
+        <div class="boardwrap" id="boardwrap">
+          <div class="board" id="board"></div>
+          <!-- vertical highlight line on the active side's edge -->
+          <div class="sideline top" id="lineTop"></div>
+          <div class="sideline bottom" id="lineBot"></div>
+          <!-- readable message shown over the board on game end -->
+          <div class="endBanner" id="endBanner"></div>
+        </div>
+        <!-- right rail: black indicator on top, white on bottom -->
+        <div class="rail">
+          <div class="railslot black" id="lampB">
+            <div class="lampline">
+              <span class="light"></span>
+              <button class="undoBtn" id="undoB" title="Înapoi o mutare">↶</button>
+            </div>
+            <span class="caps" id="takenB"></span>
+          </div>
+          <div class="railspacer"></div>
+          <div class="railslot white" id="lampW">
+            <div class="lampline">
+              <span class="light"></span>
+              <button class="undoBtn" id="undoW" title="Înapoi o mutare">↶</button>
+            </div>
+            <span class="caps" id="takenW"></span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT: history -->
+    <aside class="col right">
+      <div class="histHead">
+        <div class="histTabs">
+          <button data-tab="session" class="on" id="tabSession">Sesiune</button>
+          <button data-tab="all" id="tabAll">Istoric</button>
+        </div>
+        <button id="clearHist" class="clearBtn" title="Șterge istoricul salvat">Șterge</button>
+      </div>
+      <div class="tally" id="tally"></div>
+      <div class="exportBar">
+        <button id="exportXlsx">⬇ Excel (.xlsx)</button>
+        <button id="exportBackup">⬇ Backup</button>
+        <button id="importBackup">⬆ Import</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      <div class="histList" id="histList"></div>
+    </aside>
+  </div>
+
+  <dialog id="promoDlg">
+    <div class="promo">
+      <p>Alege piesa pentru promovare</p>
+      <div class="row" id="promoRow"></div>
+    </div>
+  </dialog>
+
+  <div id="coinOverlay" aria-hidden="true">
+    <div class="coinStage">
+      <div class="coin" id="coin">
+        <div class="face white">♛</div>
+        <div class="face black">♛</div>
+      </div>
+      <div class="coinText" id="coinText">Se aruncă moneda…</div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ---- constants ----
+  // Use the SOLID (filled) glyph set for BOTH colors. Color is applied via CSS
+  // so white pieces are cream-filled and black are charcoal-filled — both stay
+  // clearly visible on light and dark squares. Outline glyphs (♔ etc.) are
+  // avoided because they nearly disappear on light squares.
+  const SOLID={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'};
+  const G={w:SOLID,b:SOLID};
+  const VAL={P:1,N:3,B:3,R:5,Q:9,K:0};
+  const RONAME={w:'Albul',b:'Negrul'};
+  const boardEl=document.getElementById('board');
+  // The visible status line was removed (turn is shown by the lamps + side line,
+  // and end-of-game by the banner). Keep a detached element so status writes are
+  // harmless no-ops without scattering null checks through the code.
+  const statusEl=document.getElementById('status')||document.createElement('div');
+  const takenWEl=document.getElementById('takenW');
+  const takenBEl=document.getElementById('takenB');
+
+  // ---- state ----
+  let board, turn, sel, legalForSel, history, flipped, gameOver;
+  let castle, ep; // castling rights, en passant target
+  let mode='ai', humanSide='w', thinking=false;
+  let chosenSide='w'; // the user's picked side ('w','b', or 'r' for random)
+  let level=3;        // AI difficulty 1..5
+  let currentGame=null;   // metadata for the game in progress
+  const moveLog=[];       // per-move history of the current game
+  let gameRecorded=false; // guard so a game is only logged once
+  let histTab='session';  // which history list is shown
+  const sessionGames=[];  // games this session (memory only)
+  const HKEY='sah_history_v1', LEVEL_NAMES={1:'Începător',2:'Ușor',3:'Mediu',4:'Greu',5:'Expert'};
+  let animating=false; // true while a piece is sliding
+
+  // ---- board sizing (desktop: maximise to available height) ----
+  const wrapEl=boardEl.parentElement;
+  const centerCol=document.querySelector('.col.center');
+  // The board wrap = board (8*sq) + frame padding (0.30*sq each side) => 8.6*sq.
+  // We size the board so this wrap fits the available space. On desktop the
+  // limiting dimension is the window height; the board is a centered square.
+  const FRAME=8.6; // wrap size in units of sq
+  function sizeBoard(){
+    const mobile=window.matchMedia('(max-width:900px)').matches;
+    let sq;
+    if(mobile){
+      const availW=Math.min(window.innerWidth-28,600);
+      sq=Math.floor(availW/FRAME);
+    } else {
+      // full viewport height minus the app's top/bottom padding (16+16) and a
+      // tiny safety margin. Nothing sits above/below the board now, so the
+      // board grows to fill essentially the whole window height.
+      const availH=window.innerHeight-32-8;
+      // width cap: window minus the two side columns' minimum + gaps/padding.
+      const availW=window.innerWidth-(160*2)-(16*2)-(16*2);
+      const sqByH=Math.floor(availH/FRAME);
+      const sqByW=Math.floor(Math.max(200,availW)/FRAME);
+      sq=Math.min(sqByH,sqByW);
+    }
+    sq=Math.max(30,Math.min(sq,140));
+    document.documentElement.style.setProperty('--sq',sq+'px');
+  }
+  window.addEventListener('resize',sizeBoard);
+  sizeBoard();
+
+  // pixel position (left/top) of a square given current flip, relative to .board
+  function sqXY(r,c){
+    const sq=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sq'));
+    const vr=flipped?7-r:r, vc=flipped?7-c:c;
+    return {x:vc*sq, y:vr*sq, sq};
+  }
+
+  function startPos(){
+    return [
+      ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+      ['bP','bP','bP','bP','bP','bP','bP','bP'],
+      [null,null,null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null],
+      [null,null,null,null,null,null,null,null],
+      ['wP','wP','wP','wP','wP','wP','wP','wP'],
+      ['wR','wN','wB','wQ','wK','wB','wN','wR']
+    ];
+  }
+
+  function newGame(){
+    // In AI mode, resolve which colour the human plays. If they chose "random",
+    // flip a coin (animated) and only then start the game.
+    if(mode==='ai'&&chosenSide==='r'){
+      coinFlip(side=>{humanSide=side;startBoard();});
+      return;
+    }
+    humanSide = (mode==='ai') ? (chosenSide==='b'?'b':'w') : 'w';
+    startBoard();
+  }
+
+  function startBoard(){
+    board=startPos();turn='w';sel=null;legalForSel=[];history=[];gameOver=false;
+    castle={w:{k:true,q:true},b:{k:true,q:true}};ep=null;thinking=false;animating=false;
+    flipped=(mode==='ai'&&humanSide==='b');
+    gameRecorded=false;
+    moveLog.length=0;
+    // remember how this game was set up, for the history entry
+    currentGame={
+      mode, humanSide:(mode==='ai'?humanSide:null), level:(mode==='ai'?level:null),
+      started:Date.now()
+    };
+    hideBanner();
+    sizeBoard();
+    render();updateStatus();maybeAI();
+  }
+
+  // Animated coin flip that decides the human's colour at random.
+  function coinFlip(done){
+    const overlay=document.getElementById('coinOverlay');
+    const coin=document.getElementById('coin');
+    const text=document.getElementById('coinText');
+    const result=Math.random()<0.5?'w':'b';
+    // reset
+    coin.classList.remove('spin','land-w','land-b');
+    coin.style.transform='';
+    text.innerHTML='Se aruncă moneda…';
+    overlay.classList.add('show');
+    // start spin on next frame
+    void coin.offsetWidth;
+    coin.classList.add('spin');
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const dur=reduce?400:2000;
+    setTimeout(()=>{
+      coin.classList.remove('spin');
+      coin.classList.add(result==='w'?'land-w':'land-b');
+      text.innerHTML=result==='w'
+        ? 'Joci cu <b>albele</b> — începi tu!'
+        : 'Joci cu <b>negrele</b> — calculatorul începe.';
+      setTimeout(()=>{
+        overlay.classList.remove('show');
+        done(result);
+      },1150);
+    },dur);
+  }
+
+  // ---- helpers ----
+  const clone=b=>b.map(r=>r.slice());
+  const inB=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
+  const col=p=>p?p[0]:null;
+  const kind=p=>p?p[1]:null;
+
+  function findKing(b,side){
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]===side+'K')return[r,c];
+    return null;
+  }
+
+  // pseudo-legal moves (no self-check filter). ct=castling rights, epv=ep target
+  function genMoves(b,side,ct,epv){
+    const mv=[];
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=b[r][c];if(!p||col(p)!==side)continue;
+      const k=kind(p);
+      if(k==='P'){
+        const dir=side==='w'?-1:1, sr=side==='w'?6:1, pr=side==='w'?0:7;
+        if(inB(r+dir,c)&&!b[r+dir][c]){
+          mv.push({fr:r,fc:c,tr:r+dir,tc:c,promo:r+dir===pr});
+          if(r===sr&&!b[r+2*dir][c])mv.push({fr:r,fc:c,tr:r+2*dir,tc:c,dbl:true});
+        }
+        for(const dc of[-1,1]){
+          const nr=r+dir,nc=c+dc;if(!inB(nr,nc))continue;
+          if(b[nr][nc]&&col(b[nr][nc])!==side)mv.push({fr:r,fc:c,tr:nr,tc:nc,promo:nr===pr});
+          if(epv&&epv[0]===nr&&epv[1]===nc)mv.push({fr:r,fc:c,tr:nr,tc:nc,ep:true});
+        }
+      } else if(k==='N'){
+        for(const[dr,dc]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){
+          const nr=r+dr,nc=c+dc;if(inB(nr,nc)&&col(b[nr][nc])!==side)mv.push({fr:r,fc:c,tr:nr,tc:nc});
+        }
+      } else if(k==='K'){
+        for(const dr of[-1,0,1])for(const dc of[-1,0,1]){
+          if(!dr&&!dc)continue;const nr=r+dr,nc=c+dc;
+          if(inB(nr,nc)&&col(b[nr][nc])!==side)mv.push({fr:r,fc:c,tr:nr,tc:nc});
+        }
+        // castling
+        const rr=side==='w'?7:0;
+        if(ct&&ct[side].k&&!b[rr][5]&&!b[rr][6]&&b[rr][7]===side+'R')
+          mv.push({fr:r,fc:c,tr:rr,tc:6,castle:'k'});
+        if(ct&&ct[side].q&&!b[rr][1]&&!b[rr][2]&&!b[rr][3]&&b[rr][0]===side+'R')
+          mv.push({fr:r,fc:c,tr:rr,tc:2,castle:'q'});
+      } else {
+        const dirs = k==='B'?[[-1,-1],[-1,1],[1,-1],[1,1]]:
+                     k==='R'?[[-1,0],[1,0],[0,-1],[0,1]]:
+                     [[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]];
+        for(const[dr,dc]of dirs){
+          let nr=r+dr,nc=c+dc;
+          while(inB(nr,nc)){
+            if(!b[nr][nc]){mv.push({fr:r,fc:c,tr:nr,tc:nc});}
+            else{if(col(b[nr][nc])!==side)mv.push({fr:r,fc:c,tr:nr,tc:nc});break;}
+            nr+=dr;nc+=dc;
+          }
+        }
+      }
+    }
+    return mv;
+  }
+
+  function attacked(b,r,c,by){
+    // is square r,c attacked by side "by"
+    const ms=genMoves(b,by,null,null);
+    return ms.some(m=>m.tr===r&&m.tc===c);
+  }
+
+  function inCheck(b,side){
+    const k=findKing(b,side);if(!k)return false;
+    return attacked(b,k[0],k[1],side==='w'?'b':'w');
+  }
+
+  // apply move to board copy, returns {board,castle,ep}
+  function apply(b,m,ct,side){
+    const nb=clone(b);
+    const nc=JSON.parse(JSON.stringify(ct));
+    const p=nb[m.fr][m.fc];
+    nb[m.tr][m.tc]=p;nb[m.fr][m.fc]=null;
+    if(m.ep){const dir=side==='w'?1:-1;nb[m.tr+dir][m.tc]=null;}
+    if(m.promo){nb[m.tr][m.tc]=side+(m.promoTo||'Q');}
+    if(m.castle){
+      const rr=side==='w'?7:0;
+      if(m.castle==='k'){nb[rr][5]=nb[rr][7];nb[rr][7]=null;}
+      else{nb[rr][3]=nb[rr][0];nb[rr][0]=null;}
+    }
+    // update castle rights
+    if(kind(p)==='K')nc[side]={k:false,q:false};
+    if(kind(p)==='R'){
+      const hr=side==='w'?7:0;
+      if(m.fr===hr&&m.fc===0)nc[side].q=false;
+      if(m.fr===hr&&m.fc===7)nc[side].k=false;
+    }
+    // rook captured
+    [['w',7],['b',0]].forEach(([s,hr])=>{
+      if(m.tr===hr&&m.tc===0)nc[s].q=false;
+      if(m.tr===hr&&m.tc===7)nc[s].k=false;
+    });
+    const nep=m.dbl?[(m.fr+m.tr)/2,m.fc]:null;
+    return {board:nb,castle:nc,ep:nep};
+  }
+
+  function legalMoves(b,side,ct,epv){
+    const out=[];
+    // for castling we must ensure king not in/through check
+    for(const m of genMoves(b,side,ct,epv)){
+      if(m.castle){
+        if(inCheck(b,side))continue;
+        const rr=side==='w'?7:0;
+        const through=m.castle==='k'?[5,6]:[3,2];
+        const opp=side==='w'?'b':'w';
+        if(through.some(cc=>attacked(b,rr,cc,opp)))continue;
+      }
+      const res=apply(b,m,ct,side);
+      if(!inCheck(res.board,side))out.push(m);
+    }
+    return out;
+  }
+
+  // ---- rendering ----
+  function render(){
+    boardEl.innerHTML='';
+    const last=history.length?history[history.length-1].m:null;
+    const chk=inCheck(board,turn)?findKing(board,turn):null;
+    for(let vr=0;vr<8;vr++)for(let vc=0;vc<8;vc++){
+      const r=flipped?7-vr:vr, c=flipped?7-vc:vc;
+      const sq=document.createElement('div');
+      sq.className='sq '+((r+c)%2?'d':'l');
+      sq.dataset.r=r;sq.dataset.c=c;
+      if(last&&((last.fr===r&&last.fc===c)||(last.tr===r&&last.tc===c)))sq.classList.add('last');
+      const p=board[r][c];
+      if(p){
+        const span=document.createElement('span');
+        span.className='p '+(col(p)==='w'?'w':'b');
+        span.textContent=G[col(p)][kind(p)];
+        sq.appendChild(span);
+      }
+      if(sel&&sel[0]===r&&sel[1]===c)sq.classList.add('sel');
+      const lm=legalForSel.find(m=>m.tr===r&&m.tc===c);
+      if(lm)sq.classList.add(board[r][c]||lm.ep?'cap':'mv');
+      if(chk&&chk[0]===r&&chk[1]===c)sq.classList.add('chk');
+      sq.addEventListener('click',onSquare);
+      boardEl.appendChild(sq);
+    }
+    renderTaken();
+    updateTurnUI();
+  }
+
+  function renderTaken(){
+    const capW=[],capB=[]; // glyphs of pieces captured by white / by black
+    const start={P:8,N:2,B:2,R:2,Q:1,K:1};
+    const cur={w:{},b:{}};
+    for(const k in start){cur.w[k]=0;cur.b[k]=0;}
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=board[r][c];if(p)cur[col(p)][kind(p)]++;}
+    let scoreW=0,scoreB=0;
+    for(const k of['Q','R','B','N','P']){
+      for(let i=0;i<start[k]-cur.b[k];i++){capW.push('<span class="cg b">'+SOLID[k]+'</span>');scoreW+=VAL[k];}
+      for(let i=0;i<start[k]-cur.w[k];i++){capB.push('<span class="cg w">'+SOLID[k]+'</span>');scoreB+=VAL[k];}
+    }
+    const diff=scoreW-scoreB;
+    // white lamp shows the black pieces white has captured; black lamp the reverse
+    takenWEl.innerHTML=capW.join('')+(diff>0?'<span class="adv">+'+diff+'</span>':'');
+    takenBEl.innerHTML=capB.join('')+(diff<0?'<span class="adv">+'+(-diff)+'</span>':'');
+  }
+
+  // Light the active side's lamp and show the half-board contour on that side.
+  function updateTurnUI(){
+    const lampW=document.getElementById('lampW'), lampB=document.getElementById('lampB');
+    const lineTop=document.getElementById('lineTop'), lineBot=document.getElementById('lineBot');
+    const rail=document.querySelector('.rail');
+    // Keep each lamp beside its own side of the board. When flipped, black is at
+    // the bottom, so reverse the rail order to follow the pieces.
+    if(rail)rail.classList.toggle('flip',flipped);
+    if(gameOver){
+      lampW.classList.remove('active');lampB.classList.remove('active');
+      lineTop.classList.remove('show');lineBot.classList.remove('show');
+      return;
+    }
+    lampW.classList.toggle('active',turn==='w');
+    lampB.classList.toggle('active',turn==='b');
+    // vertical line on the side to move. White sits at bottom unless flipped.
+    const whiteAtBottom=!flipped;
+    const activeBottom = (turn==='w')===whiteAtBottom;
+    lineBot.classList.toggle('show',activeBottom);
+    lineTop.classList.toggle('show',!activeBottom);
+  }
+
+  function updateStatus(){
+    if(gameOver)return;
+    const legal=legalMoves(board,turn,castle,ep);
+    if(legal.length===0){
+      gameOver=true;
+      if(inCheck(board,turn)){
+        // Checkmate: `turn` is the mated side.
+        const loser=turn, winner=turn==='w'?'b':'w';
+        const winnerName=turn==='w'?'Negrul':'Albul';
+        statusEl.innerHTML='Șah mat — <b>'+winnerName+' câștigă!</b>';
+        markCheckmate(loser);
+        showBanner('Șah mat','<b>'+winnerName+'</b> câștigă',false);
+        recordGame(winner);
+      } else {
+        statusEl.innerHTML='<b>Pat</b> — remiză';
+        showBanner('Pat','remiză',true);
+        recordGame('draw');
+      }
+      return;
+    }
+    const chk=inCheck(board,turn);
+    let t=RONAME[turn]+' mută';
+    if(chk)t+=' — <b>șah!</b>';
+    if(mode==='ai'&&turn!==humanSide&&thinking)t=RONAME[turn]+' se gândește…';
+    statusEl.innerHTML=t;
+  }
+
+  // Paint the mated king square red and ring the attacking piece(s).
+  function markCheckmate(loser){
+    const k=findKing(board,loser);
+    if(!k)return;
+    const ksq=boardEl.querySelector('.sq[data-r="'+k[0]+'"][data-c="'+k[1]+'"]');
+    if(ksq){ksq.classList.remove('chk');ksq.classList.add('mate');}
+    // find enemy pieces that attack the king's square
+    const enemy=loser==='w'?'b':'w';
+    for(const m of genMoves(board,enemy,null,null)){
+      if(m.tr===k[0]&&m.tc===k[1]){
+        const asq=boardEl.querySelector('.sq[data-r="'+m.fr+'"][data-c="'+m.fc+'"]');
+        if(asq)asq.classList.add('attacker');
+      }
+    }
+  }
+
+  function showBanner(title,sub,draw){
+    const b=document.getElementById('endBanner');
+    b.className='endBanner'+(draw?' draw':'');
+    b.innerHTML=title+'<span class="sub">'+sub+'</span>';
+    // next frame -> show (for transition)
+    void b.offsetWidth;
+    b.classList.add('show');
+  }
+  function hideBanner(){
+    const b=document.getElementById('endBanner');
+    b.classList.remove('show');
+  }
+
+  // ---- history ----
+  // localStorage persists all-time history when the file is opened directly in
+  // a browser (as a desktop app). If storage is unavailable, all-time silently
+  // falls back to session-only.
+  function loadAll(){
+    try{const s=localStorage.getItem(HKEY);return s?JSON.parse(s):[];}catch(e){return [];}
+  }
+  function saveAll(list){
+    try{localStorage.setItem(HKEY,JSON.stringify(list));}catch(e){/* ignore */}
+  }
+  function recordGame(result){ // result: 'w' | 'b' | 'draw'
+    if(gameRecorded||!currentGame)return;
+    gameRecorded=true;
+    const ended=Date.now();
+    const entry={
+      ...currentGame,
+      ended,
+      result,                              // winning colour or 'draw'
+      durationSec:Math.round((ended-currentGame.started)/1000),
+      moveCount:moveLog.length,
+      moves:moveLog.map(m=>({...m}))       // snapshot of the move list
+    };
+    sessionGames.unshift(entry);
+    const all=loadAll();all.unshift(entry);saveAll(all);
+    renderHistory();
+  }
+
+  function fmtDate(ts){
+    const d=new Date(ts);
+    const p=n=>String(n).padStart(2,'0');
+    return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+
+  // Describe the result from the human's perspective (vs computer) or plainly.
+  function describe(e){
+    if(e.result==='draw')return {cls:'draw',label:'Remiză'};
+    if(e.mode==='ai'){
+      const won=e.result===e.humanSide;
+      return {cls:won?'win':'loss',label:won?'Victorie':'Înfrângere'};
+    }
+    return {cls:'win',label:(e.result==='w'?'Albul':'Negrul')+' câștigă'};
+  }
+
+  function renderTally(list){
+    const tally=document.getElementById('tally');
+    let w=0,l=0,d=0;
+    for(const e of list){
+      if(e.result==='draw'){d++;continue;}
+      if(e.mode==='ai'){ (e.result===e.humanSide)?w++:l++; }
+      else { w++; } // pvp: count as decisive games
+    }
+    const cells=[['Victorii',w],['Remize',d],['Înfrângeri',l]];
+    tally.innerHTML=cells.map(c=>'<div class="cell"><div class="n">'+c[1]+'</div><div class="k">'+c[0]+'</div></div>').join('');
+  }
+
+  function fmtDuration(sec){
+    if(sec==null)return '';
+    const m=Math.floor(sec/60), s=sec%60;
+    return m>0 ? (m+' min '+s+'s') : (s+'s');
+  }
+
+  // A single move rendered as: [glyph] from–to  with capture/castle/check/mate marks.
+  function moveText(mv){
+    const glyph=SOLID[mv.piece]||'';
+    if(mv.castle){
+      let s=mv.castle==='k'?'0–0':'0–0–0';
+      if(mv.mate)s+='#'; else if(mv.check)s+='+';
+      return '<span class="mvg '+mv.side+'">♚</span>'+s;
+    }
+    const sep=mv.cap?'×':'–';
+    let s=mv.from+sep+mv.to;
+    if(mv.promo)s+='='+SOLID[mv.promo];
+    if(mv.mate)s+='#'; else if(mv.check)s+='+';
+    return '<span class="mvg '+mv.side+'">'+glyph+'</span>'+s;
+  }
+
+  // Build a compact numbered move list (White & Black paired per turn number).
+  function movesHTML(moves){
+    if(!moves||!moves.length)return '<div class="mvEmpty">Fără mutări.</div>';
+    let rows='',i=0,num=1;
+    while(i<moves.length){
+      const w=moves[i], b=moves[i+1];
+      rows+='<div class="mvline"><span class="mvn">'+num+'.</span>'+
+            '<span class="mvw">'+moveText(w)+'</span>'+
+            (b?'<span class="mvb">'+moveText(b)+'</span>':'<span class="mvb"></span>')+
+            '</div>';
+      i+=2;num++;
+    }
+    return rows;
+  }
+
+  function renderHistory(){
+    const list=histTab==='session'?sessionGames:loadAll();
+    renderTally(list);
+    const box=document.getElementById('histList');
+    if(!list.length){
+      box.innerHTML='<div class="histEmpty">'+(histTab==='session'
+        ? 'Niciun joc în această sesiune încă.'
+        : 'Niciun joc salvat încă.')+'</div>';
+      return;
+    }
+    box.innerHTML=list.map((e,idx)=>{
+      const d=describe(e);
+      const winnerDot = e.result==='draw'?'d':e.result;
+      let setup;
+      if(e.mode==='ai'){
+        const col=e.humanSide==='w'?'albele':'negrele';
+        setup='Contra calculatorului · '+LEVEL_NAMES[e.level]+' · '+col;
+      } else {
+        setup='2 jucători';
+      }
+      const stats=(e.moveCount!=null?e.moveCount+' mutări':'')+
+                  (e.durationSec!=null?' · '+fmtDuration(e.durationSec):'');
+      return '<div class="hrow" data-idx="'+idx+'">'+
+        '<div class="hrow-top">'+
+          '<span class="dot '+winnerDot+'"></span>'+
+          '<div class="main">'+
+            '<span class="res '+d.cls+'">'+d.label+'</span>'+
+            '<div class="meta">'+setup+'</div>'+
+            '<div class="meta">'+fmtDate(e.ended)+(stats?' · '+stats:'')+'</div>'+
+          '</div>'+
+          '<div class="hbtns">'+
+            (e.moveCount?'<button class="mini" data-act="toggle">Mutări</button>':'')+
+            '<button class="mini" data-act="rematch">Revanșă</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="movebox" data-box="'+idx+'" hidden>'+movesHTML(e.moves)+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // delegate expand / rematch clicks
+  document.getElementById('histList').addEventListener('click',e=>{
+    const btn=e.target.closest('button.mini');if(!btn)return;
+    const row=btn.closest('.hrow');const idx=+row.dataset.idx;
+    const list=histTab==='session'?sessionGames:loadAll();
+    const entry=list[idx];if(!entry)return;
+    if(btn.dataset.act==='toggle'){
+      const box=row.querySelector('.movebox');
+      box.hidden=!box.hidden;
+      btn.classList.toggle('on',!box.hidden);
+    } else if(btn.dataset.act==='rematch'){
+      rematch(entry);
+    }
+  });
+
+  // Restart a game with the same setup as a past game.
+  function rematch(entry){
+    if(entry.mode==='ai'){
+      // set mode = ai
+      document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x.dataset.mode==='ai'));
+      mode='ai';
+      // side (use the exact colour they had, not random)
+      chosenSide=entry.humanSide||'w';
+      document.querySelectorAll('#side button').forEach(x=>x.classList.toggle('on',x.dataset.side===chosenSide));
+      // level
+      level=entry.level||3;
+      document.querySelectorAll('#diff button').forEach(x=>x.classList.toggle('on',+x.dataset.lv===level));
+    } else {
+      document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x.dataset.mode==='pvp'));
+      mode='pvp';
+    }
+    applyModeVisibility();
+    newGame();
+  }
+
+  // ================= EXPORT / IMPORT =================
+  // Minimal, dependency-free ZIP writer (store, no compression) so we can build
+  // a real .xlsx (which is just a ZIP of XML parts) entirely offline.
+  function crc32(bytes){
+    let c, crc=0xFFFFFFFF;
+    for(let i=0;i<bytes.length;i++){
+      c=(crc^bytes[i])&0xFF;
+      for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;
+      crc=(crc>>>8)^c;
+    }
+    return (crc^0xFFFFFFFF)>>>0;
+  }
+  const enc=new TextEncoder();
+  function strBytes(s){return enc.encode(s);}
+  function u16(n){return [n&0xFF,(n>>>8)&0xFF];}
+  function u32(n){return [n&0xFF,(n>>>8)&0xFF,(n>>>16)&0xFF,(n>>>24)&0xFF];}
+
+  // files: [{name, data(Uint8Array)}] -> Blob (application/zip)
+  function makeZip(files){
+    const chunks=[]; const central=[]; let offset=0;
+    for(const f of files){
+      const nameB=strBytes(f.name);
+      const crc=crc32(f.data);
+      const size=f.data.length;
+      const local=[].concat(
+        u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+        u32(crc), u32(size), u32(size), u16(nameB.length), u16(0)
+      );
+      const localHeader=new Uint8Array(local);
+      chunks.push(localHeader, nameB, f.data);
+      const localLen=localHeader.length+nameB.length+f.data.length;
+      const cen=[].concat(
+        u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+        u32(crc), u32(size), u32(size), u16(nameB.length), u16(0), u16(0),
+        u16(0), u16(0), u32(0), u32(offset)
+      );
+      central.push(new Uint8Array(cen), nameB);
+      offset+=localLen;
+    }
+    let centralSize=0; central.forEach(c=>centralSize+=c.length);
+    const centralStart=offset;
+    const end=new Uint8Array([].concat(
+      u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length),
+      u32(centralSize), u32(centralStart), u16(0)
+    ));
+    return new Blob([...chunks, ...central, end], {type:'application/zip'});
+  }
+
+  function xesc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  // Build a worksheet XML from a 2D array of cells. Cells: string|number.
+  function sheetXml(rows){
+    let body='';
+    rows.forEach((row,ri)=>{
+      let cells='';
+      row.forEach((val,ci)=>{
+        const ref=colLetter(ci)+(ri+1);
+        if(typeof val==='number'&&isFinite(val)){
+          cells+='<c r="'+ref+'"><v>'+val+'</v></c>';
+        } else {
+          cells+='<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+xesc(val==null?'':val)+'</t></is></c>';
+        }
+      });
+      body+='<row r="'+(ri+1)+'">'+cells+'</row>';
+    });
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+      '<sheetData>'+body+'</sheetData></worksheet>';
+  }
+  function colLetter(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+
+  function buildXlsx(sheets){ // sheets: [{name, rows}]
+    const files=[];
+    files.push({name:'[Content_Types].xml', data:strBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+      '<Default Extension="xml" ContentType="application/xml"/>'+
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+      sheets.map((s,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+
+      '</Types>')});
+    files.push({name:'_rels/.rels', data:strBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+      '</Relationships>')});
+    files.push({name:'xl/workbook.xml', data:strBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+      '<sheets>'+sheets.map((s,i)=>'<sheet name="'+xesc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets>'+
+      '</workbook>')});
+    files.push({name:'xl/_rels/workbook.xml.rels', data:strBytes(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      sheets.map((s,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+
+      '</Relationships>')});
+    sheets.forEach((s,i)=>{
+      files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml', data:strBytes(sheetXml(s.rows))});
+    });
+    return makeZip(files);
+  }
+
+  function moveToPlain(mv){
+    // human-readable move like "N g1-f3" / "Q d8xh4#"
+    const p=mv.piece==='P'?'':mv.piece;
+    if(mv.castle){let s=mv.castle==='k'?'0-0':'0-0-0';if(mv.mate)s+='#';else if(mv.check)s+='+';return s;}
+    const sep=mv.cap?'x':'-';
+    let s=(p?p+' ':'')+mv.from+sep+mv.to;
+    if(mv.promo)s+='='+mv.promo;
+    if(mv.mate)s+='#';else if(mv.check)s+='+';
+    return s;
+  }
+
+  function resultText(e){
+    if(e.result==='draw')return 'Remiză';
+    return (e.result==='w'?'Alb':'Negru')+' câștigă';
+  }
+  function outcomeForHuman(e){
+    if(e.mode!=='ai')return '';
+    if(e.result==='draw')return 'Remiză';
+    return e.result===e.humanSide?'Victorie':'Înfrângere';
+  }
+
+  function exportXlsx(){
+    const list=(histTab==='all')?loadAll():sessionGames;
+    if(!list.length){alert('Nu există jocuri de exportat.');return;}
+    // Sheet 1: one row per game
+    const gHead=['#','Data','Ora','Mod','Nivel','Culoare jucător','Rezultat','Rezultat (tu)','Nr. mutări','Durată (s)'];
+    const gRows=[gHead];
+    list.forEach((e,i)=>{
+      const d=new Date(e.ended); const p=n=>String(n).padStart(2,'0');
+      gRows.push([
+        i+1,
+        p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear(),
+        p(d.getHours())+':'+p(d.getMinutes()),
+        e.mode==='ai'?'Contra calculatorului':'2 jucători',
+        e.mode==='ai'?LEVEL_NAMES[e.level]:'',
+        e.mode==='ai'?(e.humanSide==='w'?'Alb':'Negru'):'',
+        resultText(e),
+        outcomeForHuman(e),
+        e.moveCount!=null?e.moveCount:'',
+        e.durationSec!=null?e.durationSec:''
+      ]);
+    });
+    // Sheet 2: one row per move
+    const mHead=['Joc #','Data','Nr. mutare','Culoare','Piesă','De la','Până la','Captură','Șah','Mat','Mutare'];
+    const mRows=[mHead];
+    list.forEach((e,i)=>{
+      const d=new Date(e.ended); const p=n=>String(n).padStart(2,'0');
+      const dstr=p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear();
+      (e.moves||[]).forEach(mv=>{
+        mRows.push([
+          i+1, dstr, mv.n, mv.side==='w'?'Alb':'Negru',
+          ({K:'Rege',Q:'Damă',R:'Turn',B:'Nebun',N:'Cal',P:'Pion'})[mv.piece]||mv.piece,
+          mv.from, mv.to, mv.cap?'da':'', mv.check?'da':'', mv.mate?'da':'',
+          moveToPlain(mv)
+        ]);
+      });
+    });
+    const blob=buildXlsx([{name:'Jocuri',rows:gRows},{name:'Mutări',rows:mRows}]);
+    const d=new Date(); const p=n=>String(n).padStart(2,'0');
+    downloadBlob(blob,'sah-istoric-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'.xlsx');
+  }
+
+  function downloadBlob(blob,name){
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  // JSON backup (export/import) so history can move between computers.
+  function exportBackup(){
+    const data=JSON.stringify({app:'sah-a-la-sultan',version:1,games:loadAll()},null,2);
+    const d=new Date(); const p=n=>String(n).padStart(2,'0');
+    downloadBlob(new Blob([data],{type:'application/json'}),
+      'sah-backup-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'.json');
+  }
+  function importBackup(file){
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const obj=JSON.parse(rd.result);
+        const games=Array.isArray(obj)?obj:(obj.games||[]);
+        if(!Array.isArray(games))throw new Error('format');
+        const existing=loadAll();
+        // merge, de-dup by ended+started
+        const seen=new Set(existing.map(g=>g.started+'|'+g.ended));
+        let added=0;
+        for(const g of games){const k=g.started+'|'+g.ended;if(!seen.has(k)){existing.push(g);seen.add(k);added++;}}
+        existing.sort((a,b)=>b.ended-a.ended);
+        saveAll(existing);renderHistory();
+        alert('Import reușit: '+added+' jocuri adăugate.');
+      }catch(err){alert('Fișier invalid.');}
+    };
+    rd.readAsText(file);
+  }
+
+  // ---- interaction ----
+  function onSquare(e){
+    if(gameOver||thinking||animating)return;
+    if(mode==='ai'&&turn!==humanSide)return;
+    const r=+e.currentTarget.dataset.r, c=+e.currentTarget.dataset.c;
+    const p=board[r][c];
+    if(sel){
+      const m=legalForSel.find(mm=>mm.tr===r&&mm.tc===c);
+      if(m){doMove(m);return;}
+      if(p&&col(p)===turn){selectSquare(r,c);return;}
+      sel=null;legalForSel=[];render();return;
+    }
+    if(p&&col(p)===turn)selectSquare(r,c);
+  }
+
+  function selectSquare(r,c){
+    sel=[r,c];
+    legalForSel=legalMoves(board,turn,castle,ep).filter(m=>m.fr===r&&m.fc===c);
+    render();
+  }
+
+  function doMove(m){
+    if(m.promo){
+      askPromo(pt=>{finishMove({...m,promoTo:pt});});
+      return;
+    }
+    finishMove(m);
+  }
+
+  function finishMove(m){
+    // Capture move details (before state changes) for the move history.
+    const mover=turn;
+    const piece=board[m.fr][m.fc];
+    const captured=m.ep ? (mover==='w'?'bP':'wP') : board[m.tr][m.tc];
+    // Slide the piece visually, then commit state when the animation ends.
+    animateMove(m,()=>{
+      history.push({board:clone(board),turn,castle:JSON.parse(JSON.stringify(castle)),ep,m});
+      const res=apply(board,m,castle,turn);
+      board=res.board;castle=res.castle;ep=res.ep;
+      turn=turn==='w'?'b':'w';
+      sel=null;legalForSel=[];
+      // log the move (check/mate flags determined after the position updates)
+      const gaveCheck=inCheck(board,turn);
+      const noReply=legalMoves(board,turn,castle,ep).length===0;
+      logMove({
+        n:moveLog.length+1,
+        side:mover,
+        piece:kind(piece),
+        from:coordName(m.fr,m.fc),
+        to:coordName(m.tr,m.tc),
+        cap:!!captured,
+        capPiece:captured?kind(captured):null,
+        castle:m.castle||null,
+        promo:m.promo?(m.promoTo||'Q'):null,
+        check:gaveCheck&&!noReply,
+        mate:gaveCheck&&noReply
+      });
+      render();updateStatus();
+      maybeAI();
+    });
+  }
+
+  // Board coord like "e4" (files a-h left→right on the real board, ranks 8→1 top→bottom).
+  function coordName(r,c){
+    const files='abcdefgh';
+    return files[c]+(8-r);
+  }
+  function logMove(mv){ moveLog.push(mv); }
+
+  // Slide a floating copy of the piece from its origin to its target square.
+  function animateMove(m,done){
+    const piece=board[m.fr][m.fc];
+    if(!piece){done();return;}
+    animating=true;
+    // hide the origin piece during the slide
+    sel=null;legalForSel=[];render();
+    const originSq=boardEl.querySelector('.sq[data-r="'+m.fr+'"][data-c="'+m.fc+'"] .p');
+    if(originSq)originSq.style.visibility='hidden';
+
+    const from=sqXY(m.fr,m.fc), to=sqXY(m.tr,m.tc);
+    const off=(from.sq-from.sq*0.86)/2; // centering offset for the 0.86-sized glyph
+    const el=document.createElement('div');
+    el.className='anim '+(col(piece)==='w'?'w':'b');
+    el.textContent=G[col(piece)][kind(piece)];
+    el.style.left=(from.x+off)+'px';
+    el.style.top=(from.y+off)+'px';
+    boardEl.appendChild(el);
+    // force reflow so the transition runs
+    void el.offsetWidth;
+    el.style.left=(to.x+off)+'px';
+    el.style.top=(to.y+off)+'px';
+
+    let finished=false;
+    const finish=()=>{
+      if(finished)return;finished=true;
+      el.remove();animating=false;done();
+    };
+    el.addEventListener('transitionend',finish,{once:true});
+    // safety fallback in case transitionend doesn't fire
+    setTimeout(finish,520);
+  }
+
+  function undo(){
+    if(thinking||animating||!history.length)return;
+    // undo one (or two if vs AI so it's human's turn again)
+    const steps=(mode==='ai')?2:1;
+    for(let i=0;i<steps&&history.length;i++){
+      const h=history.pop();
+      board=h.board;turn=h.turn;castle=h.castle;ep=h.ep;
+      if(moveLog.length)moveLog.pop();
+    }
+    gameOver=false;sel=null;legalForSel=[];
+    hideBanner();
+    render();updateStatus();
+  }
+
+  // ---- promotion dialog ----
+  const promoDlg=document.getElementById('promoDlg');
+  const promoRow=document.getElementById('promoRow');
+  function askPromo(cb){
+    promoRow.innerHTML='';
+    ['Q','R','B','N'].forEach(k=>{
+      const btn=document.createElement('button');
+      btn.textContent=G[turn][k];
+      btn.style.color=turn==='w'?'#5a3f28':'#231a12';
+      btn.onclick=()=>{promoDlg.close();cb(k);};
+      promoRow.appendChild(btn);
+    });
+    promoDlg.showModal();
+  }
+
+  // ---- AI (minimax + alpha-beta) ----
+  const PST={
+    P:[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],
+       [5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],
+       [5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
+    N:[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],
+       [-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],
+       [-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
+    B:[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],
+       [-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],
+       [-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
+    R:[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],
+       [-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],
+    Q:[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],
+       [-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],
+       [-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],
+    K:[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],
+       [-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],
+       [20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]]
+  };
+  function evaluate(b){
+    let s=0;
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=b[r][c];if(!p)continue;
+      const k=kind(p),side=col(p);
+      const base=VAL[k]*100;
+      const pst=side==='w'?PST[k][r][c]:PST[k][7-r][c];
+      s+=(side==='w'?1:-1)*(base+pst);
+    }
+    return s;
+  }
+  function orderMoves(b,ms){
+    return ms.map(m=>{
+      let sc=0;const cap=b[m.tr][m.tc];
+      if(cap)sc+=10*VAL[kind(cap)]-VAL[kind(b[m.fr][m.fc])];
+      if(m.promo)sc+=90;
+      return{m,sc};
+    }).sort((a,z)=>z.sc-a.sc).map(x=>x.m);
+  }
+  function search(b,side,ct,epv,depth,alpha,beta){
+    if(depth===0)return evaluate(b);
+    let moves=legalMoves(b,side,ct,epv);
+    if(moves.length===0){
+      if(inCheck(b,side))return side==='w'?-99999+ (10-depth):99999-(10-depth);
+      return 0; // stalemate
+    }
+    moves=orderMoves(b,moves);
+    const next=side==='w'?'b':'w';
+    if(side==='w'){
+      let best=-Infinity;
+      for(const m of moves){
+        const res=apply(b,m,ct,side);
+        const v=search(res.board,next,res.castle,res.ep,depth-1,alpha,beta);
+        if(v>best)best=v;
+        if(best>alpha)alpha=best;
+        if(alpha>=beta)break;
+      }
+      return best;
+    } else {
+      let best=Infinity;
+      for(const m of moves){
+        const res=apply(b,m,ct,side);
+        const v=search(res.board,next,res.castle,res.ep,depth-1,alpha,beta);
+        if(v<best)best=v;
+        if(best<beta)beta=best;
+        if(alpha>=beta)break;
+      }
+      return best;
+    }
+  }
+  // Difficulty settings per level (1=Începător … 5=Expert):
+  //  depth       — how many plies the engine looks ahead
+  //  blunder     — chance it deliberately plays a weaker move
+  //  window      — how far below best a "weak" move may be (centipawns)
+  const LEVELS={
+    1:{depth:1,blunder:0.55,window:400},
+    2:{depth:2,blunder:0.35,window:250},
+    3:{depth:3,blunder:0.15,window:120},
+    4:{depth:3,blunder:0.04,window:60},
+    5:{depth:4,blunder:0.00,window:0}
+  };
+
+  function bestMove(side){
+    const cfg=LEVELS[level];
+    let moves=orderMoves(board,legalMoves(board,side,castle,ep));
+    const next=side==='w'?'b':'w';
+    let bestV=side==='w'?-Infinity:Infinity;
+    const cands=[];
+    for(const m of moves){
+      const res=apply(board,m,castle,side);
+      const v=search(res.board,next,res.castle,res.ep,cfg.depth-1,-Infinity,Infinity);
+      cands.push({m,v});
+      if(side==='w'?v>bestV:v<bestV)bestV=v;
+    }
+    // Deliberate imperfection at lower levels: sometimes choose a move
+    // that is worse (but not catastrophic) than the best available.
+    if(cfg.blunder>0&&Math.random()<cfg.blunder){
+      const pool=cands.filter(x=>Math.abs(x.v-bestV)<=cfg.window);
+      if(pool.length)return pool[Math.floor(Math.random()*pool.length)].m;
+    }
+    // Otherwise pick among the near-best for natural variety.
+    const near=cands.filter(x=>Math.abs(x.v-bestV)<=15);
+    const pick=near.length?near:cands;
+    return pick[Math.floor(Math.random()*pick.length)].m;
+  }
+
+  function maybeAI(){
+    if(mode!=='ai'||gameOver||turn===humanSide)return;
+    thinking=true;updateStatus();
+    // Deeper searches take longer; give a short, consistent "thinking" pause
+    // so the move is easy to follow rather than instant.
+    setTimeout(()=>{
+      const m=bestMove(turn);
+      thinking=false;
+      if(!m){updateStatus();return;}
+      finishMove(m);
+    },420);
+  }
+
+  // ---- controls ----
+  function applyModeVisibility(){
+    const ai=mode==='ai';
+    // hide colour + difficulty controls in 2-player mode
+    document.getElementById('side').style.display=ai?'flex':'none';
+    document.getElementById('sideLabel').style.display=ai?'block':'none';
+    document.getElementById('diff').style.display=ai?'flex':'none';
+    document.getElementById('diffLabel').style.display=ai?'block':'none';
+  }
+  document.getElementById('mode').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    document.querySelectorAll('#mode button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');mode=b.dataset.mode;
+    applyModeVisibility();
+    newGame();
+  });
+  document.getElementById('side').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    document.querySelectorAll('#side button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    chosenSide=b.dataset.side;
+    newGame();
+  });
+  document.getElementById('diff').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    document.querySelectorAll('#diff button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');level=+b.dataset.lv;
+    newGame();
+  });
+  document.getElementById('undoW').addEventListener('click',undo);
+  document.getElementById('undoB').addEventListener('click',undo);
+  document.getElementById('reset').addEventListener('click',newGame);
+  document.getElementById('flip').addEventListener('click',()=>{flipped=!flipped;render();});
+
+  // history tabs + clear
+  document.querySelector('.histTabs').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    document.querySelectorAll('.histTabs button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');histTab=b.dataset.tab;renderHistory();
+  });
+  document.getElementById('clearHist').addEventListener('click',()=>{
+    if(histTab==='all'){
+      if(confirm('Ștergi tot istoricul salvat pe acest calculator?')){saveAll([]);renderHistory();}
+    } else {
+      sessionGames.length=0;renderHistory();
+    }
+  });
+
+  document.getElementById('exportXlsx').addEventListener('click',exportXlsx);
+  document.getElementById('exportBackup').addEventListener('click',exportBackup);
+  document.getElementById('importBackup').addEventListener('click',()=>document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change',e=>{
+    const f=e.target.files[0];if(f)importBackup(f);e.target.value='';
+  });
+
+  applyModeVisibility();
+  renderHistory();
+  flipped=false;
+  newGame();
+})();
+</script>
+</body>
+</html>
