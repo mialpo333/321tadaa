@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spice on Wheels · Vorbestellen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --ink:#0C0A08; --ink-2:#17120D; --surface:#1E1710; --surface-2:#2A2117;
+  --line:#3B2F21; --saffron:#F5821F; --turmeric:#E8B23A; --leaf:#5C9B5F;
+  --blue:#4A90D9; --cream:#F6EFE6; --muted:#A08E7B; --muted-2:#776958;
+  --danger:#D4562F; --r:14px;
+}
+:root:not([data-theme="light"]){ color-scheme: dark; }
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--ink);color:var(--cream);
+  font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.45;padding-bottom:126px;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><g fill='none' stroke='%23F5821F' stroke-width='1' opacity='0.14'><circle cx='75' cy='75' r='20'/><circle cx='75' cy='75' r='34'/><path d='M75 41v-18M75 109v18M41 75h-18M109 75h18M51 51l-13-13M99 99l13 13M99 51l13-13M51 99l-13 13'/><circle cx='75' cy='75' r='6'/></g></svg>");
+  background-size:150px 150px;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 10% 4%,rgba(245,130,31,.16),transparent 40%),
+             radial-gradient(circle at 92% 82%,rgba(232,178,58,.09),transparent 44%);
+}
+.wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:0 16px;}
+
+.brandbar{position:relative;z-index:1;max-width:520px;margin:0 auto;
+  background:linear-gradient(180deg,rgba(12,10,8,.97),rgba(12,10,8,.82));
+  border-bottom:1px solid var(--line);padding:14px 16px 13px;display:flex;align-items:center;gap:12px;}
+.logo{width:50px;height:50px;border-radius:50%;flex:0 0 auto;display:block;object-fit:cover;}
+.logo-fb{width:50px;height:50px;border-radius:50%;flex:0 0 auto;border:2px solid var(--turmeric);
+  background:radial-gradient(circle at 50% 38%,#2A2117,#0C0A08);display:grid;place-items:center;
+  text-align:center;font-size:8px;font-weight:700;line-height:1.15;color:var(--turmeric);padding:4px;}
+.bt{flex:1;min-width:0;}
+.bt .n{font-size:17px;font-weight:600;letter-spacing:-.015em;line-height:1.15;}
+.bt .t{font-size:12.5px;color:var(--saffron);}
+.demo-chip{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--turmeric);
+  border:1px solid rgba(232,178,58,.4);padding:3px 7px;border-radius:99px;white-space:nowrap;}
+
+.stop{background:linear-gradient(160deg,var(--surface),var(--ink-2));border:1px solid var(--line);
+  border-radius:var(--r);padding:16px;margin:16px 0 14px;}
+.stop h1{margin:0 0 2px;font-size:21px;font-weight:600;letter-spacing:-.02em;}
+.stop .addr{font-size:13.5px;color:var(--muted);margin-bottom:14px;}
+.clockrow{display:flex;align-items:baseline;gap:12px;border-top:1px solid var(--line);padding-top:13px;}
+.countdown{font-size:30px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  color:var(--saffron);line-height:1;}
+.countdown.warn{color:var(--danger);}
+.cd-label{font-size:12.5px;color:var(--muted);line-height:1.25;}
+.cd-label b{color:var(--cream);font-weight:600;}
+
+.tabs{display:flex;gap:6px;background:var(--ink-2);border:1px solid var(--line);
+  border-radius:99px;padding:4px;margin-bottom:16px;}
+.tabs button{flex:1;appearance:none;border:0;background:transparent;color:var(--muted);
+  font-family:inherit;font-size:14px;font-weight:500;padding:9px 6px;border-radius:99px;
+  cursor:pointer;transition:background .18s,color .18s;}
+.tabs button[aria-selected="true"]{background:var(--saffron);color:#1A0F04;font-weight:600;}
+.tabs button:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+section[hidden]{display:none;}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:15px;margin-bottom:12px;scroll-margin-top:16px;}
+.card h2{margin:0 0 3px;font-size:16px;font-weight:600;letter-spacing:-.01em;}
+.card .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
+.card .sub b{color:var(--cream);font-weight:600;}
+
+.dish{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);}
+.dish:first-of-type{border-top:0;}
+.dish .info{flex:1;min-width:0;}
+.dish .nm{font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto;}
+.dot.veg{background:var(--leaf);} .dot.non{background:var(--danger);}
+.chili{font-size:11px;color:var(--saffron);letter-spacing:1px;}
+.dish .meta{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.stepper{display:flex;align-items:center;gap:8px;}
+.stepper button{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--cream);font-size:17px;font-family:inherit;
+  cursor:pointer;line-height:1;display:grid;place-items:center;}
+.stepper button:active{background:var(--saffron);color:#1A0F04;}
+.stepper button:disabled{opacity:.3;cursor:default;}
+.stepper button:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+.stepper .qty{width:18px;text-align:center;font-variant-numeric:tabular-nums;font-size:14.5px;}
+.qty.zero{color:var(--muted);}
+
+input[type=text]{width:100%;padding:11px 13px;border-radius:11px;border:1px solid var(--line);
+  background:var(--ink);color:var(--cream);font-family:inherit;font-size:15px;}
+input[type=text]::placeholder{color:#6B5C4D;}
+input[type=text]:focus{outline:2px solid var(--saffron);outline-offset:-1px;border-color:transparent;}
+
+.hours{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px;}
+.hrow{font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);
+  color:var(--muted-2);background:var(--ink-2);white-space:nowrap;}
+.hrow.today{border-color:var(--saffron);color:var(--cream);}
+.hrow b{font-weight:700;}
+.hrow.today b{color:var(--saffron);}
+.selwrap{position:relative;}
+.selwrap::after{content:"▾";position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:var(--saffron);font-size:15px;}
+select.timesel{appearance:none;-webkit-appearance:none;width:100%;padding:14px 40px 14px 14px;
+  border-radius:11px;border:1px solid var(--line);background:var(--ink);color:var(--cream);
+  font-family:inherit;font-size:16px;font-weight:500;font-variant-numeric:tabular-nums;cursor:pointer;}
+select.timesel.chosen{border-color:var(--saffron);}
+select.timesel:focus{outline:2px solid var(--saffron);outline-offset:-1px;border-color:transparent;}
+select.timesel option{background:#1E1710;color:#F6EFE6;}
+select.timesel option:disabled{color:#6B5C4D;}
+.legend{font-size:11.5px;color:var(--muted);margin-top:10px;}
+
+/* ======= WAITING WINDOW ======= */
+.wait{border:1px solid rgba(245,130,31,.4);background:linear-gradient(165deg,#241A10,var(--ink-2));
+  border-radius:var(--r);padding:17px 16px;margin-bottom:12px;transition:border-color .3s;}
+.wait.ready{border-color:var(--leaf);background:linear-gradient(165deg,#14240F,#0E1A0B);}
+.wcode{font-size:12px;color:var(--muted);letter-spacing:.05em;font-weight:600;}
+.wbig{font-size:28px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin:3px 0 4px;}
+.wait.ready .wbig{color:#A8E5A8;}
+.wsub{font-size:13.5px;color:var(--muted);}
+.wsub b{color:var(--cream);font-weight:600;}
+.wclock{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px;}
+.wmin{font-size:42px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
+  color:var(--saffron);line-height:1;}
+.wait.ready .wmin{color:var(--leaf);font-size:34px;}
+.wminl{font-size:13px;color:var(--muted);line-height:1.25;}
+.wminl b{color:var(--cream);font-weight:600;}
+.changed{margin-top:11px;font-size:12.5px;color:var(--turmeric);
+  background:rgba(232,178,58,.1);border:1px solid rgba(232,178,58,.3);
+  border-radius:9px;padding:8px 11px;}
+
+.steps{display:flex;gap:5px;margin:15px 0 0;}
+.step{flex:1;text-align:center;}
+.step .sbar{height:5px;border-radius:3px;background:var(--surface-2);margin-bottom:6px;transition:background .3s;}
+.step.on .sbar{background:var(--saffron);}
+.step.done .sbar{background:var(--leaf);}
+.step .sl{font-size:10.5px;color:var(--muted-2);line-height:1.2;}
+.step.on .sl{color:var(--cream);font-weight:600;}
+.step.done .sl{color:var(--leaf);}
+
+.witems{margin-top:14px;border-top:1px solid var(--line);padding-top:11px;}
+.mi{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:4px 0;}
+.mi .q{color:var(--turmeric);font-weight:600;min-width:26px;font-variant-numeric:tabular-nums;}
+.mi .nm2{flex:1;}
+.mi .pr{color:var(--muted);font-variant-numeric:tabular-nums;}
+.totalrow{display:flex;justify-content:space-between;align-items:baseline;
+  border-top:1px solid var(--line);margin-top:10px;padding-top:11px;}
+.totalrow .lbl{font-size:13.5px;color:var(--muted);}
+.totalrow .val{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;}
+
+/* ======= GAME ======= */
+.gamecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:15px;margin-bottom:12px;}
+.ghead{display:flex;align-items:baseline;gap:10px;margin-bottom:3px;}
+.ghead h2{margin:0;font-size:16px;font-weight:600;flex:1;}
+.gscore{font-size:13px;color:var(--turmeric);font-weight:600;font-variant-numeric:tabular-nums;}
+.garea{position:relative;height:230px;margin-top:12px;border-radius:12px;overflow:hidden;
+  background:linear-gradient(180deg,#120E0A,#241A10);border:1px solid var(--line);
+  touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;}
+.garea:active{cursor:grabbing;}
+.fall{position:absolute;font-size:25px;line-height:1;will-change:transform;pointer-events:none;}
+.pan{position:absolute;bottom:6px;font-size:34px;line-height:1;pointer-events:none;
+  transform:translateX(-50%);transition:transform .04s linear;}
+.gover{position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+  background:rgba(12,10,8,.86);padding:20px;}
+.gover .gt{font-size:19px;font-weight:700;margin-bottom:5px;}
+.gover .gs{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+.gbtn{appearance:none;border:0;border-radius:11px;padding:11px 20px;background:var(--saffron);
+  color:#1A0F04;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;}
+.gbtn.ghostb{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);}
+.gbtn:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+.heat{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted);margin-top:9px;}
+.hpip{width:22px;height:5px;border-radius:3px;background:var(--surface-2);}
+.hpip.on{background:var(--danger);}
+.ghint{font-size:11.5px;color:var(--muted-2);margin-top:9px;}
+
+/* ======= KITCHEN (Pinna pattern) ======= */
+.capbar{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
+.caphead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.captitle{font-size:13px;font-weight:700;}
+.capeta{font-size:13px;font-weight:700;color:var(--leaf);font-variant-numeric:tabular-nums;}
+.capeta.warn{color:var(--turmeric);} .capeta.full{color:var(--danger);}
+.capmeter{height:10px;background:var(--ink);border-radius:6px;overflow:hidden;}
+.capfill{height:100%;background:var(--leaf);transition:width .3s,background .3s;}
+.capfill.warn{background:var(--turmeric);} .capfill.full{background:var(--danger);}
+.capstats{display:flex;gap:16px;margin-top:10px;font-size:12px;color:var(--muted);}
+.capstats b{color:var(--cream);font-size:15px;display:block;font-variant-numeric:tabular-nums;}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.filters button{background:var(--surface);border:1px solid var(--line);color:var(--muted);
+  padding:7px 13px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;}
+.filters button.on{background:var(--cream);color:#1A130B;border-color:var(--cream);}
+.filters button:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+
+.oq{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:12px;padding:13px;margin-bottom:10px;}
+.oq.s-neu{border-left-color:var(--blue);}
+.oq.s-arbeit{border-left-color:var(--turmeric);}
+.oq.s-fertig{border-left-color:var(--leaf);}
+.oq.s-abgeholt{opacity:.45;}
+.oqtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:5px;}
+.oqcode{font-size:18px;font-weight:800;letter-spacing:-.01em;}
+.oqname{font-size:11.5px;padding:2px 9px;border-radius:12px;font-weight:700;
+  background:rgba(245,130,31,.16);color:var(--saffron);}
+.oqtime{font-size:11.5px;color:var(--muted-2);font-variant-numeric:tabular-nums;}
+.oqitems{font-size:13.5px;line-height:1.55;margin:6px 0;}
+.oqmeta{font-size:12px;color:var(--muted);margin-bottom:9px;}
+.oqmeta b{color:var(--cream);}
+.oqeta{font-size:12px;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.etaval{font-weight:800;color:var(--cream);font-size:15px;min-width:54px;text-align:center;
+  font-variant-numeric:tabular-nums;}
+.etaval.moved{color:var(--turmeric);}
+.etaadj{background:var(--surface-2);border:1px solid var(--line);color:var(--cream);font-family:inherit;
+  font-size:13px;font-weight:700;padding:5px 11px;border-radius:8px;cursor:pointer;}
+.etaadj:active{background:var(--turmeric);color:#3A2C08;}
+.etaadj:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+.etaok{background:transparent;border:1px solid rgba(92,155,95,.5);color:var(--leaf);font-family:inherit;
+  font-size:12px;font-weight:700;padding:5px 11px;border-radius:8px;cursor:pointer;}
+.etaok:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+.oqact{display:flex;gap:7px;flex-wrap:wrap;}
+.oqact button{flex:1;min-width:84px;border:0;border-radius:8px;padding:10px;font-weight:700;
+  font-size:12.5px;font-family:inherit;cursor:pointer;}
+.oqnext{background:var(--leaf);color:#04231A;}
+.oqback{background:var(--surface-2);color:var(--muted);}
+.oqact button:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+
+.prep{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);}
+.prep:first-of-type{border-top:0;}
+.prep .cnt{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;min-width:34px;color:var(--turmeric);}
+.prep .pname{flex:1;font-size:14.5px;}
+.barwrap{width:64px;background:var(--surface-2);height:4px;border-radius:2px;overflow:hidden;}
+.barfill{display:block;height:4px;border-radius:2px;background:var(--saffron);opacity:.8;}
+.empty{font-size:13.5px;color:var(--muted);padding:26px 10px;text-align:center;}
+
+.ghost{appearance:none;width:100%;margin-top:4px;padding:10px;border-radius:11px;
+  border:1px solid var(--line);background:transparent;color:var(--muted);
+  font-family:inherit;font-size:13.5px;cursor:pointer;}
+.ghost:hover{color:var(--cream);}
+.ghost:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(12,10,8,.94);
+  backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding:11px 16px calc(11px + env(safe-area-inset-bottom));}
+.bar .in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;}
+.bar .sum{flex:1;min-width:0;}
+.bar .s1{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;}
+.bar .s2{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.bar .s2.ok{color:var(--turmeric);}
+.cta{appearance:none;border:0;border-radius:12px;padding:13px 18px;background:var(--saffron);
+  color:#1A0F04;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.cta.alt{background:transparent;color:var(--saffron);box-shadow:inset 0 0 0 1px var(--saffron);}
+.cta:disabled{background:var(--surface-2);color:var(--muted);cursor:default;box-shadow:none;}
+.cta:focus-visible{outline:2px solid var(--turmeric);outline-offset:2px;}
+
+.toast{position:fixed;left:16px;right:16px;bottom:92px;z-index:9;max-width:490px;margin:0 auto;
+  background:var(--leaf);color:#0C1A0C;border-radius:12px;padding:12px 15px;font-size:14px;
+  font-weight:500;transform:translateY(14px);opacity:0;pointer-events:none;transition:.22s;}
+.toast.show{transform:none;opacity:1;}
+
+.foot{text-align:center;font-size:11.5px;color:#6B5C4D;padding:18px 0 8px;line-height:1.7;}
+.foot b{color:var(--muted);font-weight:500;}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}
+</style>
+</head>
+<body>
+
+<div class="brandbar">
+  <img class="logo" id="logo" src="logo.png" alt="Spice on Wheels">
+  <div class="bt">
+    <div class="n">Spice on Wheels</div>
+    <div class="t">India in Every Bite</div>
+  </div>
+  <div class="demo-chip">DEMO</div>
+</div>
+
+<div class="wrap">
+
+  <div class="stop">
+    <h1 id="stopDay">Dienstag am Haus 39</h1>
+    <div class="addr">Schulze-Delitzsch-Straße 39, 70565 Stuttgart · <span id="stopHours">Truck vor Ort 11:00–15:00</span></div>
+    <div class="clockrow">
+      <div class="countdown" id="cd">43:00</div>
+      <div class="cd-label">bis Bestellschluss<br>Abholung: <b>Zeit frei wählbar</b></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-order" aria-selected="true" aria-controls="view-order">Bestellen</button>
+    <button role="tab" id="tab-kitchen" aria-selected="false" aria-controls="view-kitchen">Küche</button>
+  </div>
+
+  <!-- ===== BESTELLEN / WARTEN ===== -->
+  <section id="view-order" role="tabpanel" aria-labelledby="tab-order">
+
+    <!-- waiting window -->
+    <div id="waitPane" hidden>
+      <div class="wait" id="waitBox">
+        <div class="wcode" id="wCode">BON SW-01</div>
+        <div class="wbig" id="wBig">Bestellung angenommen</div>
+        <div class="wsub" id="wSub">Die Küche hat deinen Bon.</div>
+
+        <div class="wclock">
+          <div class="wmin" id="wMin">—</div>
+          <div class="wminl" id="wMinL">Minuten<br>bis <b>12:15 Uhr</b></div>
+        </div>
+
+        <div class="changed" id="wChanged" hidden></div>
+
+        <div class="steps" id="wSteps">
+          <div class="step" data-s="neu"><div class="sbar"></div><div class="sl">Angenommen</div></div>
+          <div class="step" data-s="arbeit"><div class="sbar"></div><div class="sl">In der Pfanne</div></div>
+          <div class="step" data-s="fertig"><div class="sbar"></div><div class="sl">Fertig</div></div>
+        </div>
+
+        <div class="witems" id="wItems"></div>
+        <div class="totalrow"><span class="lbl">Zu zahlen an der Klappe</span><span class="val" id="wTotal">0,00 €</span></div>
+      </div>
+
+      <!-- game -->
+      <div class="gamecard">
+        <div class="ghead">
+          <h2>Masala-Fang</h2>
+          <span class="gscore" id="gScore">0</span>
+        </div>
+        <p class="sub" style="margin:0">Fang die Zutaten in der Pfanne. Chilis verbrennen dich — drei und Schluss.</p>
+        <div class="garea" id="gArea">
+          <div class="pan" id="gPan" style="left:50%">🍳</div>
+          <div class="gover" id="gOver">
+            <div>
+              <div class="gt" id="gTitle">Zeit totschlagen?</div>
+              <div class="gs" id="gMsg">Wir sagen Bescheid, sobald dein Essen fertig ist.<br>Versprochen — du musst nicht im Regen stehen.</div>
+              <button class="gbtn" id="gStart">Los geht's</button>
+            </div>
+          </div>
+        </div>
+        <div class="heat" id="gHeat"><span>Schärfe</span></div>
+        <div class="ghint">Finger auf die Fläche legen und ziehen.</div>
+      </div>
+
+      <button class="ghost" id="newOrderBtn">Neue Bestellung aufgeben</button>
+    </div>
+
+    <!-- order form -->
+    <div id="formPane">
+      <div class="card">
+        <h2>Dein Name</h2>
+        <p class="sub">Kommt auf den Bon — damit an der Klappe nichts vertauscht wird.</p>
+        <input type="text" id="nameIn" placeholder="z. B. Mihai" autocomplete="given-name">
+      </div>
+
+      <div class="card">
+        <h2>Karte für heute</h2>
+        <p class="sub"><span style="color:var(--leaf)">■</span> vegetarisch · <span style="color:var(--danger)">■</span> mit Fleisch · ▲ Schärfe</p>
+        <div id="menu"></div>
+      </div>
+
+      <div class="card" id="slotCard">
+        <h2>Wann holst du ab?</h2>
+        <p class="sub" id="slotSub">Wähle eine Zeit innerhalb der Öffnungszeiten.</p>
+        <div class="hours" id="hours"></div>
+        <div class="selwrap"><select class="timesel" id="timeSel" aria-label="Abholzeit"></select></div>
+        <div class="legend">Du bekommst die Zeit bestätigt. Wenn die Küche sie verschiebt, siehst du es sofort.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== KÜCHE ===== -->
+  <section id="view-kitchen" role="tabpanel" aria-labelledby="tab-kitchen" hidden>
+
+    <div class="capbar" id="capBar"></div>
+
+    <div class="filters" id="filters">
+      <button data-f="aktiv" class="on">Aktiv</button>
+      <button data-f="alle">Alle</button>
+      <button data-f="neu">Neu</button>
+      <button data-f="arbeit">In Arbeit</button>
+    </div>
+
+    <div id="opQueue"></div>
+
+    <div class="card">
+      <h2>Mise en place</h2>
+      <p class="sub">Was für diesen Stopp vorbereitet wird.</p>
+      <div id="prep"><div class="empty">Noch keine Bestellungen für heute.</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Was das am Stopp ändert</h2>
+      <p class="sub" style="margin:0 0 12px">Ohne Vorbestellung stehen vier Stunden Standzeit gegen das, was zufällig vorbeikommt. So sind <b id="pitchMeals">0</b> Essen geplant und über den Tag verteilt — der Einkauf richtet sich nach echten Zahlen, und die Mittagsspitze staut sich nicht an der Klappe.</p>
+      <button class="ghost" id="resetBtn">Demo zurücksetzen</button>
+    </div>
+
+  </section>
+
+  <div class="foot">
+    <b>Prototyp · 321tadaa</b><br>
+    Beispielpreise · nicht mit der Kasse verbunden
+  </div>
+
+</div>
+
+<div class="bar" id="payBar">
+  <div class="in">
+    <div class="sum">
+      <div class="s1" id="barSum">Noch nichts ausgewählt</div>
+      <div class="s2" id="barSub">Karte antippen, um hinzuzufügen</div>
+    </div>
+    <button class="cta" id="addBtn" disabled>Bestellen</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var lg=document.getElementById("logo");
+  lg.addEventListener("error",function(){
+    var d=document.createElement("div");
+    d.className="logo-fb"; d.innerHTML="SPICE<br>ON<br>WHEELS";
+    lg.replaceWith(d);
+  });
+
+  var MENU=[
+    {id:"pbm",name:"Paneer Butter Masala",price:9.50,veg:true,heat:1,note:"mit Basmati"},
+    {id:"chm",name:"Chana Masala",        price:8.50,veg:true,heat:2,note:"mit Basmati"},
+    {id:"ctc",name:"Chhole Tikki Chaat",  price:7.50,veg:true,heat:2,note:"Streetfood-Teller"},
+    {id:"kul",name:"Kulcha",              price:3.50,veg:true,heat:0,note:"frisch aus dem Ofen"},
+    {id:"las",name:"Mango Lassi",         price:4.00,veg:true,heat:0,note:"0,3 l"},
+    {id:"cha",name:"Indian Masala Chai",  price:2.50,veg:true,heat:0,note:"0,2 l"}
+  ];
+  var MAINS={pbm:1,chm:1,ctc:1};
+
+  /* ---- Öffnungszeiten: die einzige Quelle für die Abholzeiten ---- */
+  var HOURS=[
+    {d:"Mo", full:"Montag",     open:null},
+    {d:"Di", full:"Dienstag",   open:["11:00","15:00"]},
+    {d:"Mi", full:"Mittwoch",   open:["11:00","15:00"]},
+    {d:"Do", full:"Donnerstag", open:["11:30","14:30"]},
+    {d:"Fr", full:"Freitag",    open:["11:00","15:00"]},
+    {d:"Sa", full:"Samstag",    open:null},
+    {d:"So", full:"Sonntag",    open:null}
+  ];
+  var TODAY=1;                     // Dienstag
+  var STEP=15, CAP=6;
+  function toMin(s){ var p=s.split(":"); return (+p[0])*60+(+p[1]); }
+  var OPEN=HOURS[TODAY].open;
+  var START=toMin(OPEN[0]), END=toMin(OPEN[1]);
+  var SLOTS=[]; for(var t=START;t<END;t+=STEP) SLOTS.push(t);
+  function hhmm(m){ m=(m+1440)%1440; var h=Math.floor(m/60),x=m%60; return h+":"+(x<10?"0":"")+x; }
+  function isPeak(m){ return m>=12*60 && m<13*60; }
+
+  var FLOW=["neu","arbeit","fertig","abgeholt"];
+  var LBL={neu:"Neu",arbeit:"In Arbeit",fertig:"Fertig",abgeholt:"Abgeholt"};
+
+  var orders=[];   // {id,code,n,items,wish,ziel,state,placed,seen}
+  var draft={}, pick=null, seq=1, myId=null, filter="aktiv";
+  var simNow=10*60+17;
+
+  var $=function(s){ return document.querySelector(s); };
+  var eur=function(n){ return n.toFixed(2).replace(".",",")+" €"; };
+  function dish(id){ for(var i=0;i<MENU.length;i++){ if(MENU[i].id===id) return MENU[i]; } return null; }
+  function sum(it){ var t=0; for(var k in it){ var d=dish(k); if(d) t+=d.price*it[k]; } return t; }
+  function count(it){ var c=0; for(var k in it){ c+=it[k]||0; } return c; }
+  function meals(it){ var c=0; for(var k in it){ if(MAINS[k]) c+=it[k]||0; } return c; }
+  function loadIn(s){ var c=0; for(var i=0;i<orders.length;i++){ if(orders[i].ziel===s && orders[i].state!=="abgeholt") c+=meals(orders[i].items); } return c; }
+  function byId(id){ for(var i=0;i<orders.length;i++){ if(orders[i].id===id) return orders[i]; } return null; }
+  function itemLines(it,sep){
+    var p=[]; for(var k in it){ if(it[k]>0){ var d=dish(k); if(d) p.push(it[k]+"× "+d.name); } }
+    return p.join(sep||"<br>");
+  }
+
+  /* clock: 1 Sim-Minute alle 10 s */
+  var left=43*60, acc=0;
+  function tickClock(){
+    var m=Math.floor(left/60), s=left%60, el=$("#cd");
+    el.textContent=m+":"+(s<10?"0":"")+s;
+    if(left<=5*60) el.classList.add("warn");
+    if(left>0) left--;
+    acc++; if(acc>=10){ acc=0; simNow++;
+      if(!$("#view-kitchen").hidden) renderKitchen();
+      if(!$("#waitPane").hidden) renderWait();
+    }
+  }
+  tickClock(); setInterval(tickClock,1000);
+
+  /* tabs */
+  function showTab(which){
+    var o=which==="order";
+    $("#tab-order").setAttribute("aria-selected",o);
+    $("#tab-kitchen").setAttribute("aria-selected",!o);
+    $("#view-order").hidden=!o;
+    $("#view-kitchen").hidden=o;
+    syncPanes();
+    if(!o){ renderKitchen(); gameStop(); }
+    window.scrollTo(0,0);
+  }
+  $("#tab-order").addEventListener("click",function(){ showTab("order"); });
+  $("#tab-kitchen").addEventListener("click",function(){ showTab("kitchen"); });
+
+  function syncPanes(){
+    var waiting = myId!==null;
+    var onOrder = !$("#view-order").hidden;
+    $("#waitPane").hidden = !(waiting && onOrder);
+    $("#formPane").hidden = waiting && onOrder;
+    $("#payBar").style.display = (onOrder && !waiting) ? "" : "none";
+    document.body.style.paddingBottom = (onOrder && !waiting) ? "126px" : "24px";
+    $("#tab-order").textContent = waiting ? "Warten" : "Bestellen";
+    if(waiting && onOrder) renderWait();
+  }
+
+  /* menu */
+  function renderMenu(){
+    var h="";
+    for(var i=0;i<MENU.length;i++){
+      var d=MENU[i], q=draft[d.id]||0;
+      h+='<div class="dish"><div class="info">'
+       +'<div class="nm"><span class="dot '+(d.veg?"veg":"non")+'"></span>'+d.name
+       +(d.heat?'<span class="chili">'+new Array(d.heat+1).join("▲")+'</span>':'')+'</div>'
+       +'<div class="meta">'+d.note+' · '+eur(d.price)+'</div></div>'
+       +'<div class="stepper">'
+       +'<button data-m="'+d.id+'" aria-label="Weniger '+d.name+'"'+(q?"":" disabled")+'>−</button>'
+       +'<span class="qty'+(q?"":" zero")+'">'+q+'</span>'
+       +'<button data-p="'+d.id+'" aria-label="Mehr '+d.name+'">+</button>'
+       +'</div></div>';
+    }
+    $("#menu").innerHTML=h;
+  }
+  $("#menu").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    var p=b.getAttribute("data-p"), m=b.getAttribute("data-m");
+    if(p) draft[p]=(draft[p]||0)+1;
+    if(m) draft[m]=Math.max(0,(draft[m]||0)-1);
+    renderMenu(); renderSlots(); renderBar();
+  });
+
+  /* opening hours strip */
+  function renderHours(){
+    var h="";
+    for(var i=0;i<HOURS.length;i++){
+      var d=HOURS[i];
+      h+='<span class="hrow'+(i===TODAY?" today":"")+'"><b>'+d.d+'</b> '
+       +(d.open?d.open[0]+"–"+d.open[1]:"geschlossen")+'</span>';
+    }
+    $("#hours").innerHTML=h;
+    $("#slotSub").textContent="Heute ist "+HOURS[TODAY].full+", der Truck steht "
+      +OPEN[0]+" bis "+OPEN[1]+" Uhr. Ausgebuchte Zeiten lassen sich nicht wählen.";
+  }
+
+  /* pickup time dropdown, built from the opening hours above */
+  function renderSlots(){
+    var need=Math.max(1,meals(draft)), sel=$("#timeSel");
+    var h='<option value="">Abholzeit wählen …</option>';
+    for(var i=0;i<SLOTS.length;i++){
+      var s=SLOTS[i], free=CAP-loadIn(s), full=free<need;
+      h+='<option value="'+s+'"'+(full?" disabled":"")+(pick===s?" selected":"")+'>'
+       +hhmm(s)+' Uhr'+(full?" — ausgebucht":" — "+free+" frei")
+       +(isPeak(s)?" · Stoßzeit":"")+'</option>';
+    }
+    sel.innerHTML=h;
+    sel.value = pick===null ? "" : String(pick);
+    sel.classList.toggle("chosen", pick!==null);
+  }
+  $("#timeSel").addEventListener("change",function(){
+    pick = this.value==="" ? null : +this.value;
+    renderSlots(); renderBar();
+  });
+
+  /* pill */
+  function renderBar(){
+    var c=count(draft), t=sum(draft), name=$("#nameIn").value.trim();
+    var s1=$("#barSum"), s2=$("#barSub"), btn=$("#addBtn");
+    btn.classList.remove("alt");
+    if(c===0){
+      s1.textContent="Noch nichts ausgewählt";
+      s2.textContent="Karte antippen, um hinzuzufügen"; s2.classList.remove("ok");
+      btn.disabled=true; btn.textContent="Bestellen"; return;
+    }
+    s1.textContent=c+(c===1?" Position":" Positionen")+" · "+eur(t);
+    if(!name){ s2.textContent="Name oben eintragen"; s2.classList.remove("ok");
+      btn.disabled=true; btn.textContent="Bestellen"; return; }
+    if(pick===null){ s2.textContent="Abholzeit fehlt"; s2.classList.remove("ok");
+      btn.disabled=false; btn.classList.add("alt"); btn.textContent="Zeit wählen"; return; }
+    s2.textContent="Abholung "+hhmm(pick)+" Uhr"; s2.classList.add("ok");
+    btn.disabled=false; btn.textContent="Bestellen";
+  }
+  $("#nameIn").addEventListener("input",renderBar);
+
+  $("#addBtn").addEventListener("click",function(){
+    if(pick===null){
+      $("#slotCard").scrollIntoView({block:"start"});
+      setTimeout(function(){ $("#timeSel").focus(); },320);
+      return;
+    }
+    var name=$("#nameIn").value.trim();
+    if(!name||count(draft)===0) return;
+    var items={}; for(var k in draft){ if(draft[k]>0) items[k]=draft[k]; }
+    var id=seq++;
+    orders.push({ id:id, code:"SW-"+(id<10?"0":"")+id, n:name, items:items,
+                  wish:pick, ziel:pick, state:"neu", placed:simNow, seen:pick });
+    myId=id;
+    var when=hhmm(pick);
+    draft={}; pick=null;
+    renderMenu(); renderSlots(); renderBar(); syncPanes();
+    window.scrollTo({top:0});
+    toast("Bon "+orders[orders.length-1].code+" · "+when+" Uhr bestätigt");
+  });
+
+  $("#newOrderBtn").addEventListener("click",function(){
+    myId=null; gameStop(); gameReset();
+    $("#nameIn").value=""; draft={}; pick=null;
+    renderMenu(); renderSlots(); renderBar(); syncPanes();
+    window.scrollTo({top:0});
+  });
+
+  var tT;
+  function toast(msg){
+    var el=$("#toast"); el.textContent=msg; el.classList.add("show");
+    clearTimeout(tT); tT=setTimeout(function(){ el.classList.remove("show"); },2800);
+  }
+
+  /* ===== waiting window ===== */
+  function renderWait(){
+    var o=myId?byId(myId):null; if(!o) return;
+    var box=$("#waitBox"), ready=(o.state==="fertig"||o.state==="abgeholt");
+    box.classList.toggle("ready",ready);
+
+    $("#wCode").textContent="BON "+o.code+" · "+o.n;
+
+    if(o.state==="neu"){
+      $("#wBig").textContent="Bestellung angenommen";
+      $("#wSub").textContent="Die Küche hat deinen Bon.";
+    } else if(o.state==="arbeit"){
+      $("#wBig").textContent="Wird zubereitet";
+      $("#wSub").textContent="Deine Pfanne steht auf dem Feuer.";
+    } else if(o.state==="fertig"){
+      $("#wBig").textContent="Fertig — komm zur Klappe";
+      $("#wSub").textContent="Steht warm bereit. Bon-Nummer nennen, fertig.";
+    } else {
+      $("#wBig").textContent="Abgeholt";
+      $("#wSub").textContent="Guten Appetit.";
+    }
+
+    var rest=o.ziel-simNow;
+    if(ready && o.state==="fertig"){
+      $("#wMin").textContent="JETZT";
+      $("#wMinL").innerHTML="abholbereit<br>an der Klappe";
+    } else if(o.state==="abgeholt"){
+      $("#wMin").textContent="✓";
+      $("#wMinL").innerHTML="erledigt<br>bis zum nächsten Mal";
+    } else {
+      $("#wMin").textContent = rest>0?rest:0;
+      $("#wMinL").innerHTML = "Minuten<br>bis <b>"+hhmm(o.ziel)+" Uhr</b>";
+    }
+
+    var ch=$("#wChanged");
+    if(o.ziel!==o.wish){
+      ch.hidden=false;
+      var diff=o.ziel-o.wish;
+      ch.textContent="Die Küche hat deine Zeit um "+Math.abs(diff)+" Min "
+        +(diff>0?"nach hinten":"nach vorne")+" gelegt: jetzt "+hhmm(o.ziel)+" Uhr.";
+    } else { ch.hidden=true; }
+
+    var idx=FLOW.indexOf(o.state), st=$("#wSteps").children;
+    for(var i=0;i<st.length;i++){
+      st[i].classList.toggle("done", i<idx || o.state==="abgeholt");
+      st[i].classList.toggle("on", i===idx && o.state!=="abgeholt");
+    }
+
+    var h="";
+    for(var k in o.items){
+      if(o.items[k]>0){ var d=dish(k); if(!d) continue;
+        h+='<div class="mi"><span class="q">'+o.items[k]+'×</span><span class="nm2">'+d.name+'</span>'
+         +'<span class="pr">'+eur(d.price*o.items[k])+'</span></div>';
+      }
+    }
+    $("#wItems").innerHTML=h;
+    $("#wTotal").textContent=eur(sum(o.items));
+  }
+
+  /* ===== game: Masala-Fang ===== */
+  var GOOD=["🧅","🍅","🫚","🧄","🌿","🥔","🍋"], BAD="🌶️";
+  var gRun=false, gScore=0, gHeat=0, gItems=[], gPanX=0.5, gLast=0, gSpawn=0, gRAF=null;
+  var gArea=$("#gArea"), gPan=$("#gPan");
+
+  function gameHeat(){
+    var h='<span>Schärfe</span>';
+    for(var i=0;i<3;i++) h+='<span class="hpip'+(i<gHeat?" on":"")+'"></span>';
+    $("#gHeat").innerHTML=h;
+  }
+  function gameReset(){
+    gScore=0; gHeat=0;
+    for(var i=0;i<gItems.length;i++){ if(gItems[i].el.parentNode) gItems[i].el.remove(); }
+    gItems=[]; $("#gScore").textContent="0"; gameHeat();
+    $("#gTitle").textContent="Zeit totschlagen?";
+    $("#gMsg").innerHTML="Wir sagen Bescheid, sobald dein Essen fertig ist.<br>Versprochen — du musst nicht im Regen stehen.";
+    $("#gStart").textContent="Los geht's";
+    $("#gOver").style.display="grid";
+  }
+  function gameStart(){
+    gameReset(); $("#gOver").style.display="none";
+    gRun=true; gLast=performance.now(); gSpawn=0;
+    gRAF=requestAnimationFrame(gameLoop);
+  }
+  function gameStop(){
+    gRun=false; if(gRAF) cancelAnimationFrame(gRAF); gRAF=null;
+  }
+  function gameOver(){
+    gameStop();
+    $("#gTitle").textContent="Zu scharf!";
+    $("#gMsg").innerHTML="Du hast <b>"+gScore+"</b> Zutaten gefangen.<br>Dein Essen kocht trotzdem weiter.";
+    $("#gStart").textContent="Nochmal";
+    $("#gOver").style.display="grid";
+  }
+  function gameLoop(ts){
+    if(!gRun) return;
+    var dt=Math.min(50,ts-gLast); gLast=ts;
+    var W=gArea.clientWidth, H=gArea.clientHeight;
+
+    gSpawn-=dt;
+    if(gSpawn<=0){
+      gSpawn=620+Math.random()*520;
+      var bad=Math.random()<0.26;
+      var el=document.createElement("div");
+      el.className="fall";
+      el.textContent= bad?BAD:GOOD[Math.floor(Math.random()*GOOD.length)];
+      var x=0.08+Math.random()*0.84;
+      el.style.left=(x*100)+"%"; el.style.top="-30px";
+      gArea.appendChild(el);
+      gItems.push({el:el,x:x,y:-30,v:0.055+Math.random()*0.05,bad:bad});
+    }
+
+    for(var i=gItems.length-1;i>=0;i--){
+      var it=gItems[i];
+      it.y+=it.v*dt*(H/230);
+      it.el.style.transform="translateY("+it.y+"px)";
+      var panY=H-46;
+      if(it.y>=panY && it.y<panY+34){
+        if(Math.abs(it.x-gPanX)*W<32){
+          if(it.bad){ gHeat++; gameHeat(); if(gHeat>=3){ it.el.remove(); gItems.splice(i,1); gameOver(); return; } }
+          else { gScore++; $("#gScore").textContent=gScore; }
+          it.el.remove(); gItems.splice(i,1); continue;
+        }
+      }
+      if(it.y>H+20){ it.el.remove(); gItems.splice(i,1); }
+    }
+    gRAF=requestAnimationFrame(gameLoop);
+  }
+  function movePan(clientX){
+    var r=gArea.getBoundingClientRect();
+    gPanX=Math.max(0.06,Math.min(0.94,(clientX-r.left)/r.width));
+    gPan.style.left=(gPanX*100)+"%";
+  }
+  var dragging=false;
+  gArea.addEventListener("pointerdown",function(e){ dragging=true; movePan(e.clientX); gArea.setPointerCapture(e.pointerId); });
+  gArea.addEventListener("pointermove",function(e){ if(dragging) movePan(e.clientX); });
+  gArea.addEventListener("pointerup",function(){ dragging=false; });
+  gArea.addEventListener("pointercancel",function(){ dragging=false; });
+  $("#gStart").addEventListener("click",gameStart);
+
+  /* ===== kitchen ===== */
+  function renderKitchen(){
+    var active=orders.filter(function(o){ return o.state!=="abgeholt"; });
+    var nowLoad=0;
+    for(var i=0;i<active.length;i++){
+      if(active[i].ziel>=simNow-7 && active[i].ziel<simNow+STEP) nowLoad+=meals(active[i].items);
+    }
+    var pct=Math.min(100,Math.round(nowLoad/CAP*100));
+    var cls = pct>=100?"full":(pct>=70?"warn":"");
+    var openMeals=active.reduce(function(s,o){ return s+meals(o.items); },0);
+    var neu=orders.filter(function(o){ return o.state==="neu"; }).length;
+    var arb=orders.filter(function(o){ return o.state==="arbeit"; }).length;
+    var rev=orders.reduce(function(s,o){ return s+sum(o.items); },0);
+
+    $("#capBar").innerHTML=
+      '<div class="caphead"><div class="captitle">Pfanne jetzt · '+hhmm(simNow)+' Uhr</div>'
+      +'<div class="capeta '+cls+'">'+nowLoad+'/'+CAP+' Essen</div></div>'
+      +'<div class="capmeter"><div class="capfill '+cls+'" style="width:'+pct+'%"></div></div>'
+      +'<div class="capstats"><div><b>'+openMeals+'</b> offen</div><div><b>'+neu+'</b> neu</div>'
+      +'<div><b>'+arb+'</b> in Arbeit</div><div><b>'+Math.round(rev)+' €</b> gebucht</div></div>';
+
+    $("#pitchMeals").textContent=orders.reduce(function(s,o){ return s+meals(o.items); },0);
+
+    var shown=orders.slice();
+    if(filter==="aktiv") shown=shown.filter(function(o){ return o.state!=="abgeholt"; });
+    else if(filter==="neu") shown=shown.filter(function(o){ return o.state==="neu"; });
+    else if(filter==="arbeit") shown=shown.filter(function(o){ return o.state==="arbeit"; });
+    shown.sort(function(a,b){ return a.ziel-b.ziel || a.id-b.id; });
+
+    var list=$("#opQueue");
+    if(!shown.length){ list.innerHTML='<div class="empty">Keine Bestellungen.</div>'; }
+    else{
+      var h="";
+      for(var j=0;j<shown.length;j++){
+        var o=shown[j], idx=FLOW.indexOf(o.state), moved=(o.ziel!==o.wish);
+        var rest=o.ziel-simNow;
+        h+='<div class="oq s-'+o.state+'">'
+         +'<div class="oqtop"><span class="oqcode">'+o.code+' · 🍛 '+meals(o.items)+'</span>'
+         +'<span class="oqname">'+o.n+'</span>'
+         +'<span class="oqtime">'+(rest>0?("in "+rest+" Min"):(rest===0?"jetzt":Math.abs(rest)+" Min über"))+'</span></div>'
+         +'<div class="oqitems">'+itemLines(o.items)+'</div>'
+         +'<div class="oqmeta"><b>'+eur(sum(o.items))+'</b> · Wunsch '+hhmm(o.wish)+' Uhr</div>'
+         +'<div class="oqeta">🎯 Zielzeit'
+         +'<button class="etaadj" data-eta="'+o.id+'" data-d="-5">−5</button>'
+         +'<span class="etaval'+(moved?" moved":"")+'">'+hhmm(o.ziel)+'</span>'
+         +'<button class="etaadj" data-eta="'+o.id+'" data-d="5">+5</button>'
+         +(moved?'<button class="etaok" data-ok="'+o.id+'">Gast informieren</button>':'')
+         +'</div><div class="oqact">';
+        if(idx>0) h+='<button class="oqback" data-back="'+o.id+'">← '+LBL[FLOW[idx-1]]+'</button>';
+        if(idx<FLOW.length-1) h+='<button class="oqnext" data-next="'+o.id+'">'+LBL[FLOW[idx+1]]+' →</button>';
+        h+='</div></div>';
+      }
+      list.innerHTML=h;
+    }
+
+    var counts={};
+    for(var a=0;a<orders.length;a++){
+      var it=orders[a].items;
+      for(var k in it){ if(it[k]>0) counts[k]=(counts[k]||0)+it[k]; }
+    }
+    var rows=[]; for(var id2 in counts) rows.push({id:id2,n:counts[id2]});
+    rows.sort(function(x,y){ return y.n-x.n; });
+    if(!rows.length){ $("#prep").innerHTML='<div class="empty">Noch keine Bestellungen für heute.</div>'; }
+    else{
+      var mx=rows[0].n, ph="";
+      for(var r=0;r<rows.length;r++){
+        var dd=dish(rows[r].id); if(!dd) continue;
+        ph+='<div class="prep"><span class="cnt">'+rows[r].n+'×</span><span class="pname">'+dd.name+'</span>'
+          +'<span class="barwrap"><span class="barfill" style="width:'+Math.round(rows[r].n/mx*100)+'%"></span></span></div>';
+      }
+      $("#prep").innerHTML=ph;
+    }
+  }
+
+  $("#filters").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    filter=b.getAttribute("data-f");
+    var all=$("#filters").querySelectorAll("button");
+    for(var i=0;i<all.length;i++) all[i].classList.toggle("on",all[i]===b);
+    renderKitchen();
+  });
+
+  $("#opQueue").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    var o;
+    if(b.hasAttribute("data-eta")){
+      o=byId(+b.getAttribute("data-eta")); if(!o) return;
+      o.ziel=Math.max(START,Math.min(END-STEP,o.ziel+parseInt(b.getAttribute("data-d"),10)));
+      renderKitchen(); return;
+    }
+    if(b.hasAttribute("data-ok")){
+      o=byId(+b.getAttribute("data-ok")); if(!o) return;
+      toast(o.n+" informiert — neue Zeit "+hhmm(o.ziel)+" Uhr");
+      renderKitchen(); return;
+    }
+    if(b.hasAttribute("data-next")){
+      o=byId(+b.getAttribute("data-next")); if(!o) return;
+      o.state=FLOW[Math.min(FLOW.length-1,FLOW.indexOf(o.state)+1)];
+      if(o.state==="fertig") toast(o.code+" · "+o.n+" benachrichtigt — Essen steht bereit");
+      renderKitchen(); return;
+    }
+    if(b.hasAttribute("data-back")){
+      o=byId(+b.getAttribute("data-back")); if(!o) return;
+      o.state=FLOW[Math.max(0,FLOW.indexOf(o.state)-1)];
+      renderKitchen(); return;
+    }
+  });
+
+  $("#resetBtn").addEventListener("click",function(){
+    orders=[]; draft={}; pick=null; myId=null; seq=1; $("#nameIn").value="";
+    gameStop(); gameReset();
+    renderMenu(); renderSlots(); renderBar(); renderKitchen(); syncPanes();
+    toast("Demo zurückgesetzt");
+  });
+
+  /* stop header follows the opening hours too */
+  $("#stopDay").textContent=HOURS[TODAY].full+" am Haus 39";
+  $("#stopHours").textContent="Truck vor Ort "+OPEN[0]+"–"+OPEN[1];
+
+  renderHours(); renderMenu(); renderSlots(); renderBar(); gameHeat(); syncPanes();
+})();
+</script>
+</body>
+</html>
