@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Tennis Scoreboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Bebas+Neue&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    min-height: 100vh;
+    background: #0a0e1a;
+    background-image:
+      radial-gradient(ellipse at 30% 20%, rgba(20,60,30,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(180,120,0,0.15) 0%, transparent 50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Oswald', 'Impact', sans-serif;
+    padding: 16px;
+  }
+
+  .title {
+    color: rgba(255,255,255,0.25);
+    font-size: 11px;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .match-type-badge {
+    color: rgba(255,200,0,0.55);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 14px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .tool-btn {
+    cursor: pointer;
+    flex: 1 1 auto;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    padding: 9px 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tool-btn.warn { border-color: rgba(0,229,255,0.3); color: #00e5ff; }
+
+  /* Board */
+  .board {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+  .board.tiebreak {
+    border-color: rgba(0,229,255,0.35);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(0,229,255,0.15);
+  }
+  .board.finished { animation: pulseGlow 1.5s ease-in-out infinite; }
+
+  /* Header */
+  .header-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .player-name {
+    cursor: pointer;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .edit-icon { font-size: 11px; margin-left: 4px; opacity: 0.4; }
+  .vs-label {
+    color: rgba(255,255,255,0.2);
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding: 0 12px;
+    text-align: center;
+  }
+  .name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255,200,0,0.6);
+    color: #fff;
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-align: center;
+    outline: none;
+    width: 140px;
+    padding: 4px;
+  }
+
+  .serve-dot {
+    width: 10px; height: 10px;
+    background: #c8ff00;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #c8ff00;
+    display: inline-block;
+    margin: 0 6px;
+    animation: serveBounce 1s ease-in-out infinite;
+  }
+  @keyframes serveBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Sets row */
+  .sets-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .set-pair { display: flex; gap: 8px; align-items: center; }
+  .set-num { font-size: 20px; color: rgba(255,255,255,0.4); }
+  .set-num.win { color: #ffd700; font-weight: 700; }
+  .set-dash { color: rgba(255,255,255,0.15); font-size: 14px; }
+
+  /* Games row */
+  .games-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: opacity 0.4s;
+  }
+  .games-row.dim { opacity: 0.3; }
+  .game-num {
+    text-align: center;
+    color: #ffd700;
+    font-size: 56px;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    letter-spacing: 4px;
+  }
+  .game-num.glow { text-shadow: 0 0 20px rgba(255,200,0,0.6), 0 0 40px rgba(255,200,0,0.3); }
+  .games-label {
+    color: rgba(255,255,255,0.15);
+    font-size: 18px;
+    padding: 0 12px;
+    text-align: center;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,200,0,0.3); }
+    50% { box-shadow: 0 0 40px rgba(255,200,0,0.7), 0 0 80px rgba(255,200,0,0.3); }
+  }
+
+  /* Tiebreak banner */
+  .tb-banner {
+    text-align: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(0,229,255,0.25);
+    color: #00e5ff;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    animation: tbBannerPulse 2s ease-in-out infinite;
+  }
+  @keyframes tbBannerPulse {
+    0%, 100% { background: rgba(0,229,255,0.06); }
+    50% { background: rgba(0,229,255,0.18); }
+  }
+
+  /* Points row */
+  .points-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 12px 16px 20px;
+    transition: padding 0.3s, background 0.3s;
+  }
+  .points-row.tiebreak {
+    padding: 22px 16px 30px;
+    background: rgba(0,229,255,0.04);
+  }
+  .point-num {
+    text-align: center;
+    color: rgba(255,255,255,0.85);
+    font-size: 42px;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    letter-spacing: 3px;
+    transition: font-size 0.3s, color 0.3s;
+  }
+  .point-num.ad { color: #c8ff00; }
+  .point-num.tb {
+    color: #00e5ff;
+    font-size: 64px;
+    animation: tbTextPulse 2s ease-in-out infinite;
+  }
+  @keyframes tbTextPulse {
+    0%, 100% { text-shadow: 0 0 16px rgba(0,229,255,0.55), 0 0 32px rgba(0,229,255,0.25); }
+    50% { text-shadow: 0 0 26px rgba(0,229,255,0.9), 0 0 52px rgba(0,229,255,0.5); }
+  }
+  .points-label {
+    color: rgba(255,255,255,0.1);
+    font-size: 14px;
+    padding: 0 10px;
+    text-align: center;
+  }
+  .points-label.tb { color: rgba(0,229,255,0.35); }
+
+  /* Status bar */
+  .status-bar {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  .status-bar.finished { background: rgba(255,200,0,0.12); color: #ffd700; }
+
+  /* Score buttons */
+  .score-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .score-btn {
+    flex: 1;
+    padding: 22px 12px;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+    user-select: none;
+    color: #fff;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: inherit;
+  }
+  .score-btn:hover:not(:disabled) {
+    background: rgba(255,200,0,0.12);
+    border-color: rgba(255,200,0,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,200,0,0.2);
+  }
+  .score-btn:active:not(:disabled) { transform: translateY(0); }
+  .score-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .score-btn .pname { font-size: 13px; opacity: 0.5; margin-bottom: 4px; }
+  .score-btn .plabel { font-size: 24px; font-weight: 700; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ctrl-btn {
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+  .ctrl-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); color: #fff; }
+  .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .footer-hint {
+    color: rgba(255,255,255,0.12);
+    font-size: 10px;
+    margin-top: 24px;
+    letter-spacing: 2px;
+    text-align: center;
+    max-width: 480px;
+  }
+
+  /* Setup panel */
+  .setup-panel {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .setup-section { display: flex; flex-direction: column; gap: 8px; }
+  .setup-label {
+    color: rgba(255,255,255,0.35);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .setup-label.tb-label { color: #00e5ff; }
+
+  .matchtype-row { display: flex; flex-direction: column; gap: 8px; }
+  .matchtype-btn {
+    cursor: pointer;
+    text-align: left;
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Oswald', sans-serif;
+    transition: all 0.15s;
+  }
+  .matchtype-btn .mt-label { font-size: 15px; font-weight: 600; letter-spacing: 1px; color: #fff; }
+  .matchtype-btn .mt-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .matchtype-btn.active { border-color: rgba(255,200,0,0.5); background: rgba(255,200,0,0.1); }
+  .matchtype-btn.active .mt-label { color: #ffd700; }
+
+  .name-row { display: flex; gap: 10px; }
+  .setup-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #fff;
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    outline: none;
+  }
+  .setup-input:focus { border-color: rgba(255,200,0,0.5); }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+  }
+  .checkbox-row input { width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer; }
+
+  .stepper-row { display: flex; align-items: center; gap: 16px; }
+  .stepper-btn {
+    cursor: pointer;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 18px;
+  }
+  .stepper-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .stepper-val {
+    color: #ffd700;
+    font-size: 20px;
+    font-family: 'Bebas Neue', sans-serif;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .set-input-row { display: flex; align-items: center; gap: 10px; }
+  .set-input-label { color: rgba(255,255,255,0.6); font-size: 13px; flex: 0 0 auto; }
+  .input-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: -2px; }
+  .num-input, .setup-select {
+    width: 64px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 8px;
+    color: #fff;
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    outline: none;
+  }
+  .num-input:focus, .setup-select:focus { border-color: rgba(255,200,0,0.5); }
+  .dash { color: rgba(255,255,255,0.2); }
+
+  .server-row { display: flex; gap: 10px; }
+  .server-btn {
+    flex: 1;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.6);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .server-btn.active {
+    border-color: rgba(200,255,0,0.5);
+    background: rgba(200,255,0,0.1);
+    color: #c8ff00;
+  }
+
+  .start-btn {
+    cursor: pointer;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: #0a0e1a;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: transform 0.15s;
+  }
+  .start-btn:hover { transform: translateY(-1px); }
+  .start-btn:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+<script>
+  const POINT_LABELS = ["0", "15", "30", "40"];
+
+  const MATCH_TYPES = {
+    best3:    { label: "2 SETS TO WIN", sub: "Best of 3 — full sets", bestOf: 3, superTB: false, setLength: 6 },
+    best5:    { label: "3 SETS TO WIN", sub: "Best of 5 — full sets", bestOf: 5, superTB: false, setLength: 6 },
+    best3_tb: { label: "BEST OF 3 + MATCH TIEBREAK", sub: "Deciding set replaced by 10-pt tiebreak", bestOf: 3, superTB: true, setLength: 6 },
+    u12:      { label: "U12 — BEST OF 3", sub: "Sets to 4 games · tiebreak at 4-4", bestOf: 3, superTB: false, setLength: 4 },
+  };
+
+  // ---------- Game state helpers ----------
+  function initPlayer(name) {
+    return { name, sets: [], games: 0, points: 0 };
+  }
+
+  function initState(bestOf = 3, superTiebreakFinalSet = false, setLength = 6) {
+    return {
+      players: [initPlayer("Player 1"), initPlayer("Player 2")],
+      server: 0,
+      bestOf,
+      superTiebreakFinalSet,
+      setLength,
+      tiebreak: false,
+      isMatchTiebreak: false,
+      finished: false,
+      winner: null,
+      history: [],
+    };
+  }
+
+  function getPointDisplay(state) {
+    const p0 = state.players[0].points;
+    const p1 = state.players[1].points;
+    if (state.tiebreak) return [String(p0), String(p1)];
+    if (p0 >= 3 && p1 >= 3) {
+      if (p0 === p1) return ["40", "40"];
+      if (p0 > p1) return ["AD", "40"];
+      return ["40", "AD"];
+    }
+    return [POINT_LABELS[p0] ?? String(p0), POINT_LABELS[p1] ?? String(p1)];
+  }
+
+  function getStatusLabel(state) {
+    if (state.finished) return `🏆 ${state.players[state.winner].name} wins!`;
+    const p0 = state.players[0].points;
+    const p1 = state.players[1].points;
+    if (state.tiebreak) return state.isMatchTiebreak ? "Match Tiebreak · First to 10" : "Tiebreak · First to 7";
+    if (p0 >= 3 && p1 >= 3) {
+      if (p0 === p1) return "Deuce";
+      return `Advantage ${state.players[p0 > p1 ? 0 : 1].name}`;
+    }
+    return `${state.players[state.server].name} serves`;
+  }
+
+  // A "deciding set" is one where both players are exactly one set away from
+  // winning the match (e.g. 1-1 in a best-of-3, or 2-2 in a best-of-5).
+  function enterMatchTiebreakIfNeeded(newState, setsToWin) {
+    if (!newState.superTiebreakFinalSet) return;
+    const sets0 = newState.players[0].sets;
+    const sets1 = newState.players[1].sets;
+    const won0 = sets0.filter((s, i) => s > sets1[i]).length;
+    const won1 = sets1.filter((s, i) => s > sets0[i]).length;
+    if (won0 === setsToWin - 1 && won1 === setsToWin - 1) {
+      newState.tiebreak = true;
+      newState.isMatchTiebreak = true;
+      newState.players[0].points = 0;
+      newState.players[1].points = 0;
+    }
+  }
+
+  function addPoint(state, playerIdx) {
+    if (state.finished) return state;
+
+    const newState = JSON.parse(JSON.stringify(state));
+    newState.history = [...state.history, JSON.parse(JSON.stringify({
+      players: state.players.map(p => ({ ...p, sets: [...p.sets] })),
+      server: state.server,
+      tiebreak: state.tiebreak,
+      isMatchTiebreak: state.isMatchTiebreak,
+      finished: state.finished,
+      winner: state.winner,
+    }))];
+
+    const scorer = newState.players[playerIdx];
+    const other = newState.players[1 - playerIdx];
+    const setsToWin = Math.ceil(newState.bestOf / 2);
+
+    if (newState.tiebreak) {
+      scorer.points += 1;
+      const total = scorer.points + other.points;
+
+      if (total % 2 === 1) {
+        newState.server = 1 - newState.server;
+      }
+
+      const target = newState.isMatchTiebreak ? 10 : 7;
+
+      if (scorer.points >= target && scorer.points - other.points >= 2) {
+        if (newState.isMatchTiebreak) {
+          scorer.sets.push(scorer.points);
+          other.sets.push(other.points);
+          scorer.games = 0;
+          other.games = 0;
+          scorer.points = 0;
+          other.points = 0;
+          newState.tiebreak = false;
+          newState.isMatchTiebreak = false;
+          newState.server = 1 - newState.server;
+        } else {
+          scorer.games += 1;
+          scorer.sets.push(scorer.games);
+          other.sets.push(other.games);
+          scorer.games = 0;
+          other.games = 0;
+          scorer.points = 0;
+          other.points = 0;
+          newState.tiebreak = false;
+          newState.server = 1 - newState.server;
+        }
+
+        const setsWon = scorer.sets.filter((s, i) => s > other.sets[i]).length;
+        if (setsWon >= setsToWin) {
+          newState.finished = true;
+          newState.winner = playerIdx;
+        } else {
+          enterMatchTiebreakIfNeeded(newState, setsToWin);
+        }
+      }
+    } else {
+      if (scorer.points >= 3 && other.points >= 3) {
+        if (scorer.points > other.points) {
+          scorer.games += 1;
+          scorer.points = 0;
+          other.points = 0;
+          newState.server = 1 - newState.server;
+        } else {
+          scorer.points += 1;
+        }
+      } else {
+        scorer.points += 1;
+        if (scorer.points >= 4) {
+          scorer.games += 1;
+          scorer.points = 0;
+          other.points = 0;
+          newState.server = 1 - newState.server;
+        }
+      }
+
+      if (scorer.games >= newState.setLength || other.games >= newState.setLength) {
+        const g0 = newState.players[0].games;
+        const g1 = newState.players[1].games;
+        const setScorer = g0 > g1 ? 0 : 1;
+        const setOther = 1 - setScorer;
+        const sg = newState.players[setScorer].games;
+        const og = newState.players[setOther].games;
+        const SL = newState.setLength;
+
+        let setWon = false;
+        if (sg >= SL && sg - og >= 2) setWon = true;
+        if (sg === SL + 1 && og === SL - 1) setWon = true; // e.g. 7-5 or 5-3
+
+        if (sg === SL && og === SL) {
+          newState.tiebreak = true;
+          newState.players[0].points = 0;
+          newState.players[1].points = 0;
+        } else if (setWon) {
+          newState.players[0].sets.push(newState.players[0].games);
+          newState.players[1].sets.push(newState.players[1].games);
+          newState.players[0].games = 0;
+          newState.players[1].games = 0;
+          newState.server = 1 - newState.server;
+
+          const setsWon = newState.players[setScorer].sets
+            .filter((s, i) => s > newState.players[setOther].sets[i]).length;
+          if (setsWon >= setsToWin) {
+            newState.finished = true;
+            newState.winner = setScorer;
+          } else {
+            enterMatchTiebreakIfNeeded(newState, setsToWin);
+          }
+        }
+      }
+    }
+
+    return newState;
+  }
+
+  function undo(state) {
+    if (state.history.length === 0) return state;
+    const prev = state.history[state.history.length - 1];
+    return {
+      ...prev,
+      bestOf: state.bestOf,
+      superTiebreakFinalSet: state.superTiebreakFinalSet,
+      setLength: state.setLength,
+      history: state.history.slice(0, -1),
+    };
+  }
+
+  // ---------- App state ----------
+  let matchType = 'best3';
+  let bestOf = MATCH_TYPES[matchType].bestOf;
+  let superTB = MATCH_TYPES[matchType].superTB;
+  let setLength = MATCH_TYPES[matchType].setLength;
+  let state = initState(bestOf, superTB, setLength);
+  let editingName = null;
+  let viewMode = 'board'; // 'board' | 'setup'
+
+  // Setup-form scratch state
+  let setupPlayer1 = "Player 1";
+  let setupPlayer2 = "Player 2";
+  let setupResume = false;
+  let setupCompletedCount = 0;
+  let setupCompletedSets = [];
+  let setupCurGames = { p1: 0, p2: 0 };
+  let setupInTiebreak = false;
+  let setupTbPoints = { p1: 0, p2: 0 };
+  let setupPoints = { p1: "0", p2: "0" };
+  let setupServer = 0;
+
+  // ---------- Actions ----------
+  function score(idx) { state = addPoint(state, idx); render(); }
+  function undoLast() { state = undo(state); render(); }
+
+  function resetMatch() {
+    const n1 = state.players[0].name;
+    const n2 = state.players[1].name;
+    state = initState(bestOf, superTB, setLength);
+    state.players[0].name = n1;
+    state.players[1].name = n2;
+    render();
+  }
+
+  function startEdit(idx) { editingName = idx; render(); }
+  function commitName(idx, value) {
+    state.players[idx].name = value.trim() || `Player ${idx + 1}`;
+    editingName = null;
+    render();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function clampInt(val, min, max, fallback) {
+    const n = parseInt(val, 10);
+    if (isNaN(n)) return fallback;
+    return Math.min(Math.max(n, min), max);
+  }
+
+  function matchTypeLabel(key) {
+    const mt = MATCH_TYPES[key];
+    return mt ? `${mt.label} · ${mt.sub}` : '';
+  }
+
+  // ---------- Setup helpers ----------
+  function seedSetupFromState() {
+    setupPlayer1 = state.players[0].name;
+    setupPlayer2 = state.players[1].name;
+    setupResume = false;
+    setupCompletedCount = 0;
+    setupCompletedSets = [];
+    setupCurGames = { p1: 0, p2: 0 };
+    setupInTiebreak = false;
+    setupTbPoints = { p1: 0, p2: 0 };
+    setupPoints = { p1: "0", p2: "0" };
+    setupServer = 0;
+  }
+
+  function decidingSuperTbInSetup() {
+    if (!superTB) return false;
+    const stw = Math.ceil(bestOf / 2);
+    let won0 = 0, won1 = 0;
+    for (let i = 0; i < setupCompletedCount; i++) {
+      const cs = setupCompletedSets[i] || { p1: 0, p2: 0 };
+      const a = Number(cs.p1) || 0;
+      const b = Number(cs.p2) || 0;
+      if (a > b) won0++;
+      else if (b > a) won1++;
+    }
+    return won0 === stw - 1 && won1 === stw - 1;
+  }
+
+  function buildStateFromSetup() {
+    const ns = initState(bestOf, superTB, setLength);
+    ns.players[0].name = setupPlayer1.trim() || "Player 1";
+    ns.players[1].name = setupPlayer2.trim() || "Player 2";
+
+    if (!setupResume) return ns;
+
+    const stw = Math.ceil(bestOf / 2);
+    const maxG = setLength + 1; // e.g. 7 for normal, 5 for U12
+
+    for (let i = 0; i < setupCompletedCount; i++) {
+      const cs = setupCompletedSets[i] || { p1: 0, p2: 0 };
+      ns.players[0].sets.push(clampInt(cs.p1, 0, maxG, 0));
+      ns.players[1].sets.push(clampInt(cs.p2, 0, maxG, 0));
+    }
+
+    const decidingTb = decidingSuperTbInSetup();
+
+    if (decidingTb) {
+      ns.tiebreak = true;
+      ns.isMatchTiebreak = true;
+      ns.players[0].games = 0;
+      ns.players[1].games = 0;
+      ns.players[0].points = clampInt(setupTbPoints.p1, 0, 30, 0);
+      ns.players[1].points = clampInt(setupTbPoints.p2, 0, 30, 0);
+    } else if (setupInTiebreak) {
+      ns.tiebreak = true;
+      ns.players[0].games = 6;
+      ns.players[1].games = 6;
+      ns.players[0].points = clampInt(setupTbPoints.p1, 0, 30, 0);
+      ns.players[1].points = clampInt(setupTbPoints.p2, 0, 30, 0);
+    } else {
+      ns.players[0].games = clampInt(setupCurGames.p1, 0, 7, 0);
+      ns.players[1].games = clampInt(setupCurGames.p2, 0, 7, 0);
+      const map = { "0": 0, "15": 1, "30": 2, "40": 3, "AD": 4 };
+      ns.players[0].points = map[setupPoints.p1] ?? 0;
+      ns.players[1].points = map[setupPoints.p2] ?? 0;
+    }
+
+    ns.server = setupServer;
+
+    const setsWon0 = ns.players[0].sets.filter((s, i) => s > ns.players[1].sets[i]).length;
+    const setsWon1 = ns.players[1].sets.filter((s, i) => s > ns.players[0].sets[i]).length;
+    if (setsWon0 >= stw) { ns.finished = true; ns.winner = 0; }
+    else if (setsWon1 >= stw) { ns.finished = true; ns.winner = 1; }
+
+    return ns;
+  }
+
+  // ---------- Export / Import ----------
+  function buildSummary(s) {
+    const p0 = s.players[0], p1 = s.players[1];
+    const numSets = Math.max(p0.sets.length, p1.sets.length);
+    const setsStr = [];
+    for (let i = 0; i < numSets; i++) {
+      setsStr.push(`${p0.sets[i] ?? '-'}-${p1.sets[i] ?? '-'}`);
+    }
+    let line = `${p0.name} vs ${p1.name}`;
+    if (setsStr.length) line += `: ${setsStr.join(', ')}`;
+    if (s.finished) {
+      line += setsStr.length ? ` — ${s.players[s.winner].name} wins!` : `: ${s.players[s.winner].name} wins!`;
+    } else {
+      const cur = `${p0.games}-${p1.games}`;
+      line += setsStr.length ? `, ${cur} (current set)` : `: ${cur} (current set)`;
+      line += ` — ${getStatusLabel(s)}`;
+    }
+    return line;
+  }
+
+  function exportMatch() {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      matchType,
+      bestOf,
+      superTB,
+      setLength,
+      summary: buildSummary(state),
+      state,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeName = `${state.players[0].name}_vs_${state.players[1].name}`.replace(/[^a-z0-9_\-]+/gi, '_');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `tennis_${safeName}_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyScore(btn) {
+    const text = buildSummary(state);
+    const original = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✓ COPIED';
+    } catch (err) {
+      window.prompt('Copy this score:', text);
+    }
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  }
+
+  function loadMatchFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data || !data.state || !data.state.players) throw new Error('bad file');
+        state = data.state;
+        if (!Array.isArray(state.history)) state.history = [];
+        bestOf = data.bestOf || state.bestOf || 3;
+        superTB = !!(data.superTB ?? state.superTiebreakFinalSet);
+        setLength = data.setLength || state.setLength || 6;
+        state.bestOf = bestOf;
+        state.superTiebreakFinalSet = superTB;
+        state.setLength = setLength;
+        matchType = data.matchType && MATCH_TYPES[data.matchType]
+          ? data.matchType
+          : (superTB ? 'best3_tb' : (bestOf === 5 ? 'best5' : (setLength === 4 ? 'u12' : 'best3')));
+        viewMode = 'board';
+        render();
+      } catch (err) {
+        alert('This file could not be read as a saved match.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- Render: Toolbar ----------
+  function renderToolbar() {
+    return `<div class="toolbar">
+      <button class="tool-btn ${viewMode === 'setup' ? 'warn' : ''}" id="toggle-setup-btn">${viewMode === 'setup' ? '✕ CLOSE' : '⚙ SETUP'}</button>
+      <button class="tool-btn" id="export-btn">💾 EXPORT</button>
+      <button class="tool-btn" id="copy-btn">📋 COPY SCORE</button>
+      <button class="tool-btn" id="load-btn">📂 LOAD</button>
+      <input type="file" id="load-file" accept="application/json" style="display:none" />
+    </div>`;
+  }
+
+  function attachToolbarListeners() {
+    const toggleBtn = document.getElementById('toggle-setup-btn');
+    if (toggleBtn) toggleBtn.addEventListener('click', () => {
+      if (viewMode === 'setup') {
+        viewMode = 'board';
+      } else {
+        seedSetupFromState();
+        viewMode = 'setup';
+      }
+      render();
+    });
+
+    const exportBtn = document.getElementById('export-btn');
+    if (exportBtn) exportBtn.addEventListener('click', exportMatch);
+
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.addEventListener('click', () => copyScore(copyBtn));
+
+    const loadBtn = document.getElementById('load-btn');
+    const loadFile = document.getElementById('load-file');
+    if (loadBtn && loadFile) {
+      loadBtn.addEventListener('click', () => loadFile.click());
+      loadFile.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) loadMatchFile(e.target.files[0]);
+        loadFile.value = '';
+      });
+    }
+  }
+
+  // ---------- Render: Setup panel ----------
+  function renderPointSelect(id, current) {
+    const opts = ["0", "15", "30", "40", "AD"];
+    let s = `<select class="setup-select" id="${id}">`;
+    opts.forEach(o => {
+      s += `<option value="${o}" ${o === current ? 'selected' : ''}>${o}</option>`;
+    });
+    s += `</select>`;
+    return s;
+  }
+
+  function renderSetupPanel() {
+    let html = `<div class="board setup-panel">`;
+
+    // Match type
+    html += `<div class="setup-section">
+      <div class="setup-label">Match Type</div>
+      <div class="matchtype-row">`;
+    Object.entries(MATCH_TYPES).forEach(([key, mt]) => {
+      html += `<button class="matchtype-btn ${matchType === key ? 'active' : ''}" data-matchtype="${key}">
+        <div class="mt-label">${mt.label}</div>
+        <div class="mt-sub">${mt.sub}</div>
+      </button>`;
+    });
+    html += `</div></div>`;
+
+    // Names
+    html += `<div class="setup-section">
+      <div class="setup-label">Players</div>
+      <div class="name-row">
+        <input class="setup-input" id="setup-p1" type="text" value="${escapeHtml(setupPlayer1)}" placeholder="Player 1" />
+        <input class="setup-input" id="setup-p2" type="text" value="${escapeHtml(setupPlayer2)}" placeholder="Player 2" />
+      </div>
+    </div>`;
+
+    // Resume toggle
+    html += `<div class="setup-section">
+      <label class="checkbox-row">
+        <input type="checkbox" id="setup-resume" ${setupResume ? 'checked' : ''} />
+        <span>Jump into a match already in progress</span>
+      </label>
+    </div>`;
+
+    if (setupResume) {
+      const maxCompleted = bestOf - 1;
+
+      html += `<div class="setup-section">
+        <div class="setup-label">Completed Sets</div>
+        <div class="stepper-row">
+          <button class="stepper-btn" id="completed-minus" ${setupCompletedCount <= 0 ? 'disabled' : ''}>−</button>
+          <span class="stepper-val">${setupCompletedCount}</span>
+          <button class="stepper-btn" id="completed-plus" ${setupCompletedCount >= maxCompleted ? 'disabled' : ''}>+</button>
+        </div>`;
+
+      for (let i = 0; i < setupCompletedCount; i++) {
+        const cs = setupCompletedSets[i] || { p1: 0, p2: 0 };
+        html += `<div class="set-input-row">
+          <span class="set-input-label" style="min-width:48px">Set ${i + 1}</span>
+          <input class="num-input" type="number" min="0" max="${setLength + 1}" id="cs-${i}-p1" value="${cs.p1}" />
+          <span class="dash">–</span>
+          <input class="num-input" type="number" min="0" max="${setLength + 1}" id="cs-${i}-p2" value="${cs.p2}" />
+        </div>`;
+      }
+      html += `</div>`;
+
+      const decidingTb = decidingSuperTbInSetup();
+
+      if (decidingTb) {
+        html += `<div class="setup-section">
+          <div class="setup-label tb-label">⚡ Deciding set: Match Tiebreak (to 10)</div>
+          <div class="set-input-row">
+            <span class="set-input-label" style="min-width:48px">Points</span>
+            <input class="num-input" type="number" min="0" max="30" id="tb-p1" value="${setupTbPoints.p1}" />
+            <span class="dash">–</span>
+            <input class="num-input" type="number" min="0" max="30" id="tb-p2" value="${setupTbPoints.p2}" />
+          </div>
+          <div class="input-hint">${escapeHtml(setupPlayer1)} / ${escapeHtml(setupPlayer2)}</div>
+        </div>`;
+      } else {
+        html += `<div class="setup-section">
+          <div class="setup-label">Current Set — Games</div>
+          <div class="set-input-row">
+            <span class="set-input-label" style="min-width:48px">Games</span>
+            <input class="num-input" type="number" min="0" max="${setLength + 1}" id="cur-g-p1" value="${setupCurGames.p1}" />
+            <span class="dash">–</span>
+            <input class="num-input" type="number" min="0" max="${setLength + 1}" id="cur-g-p2" value="${setupCurGames.p2}" />
+          </div>
+          <div class="input-hint">${escapeHtml(setupPlayer1)} / ${escapeHtml(setupPlayer2)}</div>
+        </div>`;
+
+        html += `<div class="setup-section">
+          <label class="checkbox-row">
+            <input type="checkbox" id="setup-tiebreak" ${setupInTiebreak ? 'checked' : ''} />
+            <span>Currently in a ${setLength}-${setLength} tiebreak</span>
+          </label>
+        </div>`;
+
+        if (setupInTiebreak) {
+          html += `<div class="setup-section">
+            <div class="setup-label">Tiebreak Points</div>
+            <div class="set-input-row">
+              <span class="set-input-label" style="min-width:48px">Points</span>
+              <input class="num-input" type="number" min="0" max="30" id="tb-p1" value="${setupTbPoints.p1}" />
+              <span class="dash">–</span>
+              <input class="num-input" type="number" min="0" max="30" id="tb-p2" value="${setupTbPoints.p2}" />
+            </div>
+            <div class="input-hint">${escapeHtml(setupPlayer1)} / ${escapeHtml(setupPlayer2)}</div>
+          </div>`;
+        } else {
+          html += `<div class="setup-section">
+            <div class="setup-label">Current Game — Points</div>
+            <div class="set-input-row">
+              <span class="set-input-label" style="min-width:48px">Points</span>
+              ${renderPointSelect('pts-p1', setupPoints.p1)}
+              <span class="dash">–</span>
+              ${renderPointSelect('pts-p2', setupPoints.p2)}
+            </div>
+            <div class="input-hint">${escapeHtml(setupPlayer1)} / ${escapeHtml(setupPlayer2)} · "AD" only valid when the other side shows 40</div>
+          </div>`;
+        }
+      }
+
+      html += `<div class="setup-section">
+        <div class="setup-label">Currently Serving</div>
+        <div class="server-row">
+          <button class="server-btn ${setupServer === 0 ? 'active' : ''}" data-server="0">${escapeHtml(setupPlayer1)}</button>
+          <button class="server-btn ${setupServer === 1 ? 'active' : ''}" data-server="1">${escapeHtml(setupPlayer2)}</button>
+        </div>
+      </div>`;
+    }
+
+    html += `<button class="start-btn" id="start-match-btn">▶ Start Match</button>`;
+    html += `</div>`;
+    return html;
+  }
+
+  function attachSetupListeners() {
+    document.querySelectorAll('[data-matchtype]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        matchType = btn.dataset.matchtype;
+        bestOf = MATCH_TYPES[matchType].bestOf;
+        superTB = MATCH_TYPES[matchType].superTB;
+        setLength = MATCH_TYPES[matchType].setLength;
+        const maxCompleted = bestOf - 1;
+        if (setupCompletedCount > maxCompleted) setupCompletedCount = maxCompleted;
+        while (setupCompletedSets.length < setupCompletedCount) setupCompletedSets.push({ p1: 0, p2: 0 });
+        render();
+      });
+    });
+
+    const p1input = document.getElementById('setup-p1');
+    if (p1input) p1input.addEventListener('input', () => { setupPlayer1 = p1input.value; });
+    const p2input = document.getElementById('setup-p2');
+    if (p2input) p2input.addEventListener('input', () => { setupPlayer2 = p2input.value; });
+
+    const resumeCb = document.getElementById('setup-resume');
+    if (resumeCb) resumeCb.addEventListener('change', () => { setupResume = resumeCb.checked; render(); });
+
+    const minusBtn = document.getElementById('completed-minus');
+    if (minusBtn) minusBtn.addEventListener('click', () => {
+      if (setupCompletedCount > 0) setupCompletedCount--;
+      render();
+    });
+    const plusBtn = document.getElementById('completed-plus');
+    if (plusBtn) plusBtn.addEventListener('click', () => {
+      const maxCompleted = bestOf - 1;
+      if (setupCompletedCount < maxCompleted) setupCompletedCount++;
+      while (setupCompletedSets.length < setupCompletedCount) setupCompletedSets.push({ p1: 0, p2: 0 });
+      render();
+    });
+
+    for (let i = 0; i < setupCompletedCount; i++) {
+      const p1el = document.getElementById(`cs-${i}-p1`);
+      const p2el = document.getElementById(`cs-${i}-p2`);
+      if (p1el) p1el.addEventListener('input', () => {
+        if (!setupCompletedSets[i]) setupCompletedSets[i] = { p1: 0, p2: 0 };
+        setupCompletedSets[i].p1 = p1el.value;
+      });
+      if (p2el) p2el.addEventListener('input', () => {
+        if (!setupCompletedSets[i]) setupCompletedSets[i] = { p1: 0, p2: 0 };
+        setupCompletedSets[i].p2 = p2el.value;
+      });
+    }
+
+    const curG1 = document.getElementById('cur-g-p1');
+    if (curG1) curG1.addEventListener('input', () => { setupCurGames.p1 = curG1.value; });
+    const curG2 = document.getElementById('cur-g-p2');
+    if (curG2) curG2.addEventListener('input', () => { setupCurGames.p2 = curG2.value; });
+
+    const tbCb = document.getElementById('setup-tiebreak');
+    if (tbCb) tbCb.addEventListener('change', () => { setupInTiebreak = tbCb.checked; render(); });
+
+    const tbp1 = document.getElementById('tb-p1');
+    if (tbp1) tbp1.addEventListener('input', () => { setupTbPoints.p1 = tbp1.value; });
+    const tbp2 = document.getElementById('tb-p2');
+    if (tbp2) tbp2.addEventListener('input', () => { setupTbPoints.p2 = tbp2.value; });
+
+    const ptsP1 = document.getElementById('pts-p1');
+    if (ptsP1) ptsP1.addEventListener('change', () => { setupPoints.p1 = ptsP1.value; });
+    const ptsP2 = document.getElementById('pts-p2');
+    if (ptsP2) ptsP2.addEventListener('change', () => { setupPoints.p2 = ptsP2.value; });
+
+    document.querySelectorAll('[data-server]').forEach(btn => {
+      btn.addEventListener('click', () => { setupServer = parseInt(btn.dataset.server, 10); render(); });
+    });
+
+    const startBtn = document.getElementById('start-match-btn');
+    if (startBtn) startBtn.addEventListener('click', () => {
+      state = buildStateFromSetup();
+      viewMode = 'board';
+      render();
+    });
+  }
+
+  // ---------- Render: Board ----------
+  function renderBoard() {
+    const pointDisplay = getPointDisplay(state);
+    const statusLabel = getStatusLabel(state);
+    const numSets = Math.max(state.players[0].sets.length, state.players[1].sets.length);
+
+    let boardClass = "board";
+    if (state.tiebreak && !state.finished) boardClass += " tiebreak";
+    if (state.finished) boardClass += " finished";
+
+    let html = `<div class="${boardClass}">`;
+
+    // Header row
+    html += `<div class="header-row">`;
+    if (editingName === 0) {
+      html += `<div style="text-align:center"><input class="name-input" id="name-input-0" value="${escapeHtml(state.players[0].name)}" /></div>`;
+    } else {
+      const dot0 = (state.server === 0 && !state.finished) ? `<span class="serve-dot"></span>` : "";
+      html += `<div class="player-name" data-edit="0">${dot0}${escapeHtml(state.players[0].name)}<span class="edit-icon">✏</span></div>`;
+    }
+    html += `<div class="vs-label">VS</div>`;
+    if (editingName === 1) {
+      html += `<div style="text-align:center"><input class="name-input" id="name-input-1" value="${escapeHtml(state.players[1].name)}" /></div>`;
+    } else {
+      const dot1 = (state.server === 1 && !state.finished) ? `<span class="serve-dot"></span>` : "";
+      html += `<div class="player-name" data-edit="1">${escapeHtml(state.players[1].name)}<span class="edit-icon">✏</span>${dot1}</div>`;
+    }
+    html += `</div>`;
+
+    // Sets row
+    if (numSets > 0) {
+      html += `<div class="sets-row">`;
+      for (let i = 0; i < numSets; i++) {
+        const s0 = state.players[0].sets[i];
+        const s1 = state.players[1].sets[i];
+        const s0disp = s0 === undefined ? "-" : s0;
+        const s1disp = s1 === undefined ? "-" : s1;
+        const w0 = s0 !== undefined && s1 !== undefined && s0 > s1;
+        const w1 = s0 !== undefined && s1 !== undefined && s1 > s0;
+        html += `<div class="set-pair">
+          <span class="set-num ${w0 ? "win" : ""}">${s0disp}</span>
+          <span class="set-dash">–</span>
+          <span class="set-num ${w1 ? "win" : ""}">${s1disp}</span>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    // Games row
+    html += `<div class="games-row ${state.isMatchTiebreak ? "dim" : ""}">`;
+    html += `<div class="game-num ${state.players[0].games > state.players[1].games ? "glow" : ""}">${state.players[0].games}</div>`;
+    html += `<div class="games-label">GAMES</div>`;
+    html += `<div class="game-num ${state.players[1].games > state.players[0].games ? "glow" : ""}">${state.players[1].games}</div>`;
+    html += `</div>`;
+
+    // Tiebreak banner
+    if (state.tiebreak && !state.finished) {
+      const label = state.isMatchTiebreak ? "Match Tiebreak · First to 10" : "Tiebreak · First to 7";
+      html += `<div class="tb-banner">⚡ ${label}</div>`;
+    }
+
+    // Points row
+    html += `<div class="points-row ${state.tiebreak ? "tiebreak" : ""}">`;
+    let p0cls = "point-num";
+    if (state.tiebreak) p0cls += " tb";
+    else if (pointDisplay[0] === "AD") p0cls += " ad";
+    html += `<div class="${p0cls}">${pointDisplay[0]}</div>`;
+    html += `<div class="points-label ${state.tiebreak ? "tb" : ""}">${state.tiebreak ? "TB" : "PTS"}</div>`;
+    let p1cls = "point-num";
+    if (state.tiebreak) p1cls += " tb";
+    else if (pointDisplay[1] === "AD") p1cls += " ad";
+    html += `<div class="${p1cls}">${pointDisplay[1]}</div>`;
+    html += `</div>`;
+
+    // Status bar
+    html += `<div class="status-bar ${state.finished ? "finished" : ""}">${statusLabel}</div>`;
+
+    html += `</div>`;
+    return html;
+  }
+
+  function renderScoreButtons() {
+    let html = `<div class="score-buttons">`;
+    for (let i = 0; i < 2; i++) {
+      html += `<button class="score-btn" data-score="${i}" ${state.finished ? "disabled" : ""}>
+        <div class="pname">${escapeHtml(state.players[i].name)}</div>
+        <div class="plabel">+ Point</div>
+      </button>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  function renderControls() {
+    let html = `<div class="controls">`;
+    html += `<button class="ctrl-btn" id="undo-btn" ${state.history.length === 0 ? "disabled" : ""}>↩ UNDO</button>`;
+    html += `<button class="ctrl-btn" id="new-match-btn">↺ NEW MATCH</button>`;
+    html += `</div>`;
+    return html;
+  }
+
+  function attachBoardListeners() {
+    document.querySelectorAll('[data-score]').forEach(btn => {
+      btn.addEventListener('click', () => score(parseInt(btn.dataset.score, 10)));
+    });
+    document.querySelectorAll('[data-edit]').forEach(div => {
+      div.addEventListener('click', () => startEdit(parseInt(div.dataset.edit, 10)));
+    });
+    const undoBtn = document.getElementById('undo-btn');
+    if (undoBtn) undoBtn.addEventListener('click', undoLast);
+    const newMatchBtn = document.getElementById('new-match-btn');
+    if (newMatchBtn) newMatchBtn.addEventListener('click', resetMatch);
+
+    for (let i = 0; i < 2; i++) {
+      const inp = document.getElementById(`name-input-${i}`);
+      if (inp) {
+        inp.focus();
+        inp.select();
+        inp.addEventListener('blur', () => commitName(i, inp.value));
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commitName(i, inp.value); });
+      }
+    }
+  }
+
+  // ---------- Main render ----------
+  function render() {
+    let html = `<div class="title">Tennis Scoreboard</div>`;
+
+    if (viewMode === 'board') {
+      html += `<div class="match-type-badge">${matchTypeLabel(matchType)}</div>`;
+    }
+
+    html += renderToolbar();
+
+    if (viewMode === 'setup') {
+      html += renderSetupPanel();
+      html += `<div class="footer-hint">CHOOSE A MATCH TYPE, OPTIONALLY ENTER THE CURRENT SCORE TO JUMP IN, THEN START</div>`;
+    } else {
+      html += renderBoard();
+      html += renderScoreButtons();
+      html += renderControls();
+      html += `<div class="footer-hint">TAP PLAYER NAME TO EDIT · ⚙ SETUP TO CHANGE MATCH TYPE OR RESUME A MATCH</div>`;
+    }
+
+    document.getElementById('root').innerHTML = html;
+
+    attachToolbarListeners();
+    if (viewMode === 'setup') {
+      attachSetupListeners();
+    } else {
+      attachBoardListeners();
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
