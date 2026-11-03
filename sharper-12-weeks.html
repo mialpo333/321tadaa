@@ -60,6 +60,14 @@ nav.tabs button.on{color:var(--accent);font-weight:700}
 .toast.show{opacity:1}
 .small{font-size:13px}
 ul.tight{margin:6px 0;padding-left:20px}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 6px}
+.day{padding:6px 2px;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2;min-width:0}
+.day span{font-size:11px;color:var(--muted)}
+.day b{font-size:11px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day.cur{border-color:var(--accent);background:var(--soft)}
+.day.ok{border-bottom:3px solid var(--accent)}
+.hint{font-size:14px;color:var(--muted);margin:-4px 0 10px}
+.tmr{font-size:14px}
 </style>
 </head>
 <body>
@@ -157,6 +165,9 @@ const WEEKS=[
   'What do you keep, what do you drop, and what is the focus for the next 12 weeks?']}
 ];
 const BOOKS=['Clear Thinking — Shane Parrish','Trillion Dollar Coach — Schmidt, Rosenberg, Eagle','Longitude — Dava Sobel','Genesis — Kissinger, Schmidt, Mundie'];
+const FALLBACK='What is on your mind today? Write whatever comes first: work, people, home, anything.';
+const SHORT=['Work','Decide','Build','People','Self','Rest','Review'];
+const DNAMES=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const REVIEW=[['well','What went well this week?'],['not','What did not work — and why?'],['learned','What did I learn about how I think or work?'],['next','One focus for next week:']];
 
 const KEY='sharper12';
@@ -220,16 +231,24 @@ function rToday(v){
   let head=`<div class="row between"><span class="badge ph${W.p}">Phase ${W.p} · ${PHASES[W.p]}</span>
     <span class="muted">Week ${I.wk+1} · Day ${I.idx+1}/84</span></div>
     <h2>${fmt(viewDate)}</h2><div class="muted">This week: <b>${esc(W.focus)}</b></div>`;
-  let body='';
+  const mon=addDays(S.start,I.wk*7);
+  head+=`<div class="strip">${SHORT.map((s,k)=>{const d=addDays(mon,k);
+    return `<button class="day ${d===viewDate?'cur':''} ${(S.entries[d]||{}).done?'ok':''}" data-d="${d}"><span>${DNAMES[k]}</span><b>${s}</b></button>`}).join('')}</div>`;
+  let body='',curQ='';
   if(I.dow>=1&&I.dow<=5){
-    const q=W.q[I.dow-1];
+    const free=!!e.free;
+    const q=curQ=free?FALLBACK:W.q[I.dow-1];
     body=`<div class="card">${head}
-      <div style="margin-top:12px"><span class="badge">${THEMES[I.dow-1]}</span></div>
+      <div style="margin-top:8px"><span class="badge">${free?'Free writing':THEMES[I.dow-1]}</span></div>
       <p class="prompt">${esc(q)}</p>
-      <textarea id="txt" placeholder="Write freely for ~15 minutes. Bullet points are fine.">${esc(e.text)}</textarea>
+      <p class="hint">3 sentences is enough. No wrong answers: whatever comes first is the right material. Don't judge it, don't delete it.</p>
+      <textarea id="txt" placeholder="Write what comes to mind. Bullet points are fine.">${esc(e.text)}</textarea>
       <div class="row" style="margin-top:10px">
+        <button class="ghost" id="free">${free?'↺ Back to today\'s question':'No idea? Write what\'s on your mind'}</button>
+      </div>
+      <div class="row" style="margin-top:8px">
         <button class="primary" id="ai">Challenge with AI</button>
-        <button id="dec">→ Log as decision</button>
+        <button id="dec">→ It's a decision: log it</button>
       </div>
       <label class="check"><input type="checkbox" id="done" ${e.done?'checked':''}> Done for today</label>
     </div>`;
@@ -248,7 +267,16 @@ function rToday(v){
   }
   const act=`<div class="card"><h3 style="margin-top:0">This week's action</h3>
     <label class="check"><input type="checkbox" id="act" ${S.actions[I.wk]?'checked':''}> <span>${esc(W.action)}</span></label></div>`;
-  v.innerHTML=nav+body+act;
+  const t1=addDays(viewDate,1),T=info(t1);
+  let tmr='';
+  if(T.idx<=83){
+    const what=T.dow===6?'Rest day':T.dow===0?'Weekly review (30 min)':`<b>${THEMES[T.dow-1]}:</b> ${esc(T.W.q[T.dow-1])}`;
+    tmr=`<div class="card tmr"><span class="muted">Tomorrow · ${DNAMES[(T.dow+6)%7]}</span><div style="margin-top:4px">${what}</div></div>`;
+  }
+  v.innerHTML=nav+body+act+tmr;
+  v.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{viewDate=b.dataset.d;render()});
+  const fr=document.getElementById('free');
+  if(fr) fr.onclick=()=>{const en=entry(viewDate);en.free=!en.free;save();render()};
 
   document.getElementById('prev').onclick=()=>{viewDate=addDays(viewDate,-1);render()};
   document.getElementById('next').onclick=()=>{viewDate=addDays(viewDate,1);render()};
@@ -261,7 +289,7 @@ function rToday(v){
   if(ai) ai.onclick=()=>{
     const txt=(entry(viewDate).text||'').trim();
     if(!txt){toast('Write something first');return}
-    copyText(`I'm doing a daily thinking practice. Challenge my reflection below. Be direct, not polite:\n1. Name my weakest assumption.\n2. Give the strongest argument against my view.\n3. Point out anything I seem to be avoiding.\n4. Ask me one question that would sharpen my thinking.\nKeep it short.\n\nToday's prompt: ${W.q[I.dow-1]}\n\nMy notes:\n${txt}`);
+    copyText(`I'm doing a daily thinking practice. Challenge my reflection below. Be direct, not polite:\n1. Name my weakest assumption.\n2. Give the strongest argument against my view.\n3. Point out anything I seem to be avoiding.\n4. Ask me one question that would sharpen my thinking.\nKeep it short.\n\nToday's prompt: ${curQ}\n\nMy notes:\n${txt}`);
   };
   const dc=document.getElementById('dec');
   if(dc) dc.onclick=()=>{pendingDecision=(entry(viewDate).text||'').trim();tab='decisions';render()};
