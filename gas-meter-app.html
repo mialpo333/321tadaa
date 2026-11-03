@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a5f">
+<title>Gas Meter</title>
+<style>
+  :root{--ink:#1c2533;--muted:#6b7686;--line:#e3e7ee;--bg:#f3f5f9;--card:#fff;--navy:#1f3a5f;--accent:#e8702a;--ok:#2e7d32;--bad:#c62828;--soft:#fff4e8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:0 0 40px}
+  header{background:var(--navy);color:#fff;padding:18px 16px 54px}
+  header .row{display:flex;justify-content:space-between;align-items:center;max-width:520px;margin:0 auto}
+  header h1{font-size:18px;font-weight:650;letter-spacing:.2px}
+  .gear{background:rgba(255,255,255,.12);border:0;color:#fff;font-size:18px;width:38px;height:38px;border-radius:10px}
+  .wrap{max-width:520px;margin:-40px auto 0;padding:0 14px}
+  .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(20,30,50,.06)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:12px;font-weight:600}
+  .last{display:flex;justify-content:space-between;align-items:flex-end}
+  .last .big{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+  .last .big small{font-size:15px;color:var(--muted);font-weight:500}
+  .muted{color:var(--muted);font-size:13px}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px;font-weight:550}
+  input{width:100%;font:inherit;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus{outline:none;border-color:var(--navy)}
+  #value{font-size:30px;font-weight:700;text-align:center;letter-spacing:2px;font-variant-numeric:tabular-nums;padding:14px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:15px;font:inherit;font-weight:650;font-size:16px;margin-top:14px;cursor:pointer}
+  .btn-main{background:var(--accent);color:#fff}
+  .btn-main:disabled{background:#cfd5de}
+  .btn-ghost{background:#eef1f6;color:var(--navy)}
+  .photo{display:none;width:100%;border-radius:12px;margin-top:12px;max-height:260px;object-fit:contain;background:#000}
+  .delta{margin-top:10px;font-size:14px;padding:10px 12px;border-radius:10px;background:#eef4ff;color:#26457a;display:none}
+  .delta.warn{background:#fdecea;color:var(--bad)}
+  .msg{margin-top:12px;padding:12px;border-radius:10px;font-size:14px;display:none}
+  .msg.ok{display:block;background:#e7f5ea;color:var(--ok)}
+  .msg.err{display:block;background:#fdecea;color:var(--bad)}
+  .msg.info{display:block;background:var(--soft);color:#8a4a12}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--bg);border-radius:12px;padding:12px}
+  .tile .k{font-size:12px;color:var(--muted)}
+  .tile .v{font-size:20px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .cmp{margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--line)}
+  .bar{height:10px;border-radius:5px;background:var(--line);margin:6px 0 2px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:5px}
+  .good{color:var(--ok)} .badc{color:var(--bad)}
+  .list .it{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;gap:10px}
+  .list .it:last-child{border:0}
+  .list .val{font-weight:650;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .list .note{font-size:12px;color:var(--muted)}
+  .pending{background:var(--soft);color:#8a4a12;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none}
+  dialog{border:0;border-radius:16px;padding:20px;width:min(92vw,440px);margin:auto}
+  dialog::backdrop{background:rgba(10,20,40,.45)}
+  .hidden{display:none}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header><div class="row"><h1>⛽ Gas Meter</h1><button class="gear" id="openSettings" aria-label="Settings">⚙</button></div></header>
+
+<div class="wrap">
+  <div class="pending" id="pending"></div>
+
+  <div class="card">
+    <h2>Last reading</h2>
+    <div class="last">
+      <div class="big" id="lastValue">–<small> m³</small></div>
+      <div class="muted" id="lastDate">not loaded</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>New reading</h2>
+    <button class="btn btn-ghost" id="photoBtn" style="margin-top:0">📷 Photo of the meter (optional)</button>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
+    <img id="photo" class="photo" alt="Meter photo">
+    <label for="value">Meter value (black digits, m³)</label>
+    <input id="value" inputmode="decimal" autocomplete="off" placeholder="17080">
+    <div class="delta" id="delta"></div>
+    <div class="two">
+      <div><label for="date">Date</label><input type="date" id="date"></div>
+      <div><label for="note">Note (optional)</label><input id="note" placeholder="e.g. -5°C"></div>
+    </div>
+    <button class="btn btn-main" id="save" disabled>Save to sheet</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card" id="statsCard">
+    <h2>Consumption</h2>
+    <div class="grid" id="tiles"><div class="muted">Connect the sheet in ⚙ settings.</div></div>
+    <div id="compare"></div>
+  </div>
+
+  <div class="card">
+    <h2>Recent readings</h2>
+    <div class="list" id="recent"><div class="muted">–</div></div>
+    <button class="btn btn-ghost" id="refresh">↻ Refresh</button>
+  </div>
+</div>
+
+<dialog id="settings">
+  <h2 style="font-size:17px;margin-bottom:6px">Connect your Google Sheet</h2>
+  <p class="muted">Paste the Web app URL from Apps Script (ends with /exec) and the SECRET you set in the script.</p>
+  <label for="url">Web app URL</label><input id="url" placeholder="https://script.google.com/macros/s/…/exec">
+  <label for="key">Key (SECRET)</label><input id="key" placeholder="your secret">
+  <button class="btn btn-main" id="saveSettings">Save &amp; test</button>
+  <button class="btn btn-ghost" id="closeSettings">Close</button>
+  <div class="msg" id="setMsg"></div>
+</dialog>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  };
+  const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxrisX1zHYTrID23GNQ1wsV5liBjVh5g161HqS08-fZ82dUWxKGNKwXS8QiZwu2csI/exec';
+  let cfg = store.get('gm.cfg', {url: DEFAULT_URL, key:''});
+  if (!cfg.url) cfg.url = DEFAULT_URL;
+  let queue = store.get('gm.queue', []);
+  let summary = store.get('gm.summary', null);
+
+  const fmt = (n, d=0) => n == null || isNaN(n) ? '–' : Number(n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
+  const today = () => { const t = new Date(); t.setMinutes(t.getMinutes() - t.getTimezoneOffset()); return t.toISOString().slice(0,10); };
+  const parseVal = s => { const v = parseFloat(String(s).replace(/\s/g,'').replace(',', '.')); return isFinite(v) ? v : NaN; };
+  const dmy = iso => iso.split('-').reverse().join('.');
+
+  $('date').value = today();
+
+  async function call(params){
+    if (!cfg.url) throw new Error('Not connected – open ⚙ settings.');
+    const q = new URLSearchParams(Object.assign({key: cfg.key}, params));
+    const r = await fetch(cfg.url + (cfg.url.includes('?') ? '&' : '?') + q.toString(), {redirect:'follow'});
+    if (!r.ok) throw new Error('Server answered ' + r.status);
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Unknown error');
+    return j;
+  }
+
+  function show(el, text, cls){ el.className = 'msg ' + cls; el.innerHTML = text; }
+
+  function render(){
+    if (!summary) return;
+    const s = summary;
+    $('lastValue').innerHTML = fmt(s.lastValue) + '<small> m³</small>';
+    $('lastDate').textContent = s.lastDate || '';
+    $('value').placeholder = s.lastValue != null ? String(Math.round(s.lastValue)) : '';
+    const q = s.quick || [];
+    const tile = (k, v, sub) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub||''}</div></div>`;
+    const y = (s.years || []).find(x => x.year === new Date().getFullYear()) || (s.years||[]).slice(-1)[0];
+    let html = '';
+    if (q[0]) html += tile('Last 7 days', fmt(q[0].m3) + ' m³', fmt(q[0].perDay,1) + ' m³/day · ' + fmt(q[0].cost) + ' €');
+    if (q[1]) html += tile('Last 30 days', fmt(q[1].m3) + ' m³', fmt(q[1].perDay,1) + ' m³/day · ' + fmt(q[1].cost) + ' €');
+    if (q[2]) html += tile('This year so far', fmt(q[2].m3) + ' m³', fmt(q[2].cost) + ' €');
+    if (y) html += tile('Forecast ' + y.year, fmt(y.forecast) + ' m³', fmt(y.cost) + ' €');
+    if (q[3]) html += tile('Last 12 months', fmt(q[3].m3) + ' m³', fmt(q[3].cost) + ' €');
+    if (s.nextMonth && s.nextMonth.predicted != null) html += tile('Forecast ' + s.nextMonth.month, fmt(s.nextMonth.predicted) + ' m³', 'trend factor ' + fmt(s.factor,2));
+    $('tiles').innerHTML = html;
+
+    const lm = s.lastMonth || {};
+    if (lm.actual != null && lm.predicted != null){
+      const max = Math.max(lm.actual, lm.predicted) || 1;
+      const better = lm.actual <= lm.predicted;
+      $('compare').innerHTML = `<div class="cmp"><div class="k muted">${lm.month}: reality vs prediction</div>
+        <div class="muted" style="margin-top:8px">Actual ${fmt(lm.actual)} m³</div><div class="bar"><i style="width:${lm.actual/max*100}%;background:var(--accent)"></i></div>
+        <div class="muted">Predicted ${fmt(lm.predicted)} m³</div><div class="bar"><i style="width:${lm.predicted/max*100}%;background:#9aa7ba"></i></div>
+        <div style="margin-top:6px;font-weight:650" class="${better?'good':'badc'}">${lm.delta>0?'+':''}${fmt(lm.delta*100)} % ${better?'below':'above'} prediction</div></div>`;
+    } else $('compare').innerHTML = '';
+
+    const rec = s.recent || [];
+    $('recent').innerHTML = rec.length ? rec.map(r => `<div class="it"><div>${r.date}${r.note ? `<div class="note">${String(r.note).replace(/</g,'&lt;')}</div>` : ''}</div>
+      <div class="val">${fmt(r.value)} m³${r.diff != null ? `<div class="note">+${fmt(r.diff)} in ${r.days} d · ${fmt(r.days ? r.diff/r.days : 0,1)}/d</div>` : ''}</div></div>`).join('') : '<div class="muted">No readings yet</div>';
+    updateDelta();
+  }
+
+  function updateDelta(){
+    const v = parseVal($('value').value);
+    const d = $('delta');
+    $('save').disabled = !(v > 0) || !$('date').value;
+    if (!(v > 0) || !summary || summary.lastValue == null){ d.style.display = 'none'; return; }
+    d.style.display = 'block';
+    const diff = v - summary.lastValue;
+    const days = Math.round((new Date($('date').value) - new Date(summary.lastIso)) / 86400000);
+    if ($('date').value > summary.lastIso && diff < 0){ d.className = 'delta warn'; d.textContent = `Lower than the last reading (${fmt(summary.lastValue)}). Check the digits.`; return; }
+    if ($('date').value <= summary.lastIso){ d.className = 'delta'; d.textContent = 'Date is not after the last reading – it will be filed on its own date.'; return; }
+    const rate = days > 0 ? diff / days : 0;
+    d.className = 'delta' + (rate > 40 ? ' warn' : '');
+    d.textContent = `+${fmt(diff,1)} m³ since ${summary.lastDate} · ${days} day${days===1?'':'s'} · ${fmt(rate,1)} m³/day` + (rate > 40 ? ' – unusually high, check the digits' : '');
+  }
+
+  function renderQueue(){
+    const p = $('pending');
+    if (queue.length){ p.style.display = 'block'; p.textContent = `${queue.length} reading(s) waiting to be sent (no connection). They will be sent automatically.`; }
+    else p.style.display = 'none';
+  }
+
+  async function flushQueue(){
+    if (!queue.length || !cfg.url) return;
+    const rest = [];
+    for (const item of queue){
+      try { summary = await call(Object.assign({action:'add'}, item)); }
+      catch(e){ if (/Failed to fetch|NetworkError|Load failed/i.test(e.message)) rest.push(item); else show($('msg'), `Queued reading ${dmy(item.date)} rejected: ${e.message}`, 'err'); }
+    }
+    queue = rest; store.set('gm.queue', queue); store.set('gm.summary', summary);
+    renderQueue(); render();
+  }
+
+  async function load(){
+    if (!cfg.url || !cfg.key) { $('url').value = cfg.url; $('key').value = cfg.key; $('settings').showModal(); return; }
+    $('refresh').innerHTML = '<span class="spin"></span>Loading…';
+    try { summary = await call({action:'summary'}); store.set('gm.summary', summary); render(); }
+    catch(e){ show($('msg'), 'Could not load from the sheet: ' + e.message, 'err'); }
+    finally { $('refresh').textContent = '↻ Refresh'; }
+    flushQueue();
+  }
+
+  $('value').addEventListener('input', updateDelta);
+  $('date').addEventListener('change', updateDelta);
+  $('photoBtn').onclick = () => $('photoInput').click();
+  $('photoInput').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => { $('photo').src = ev.target.result; $('photo').style.display = 'block'; $('value').focus(); };
+    r.readAsDataURL(f);
+  };
+
+  $('save').onclick = async () => {
+    const v = parseVal($('value').value);
+    const item = { date: $('date').value, value: v, note: $('note').value.trim() };
+    if (summary && item.date > summary.lastIso && v < summary.lastValue && !confirm('This is lower than the last reading. Save anyway?')) return;
+    $('save').disabled = true; $('save').innerHTML = '<span class="spin"></span>Saving…';
+    try {
+      summary = await call(Object.assign({action:'add', force: (summary && item.date > summary.lastIso && v < summary.lastValue) ? '1' : ''}, item));
+      store.set('gm.summary', summary);
+      const rep = summary.saved && summary.saved.replaced != null ? ` (replaced ${fmt(summary.saved.replaced)})` : '';
+      show($('msg'), `✓ Saved ${fmt(v)} m³ for ${dmy(item.date)}${rep}`, 'ok');
+      $('value').value = ''; $('note').value = ''; $('photo').style.display = 'none'; $('photoInput').value = '';
+      $('date').value = today();
+      render();
+    } catch(e){
+      if (/Failed to fetch|NetworkError|Load failed/i.test(e.message)){
+        queue.push(item); store.set('gm.queue', queue); renderQueue();
+        show($('msg'), 'No connection – reading stored on this phone and will be sent later.', 'info');
+        $('value').value = ''; $('note').value = '';
+      } else show($('msg'), '⚠ ' + e.message, 'err');
+    } finally { $('save').textContent = 'Save to sheet'; updateDelta(); }
+  };
+
+  $('refresh').onclick = load;
+  $('openSettings').onclick = () => { $('url').value = cfg.url; $('key').value = cfg.key; $('settings').showModal(); };
+  $('closeSettings').onclick = () => $('settings').close();
+  $('saveSettings').onclick = async () => {
+    cfg = { url: $('url').value.trim(), key: $('key').value.trim() };
+    store.set('gm.cfg', cfg);
+    show($('setMsg'), '<span class="spin"></span>Testing…', 'info');
+    try { summary = await call({action:'summary'}); store.set('gm.summary', summary); render(); show($('setMsg'), '✓ Connected. Last reading ' + fmt(summary.lastValue) + ' m³ on ' + summary.lastDate, 'ok'); setTimeout(() => $('settings').close(), 1200); flushQueue(); }
+    catch(e){ show($('setMsg'), '⚠ ' + e.message, 'err'); }
+  };
+  window.addEventListener('online', flushQueue);
+
+  renderQueue(); render(); load();
+})();
+</script>
+</body>
+</html>
