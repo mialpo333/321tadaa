@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sharper in 12 Weeks</title>
+<style>
+:root{
+  --bg:#f5f3ee;--card:#ffffff;--ink:#1d1d1b;--muted:#6d6a63;--line:#e2ded4;
+  --accent:#2f5d50;--accent-ink:#ffffff;--soft:#e4eee9;
+  --p1:#2f5d50;--p2:#3a4f8f;--p3:#9a5232;--p4:#7d6000;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131312;--card:#1d1d1b;--ink:#ecebe6;--muted:#a3a097;--line:#34332f;
+  --accent:#86bfac;--accent-ink:#10201b;--soft:#20302a;
+  --p1:#86bfac;--p2:#9db0ea;--p3:#e7a584;--p4:#e2c46a;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 96px}
+header h1{font-size:20px;margin:4px 0 2px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;
+  background:var(--soft);color:var(--accent)}
+.ph1{color:var(--p1)}.ph2{color:var(--p2)}.ph3{color:var(--p3)}.ph4{color:var(--p4)}
+.muted{color:var(--muted);font-size:14px}
+h2{font-size:18px;margin:8px 0 4px}
+h3{font-size:15px;margin:14px 0 6px}
+.prompt{font-size:18px;line-height:1.45;margin:10px 0 12px;font-weight:500}
+textarea,input[type=text],input[type=date]{width:100%;font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:150px;resize:vertical}
+textarea.sm{min-height:70px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+button{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:10px;padding:9px 14px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.ghost{background:transparent}
+button:disabled{opacity:.4}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav.tabs button{flex:1;max-width:136px;border:none;background:none;font-size:13px;color:var(--muted);padding:8px 4px}
+nav.tabs button.on{color:var(--accent);font-weight:700}
+.weekgrid{display:grid;gap:10px}
+.wk{border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;background:var(--card)}
+.wk.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dots{display:flex;gap:4px;margin-top:8px}
+.dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--line)}
+.dot.on{background:var(--accent);border-color:var(--accent)}
+.dec{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.dec.due{border-left:3px solid var(--p3);padding-left:10px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.small{font-size:13px}
+ul.tight{margin:6px 0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Sharper in 12 Weeks</h1>
+    <p>Think clearer · Use AI as leverage · Lead better · Grow 321tadaa</p>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="tabs">
+  <button data-tab="today">Today</button>
+  <button data-tab="plan">Plan</button>
+  <button data-tab="decisions">Decisions</button>
+  <button data-tab="toolkit">Toolkit</button>
+  <button data-tab="settings">Setup</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const PHASES={1:'Sharper thinking',2:'AI leverage',3:'Leadership',4:'Synthesis · 321tadaa'};
+const THEMES=['Work','Decision','Build · 321tadaa','People','Personal'];
+const WEEKS=[
+ {p:1,focus:'Start the habit',action:'Pick one daily slot for news and feeds. Turn off non-essential notifications.',q:[
+  'What is the single most important outcome for you at work this week — and why that one, not another?',
+  'Describe a decision you are currently avoiding. What exactly makes it hard?',
+  'Which 321tadaa project or idea deserves your energy right now, and which one should you drop?',
+  'Who at work or in your life would you like to understand better? What do you not yet know about their goals?',
+  'What drained your energy this week, and what gave you energy?']},
+ {p:1,focus:'Decision journal',action:'Log at least 2 decisions in the Decisions tab.',q:[
+  'Pick a work decision you will make this week. Write the options, your choice and what you expect to happen. Then log it in Decisions.',
+  'Which decision did you make quickly lately that you would now make differently? What signal did you miss?',
+  'If 321tadaa could only offer one thing next year, what would it be?',
+  'Think of a recent disagreement. What was the other person\'s strongest argument?',
+  'Which personal decision (health, family, time) do you keep postponing? What would a 10-minute first step be?']},
+ {p:1,focus:'Question your assumptions',action:'Read Clear Thinking (Shane Parrish) — about 20 pages, 3 times this week.',q:[
+  'Pick a belief about your work you have never questioned. What supports it? What would prove it wrong?',
+  'What are you assuming about a current project that, if false, would change everything?',
+  'What do you assume 321tadaa clients actually want? How do you know?',
+  'What assumption do you make about a colleague? Write a more generous explanation of their behaviour.',
+  'Which assumption about your time limits you the most? Is it really true?']},
+ {p:1,focus:'Second-order thinking',action:'Continue Clear Thinking. On Sunday, review your decision journal for the first time.',q:[
+  'Take a change you are approving or proposing at work. What happens next — and what happens after that?',
+  'Look at your decision journal. Which outcome is already different from what you expected? Why?',
+  'If one 321tadaa tool became a big success, what new problem would that create?',
+  'Which of your habits shapes how others work with you — positively or negatively?',
+  'Month 1 reflection: what changed in how you think? What felt like a waste of time?']},
+ {p:2,focus:'AI as sparring partner',action:'Use the "Challenge with AI" button at least 3 times this week.',q:[
+  'Write your position on a current work topic. Then use the button and let AI argue the opposite as strongly as possible.',
+  'Describe a decision you face. Ask AI: what is the weakest assumption in my reasoning?',
+  'Describe a 321tadaa idea. Ask AI to respond as a skeptical client who has to pay for it.',
+  'Draft how you would give a colleague difficult feedback. Ask AI how it might be received.',
+  'Which task this week took the longest and felt most repetitive? (This is your first candidate for delegation.)']},
+ {p:2,focus:'Pre-mortems & first delegation',action:'Hand your first recurring task to AI this week.',q:[
+  'Pre-mortem: it is 12 months from now and your main work project has failed. Write the most likely reasons.',
+  'Hand last Friday\'s repetitive task to AI today. What did you need to explain for it to do the task well?',
+  '321tadaa pre-mortem: a client project went wrong. What was the cause, and how could you prevent it now?',
+  'Which meeting could you prepare in 5 minutes with AI instead of 30? Try it and note the result.',
+  'What did AI do well this week, and where did it mislead you or waste your time?']},
+ {p:2,focus:'Delegation as a habit',action:'Delegate a second task to AI. Note roughly how much time it saved.',q:[
+  'Which part of your approver/challenger role is mostly pattern-matching? Could AI do a first pass?',
+  'Write a decision you face and ask AI for three options you have not considered. Was one of them better?',
+  'Which 321tadaa task (quotes, specs, client questions) eats the most time? Sketch a reusable AI workflow for it.',
+  'Use AI to prepare questions for a conversation you have this week. Which question turned out best?',
+  'Where could AI save you time at home (planning, admin, paperwork)? Try one thing.']},
+ {p:2,focus:'Build your toolkit',action:'Save your 3 best prompts as templates in the Toolkit tab. Sunday: decision journal review.',q:[
+  'Collect your three most useful prompts so far. Rewrite them as reusable templates.',
+  'Decision journal, month 2: do you see a pattern in where your judgment goes wrong?',
+  'Could any of your own AI workflows become a 321tadaa offering for clients?',
+  'What would your teams gain if they used AI the way you now do? How could you share it?',
+  'Month 2 reflection: what saves real time, and what is just novelty?']},
+ {p:3,focus:'The coach mindset',action:'Start reading Trillion Dollar Coach. In meetings: ask two questions before giving your opinion.',q:[
+  'Think of the best boss or mentor you ever had. What exactly did they do — concretely?',
+  'In today\'s meetings, ask two questions before giving your opinion. What did you learn that you would have missed?',
+  'If a great coach looked at 321tadaa today, what would they tell you?',
+  'Pick one person you work with. What are their goals for the next year? If you don\'t know, plan to ask this week.',
+  'Where are you already leading without noticing — family, club, friends?']},
+ {p:3,focus:'Trust',action:'Have one conversation focused entirely on the other person.',q:[
+  'Who do you trust most at work, and why? Who trusts you — and what did you do to earn it?',
+  'Today, hold one conversation entirely about the other person. What did you hear?',
+  'How do you build trust with a new 321tadaa client in the very first meeting?',
+  'Where have you been right but unhelpful? How could you have challenged differently?',
+  'Who deserves a thank-you from you this week? Write it — then send it.']},
+ {p:3,focus:'Challenge with care',action:'Ask one person for honest feedback on how you challenge and review.',q:[
+  'Which proposal in your pipeline needs a real challenge? Write the one question that would help it most.',
+  'How do you say no and keep the relationship strong? Draft a real example you need this month.',
+  'Which 321tadaa lead or request should you say no to?',
+  'Ask someone for honest feedback on how you challenge. Write down what you heard, without defending yourself.',
+  'What kind of leader do you want to be known as in five years?']},
+ {p:4,focus:'Synthesis & 321tadaa',action:'Write your plan for the next 12 weeks in the Toolkit tab.',q:[
+  'Re-read your notes from weeks 1–11 (Plan tab). Which themes keep coming back?',
+  'Final decision journal review: what did three months teach you about your judgment?',
+  'Which problem do you keep solving for people? Could it become a repeatable 321tadaa offering?',
+  'Who helped you during these 12 weeks? Tell them.',
+  'What do you keep, what do you drop, and what is the focus for the next 12 weeks?']}
+];
+const BOOKS=['Clear Thinking — Shane Parrish','Trillion Dollar Coach — Schmidt, Rosenberg, Eagle','Longitude — Dava Sobel','Genesis — Kissinger, Schmidt, Mundie'];
+const REVIEW=[['well','What went well this week?'],['not','What did not work — and why?'],['learned','What did I learn about how I think or work?'],['next','One focus for next week:']];
+
+const KEY='sharper12';
+let S;
+function blank(){return{start:null,entries:{},actions:{},decisions:[],toolkit:'',books:{}}}
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))||blank()}catch(e){S=blank()}
+  S=Object.assign(blank(),S)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+load();
+
+const DAY=864e5;
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((parse(b)-parse(a))/DAY);
+const todayIso=()=>iso(new Date());
+const monday=s=>{const d=parse(s);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return iso(d)};
+const fmt=s=>parse(s).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+
+let tab='today',viewDate=todayIso();
+if(!S.start){tab='settings'}
+else if(diff(S.start,viewDate)<0) viewDate=S.start;
+
+function info(date){
+  const idx=diff(S.start,date), wk=Math.floor(idx/7), dow=parse(date).getDay();
+  return{idx,wk,dow,W:WEEKS[wk]};
+}
+function entry(d){return S.entries[d]||(S.entries[d]={})}
+
+function copyText(t){
+  const done=()=>toast('Copied — paste it into Claude');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>fallback(t,done))}
+  else fallback(t,done);
+}
+function fallback(t,cb){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();
+  try{document.execCommand('copy');cb()}catch(e){toast('Copy failed — select the text manually')}a.remove()}
+
+function render(){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  const v=document.getElementById('view');
+  if(!S.start&&tab!=='settings'){tab='settings'}
+  ({today:rToday,plan:rPlan,decisions:rDec,toolkit:rTool,settings:rSet})[tab](v);
+  window.scrollTo(0,0);
+}
+
+function rToday(v){
+  const I=info(viewDate);
+  const nav=`<div class="row between">
+    <button class="ghost" id="prev" ${I.idx<=0?'disabled':''}>‹ Prev</button>
+    <button class="ghost" id="tday">Today</button>
+    <button class="ghost" id="next" ${I.idx>=83?'disabled':''}>Next ›</button></div>`;
+  if(I.idx<0||I.idx>83){
+    v.innerHTML=`<div class="card">${I.idx<0?`<h2>Starts ${fmt(S.start)}</h2><p class="muted">You can preview day 1 already.</p><button class="primary" id="go1">Open day 1</button>`
+      :`<h2>12 weeks complete 🎉</h2><p class="muted">Use the Plan tab to re-read your notes, or set a new start date in Setup for another round.</p>`}</div>`;
+    const g=document.getElementById('go1'); if(g) g.onclick=()=>{viewDate=S.start;render()};
+    return;
+  }
+  const W=I.W,e=entry(viewDate);
+  let head=`<div class="row between"><span class="badge ph${W.p}">Phase ${W.p} · ${PHASES[W.p]}</span>
+    <span class="muted">Week ${I.wk+1} · Day ${I.idx+1}/84</span></div>
+    <h2>${fmt(viewDate)}</h2><div class="muted">This week: <b>${esc(W.focus)}</b></div>`;
+  let body='';
+  if(I.dow>=1&&I.dow<=5){
+    const q=W.q[I.dow-1];
+    body=`<div class="card">${head}
+      <div style="margin-top:12px"><span class="badge">${THEMES[I.dow-1]}</span></div>
+      <p class="prompt">${esc(q)}</p>
+      <textarea id="txt" placeholder="Write freely for ~15 minutes. Bullet points are fine.">${esc(e.text)}</textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="ai">Challenge with AI</button>
+        <button id="dec">→ Log as decision</button>
+      </div>
+      <label class="check"><input type="checkbox" id="done" ${e.done?'checked':''}> Done for today</label>
+    </div>`;
+  } else if(I.dow===6){
+    body=`<div class="card">${head}<h3>Rest day</h3>
+      <p class="muted">Nothing to do. If you feel like it: read 20 minutes from your current book.<br>Missed a weekday? Skip it — never repay it. Just continue with today.</p>
+      <label class="check"><input type="checkbox" id="done" ${e.done?'checked':''}> Read today (optional)</label></div>`;
+  } else {
+    const r=e.review||{};
+    const due=S.decisions.filter(d=>!d.outcome&&d.review&&d.review<=viewDate);
+    body=`<div class="card">${head}<h3>Weekly review · 30 minutes</h3>
+      <p class="muted">Re-read this week's notes first (Plan tab), then answer.</p>
+      ${REVIEW.map(([k,l])=>`<label>${l}</label><textarea class="sm" data-r="${k}">${esc(r[k])}</textarea>`).join('')}
+      ${due.length?`<h3>Decisions due for review</h3><ul class="tight">${due.map(d=>`<li>${esc(d.title)}</li>`).join('')}</ul><button id="todec">Open Decisions</button>`:''}
+      <label class="check"><input type="checkbox" id="done" ${e.done?'checked':''}> Review done</label></div>`;
+  }
+  const act=`<div class="card"><h3 style="margin-top:0">This week's action</h3>
+    <label class="check"><input type="checkbox" id="act" ${S.actions[I.wk]?'checked':''}> <span>${esc(W.action)}</span></label></div>`;
+  v.innerHTML=nav+body+act;
+
+  document.getElementById('prev').onclick=()=>{viewDate=addDays(viewDate,-1);render()};
+  document.getElementById('next').onclick=()=>{viewDate=addDays(viewDate,1);render()};
+  document.getElementById('tday').onclick=()=>{viewDate=todayIso();render()};
+  const t=document.getElementById('txt'); if(t) t.oninput=()=>{entry(viewDate).text=t.value;save()};
+  document.querySelectorAll('[data-r]').forEach(a=>a.oninput=()=>{const en=entry(viewDate);en.review=en.review||{};en.review[a.dataset.r]=a.value;save()});
+  document.getElementById('done').onchange=ev=>{entry(viewDate).done=ev.target.checked;save();if(ev.target.checked)toast('Nice. See you tomorrow.')};
+  document.getElementById('act').onchange=ev=>{S.actions[I.wk]=ev.target.checked;save()};
+  const ai=document.getElementById('ai');
+  if(ai) ai.onclick=()=>{
+    const txt=(entry(viewDate).text||'').trim();
+    if(!txt){toast('Write something first');return}
+    copyText(`I'm doing a daily thinking practice. Challenge my reflection below. Be direct, not polite:\n1. Name my weakest assumption.\n2. Give the strongest argument against my view.\n3. Point out anything I seem to be avoiding.\n4. Ask me one question that would sharpen my thinking.\nKeep it short.\n\nToday's prompt: ${W.q[I.dow-1]}\n\nMy notes:\n${txt}`);
+  };
+  const dc=document.getElementById('dec');
+  if(dc) dc.onclick=()=>{pendingDecision=(entry(viewDate).text||'').trim();tab='decisions';render()};
+  const td=document.getElementById('todec'); if(td) td.onclick=()=>{tab='decisions';render()};
+}
+
+function rPlan(v){
+  const cur=info(todayIso()).wk;
+  v.innerHTML=`<div class="card"><h2>12-week plan</h2>
+    <p class="muted">≈15 min on weekdays · Saturday off · 30 min review on Sunday. Tap a week to open it.</p></div>
+    <div class="weekgrid">${WEEKS.map((W,i)=>{
+      const mon=addDays(S.start,i*7);
+      const dots=[0,1,2,3,4,6].map(k=>`<span class="dot ${(S.entries[addDays(mon,k)]||{}).done?'on':''}"></span>`).join('');
+      return `<div class="wk ${i===cur?'now':''}" data-w="${i}">
+        <div class="row between"><b>Week ${i+1}: ${esc(W.focus)}</b><span class="small ph${W.p}">${PHASES[W.p]}</span></div>
+        <div class="muted small">${parse(mon).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · Action: ${esc(W.action)} ${S.actions[i]?'✓':''}</div>
+        <div class="dots">${dots}</div></div>`}).join('')}</div>`;
+  v.querySelectorAll('[data-w]').forEach(el=>el.onclick=()=>{
+    const i=+el.dataset.w;const mon=addDays(S.start,i*7);
+    viewDate=(i===cur)?todayIso():mon;tab='today';render()});
+}
+
+let pendingDecision='';
+function rDec(v){
+  const list=[...S.decisions].sort((a,b)=>(a.outcome?1:0)-(b.outcome?1:0)||b.date.localeCompare(a.date));
+  const tdy=todayIso();
+  v.innerHTML=`<div class="card"><h2>Decision journal</h2>
+    <p class="muted">Log important decisions before you know the result. Review them later to learn how your judgment really works.</p>
+    <label>Decision</label><input type="text" id="dt" placeholder="e.g. Approve the CRM vendor shortlist">
+    <label>Context & options</label><textarea class="sm" id="dx">${esc(pendingDecision)}</textarea>
+    <label>What I chose — and why</label><textarea class="sm" id="dw"></textarea>
+    <label>What I expect to happen</label><textarea class="sm" id="de"></textarea>
+    <label>Review on</label><input type="date" id="dr" value="${addDays(tdy,30)}">
+    <div style="margin-top:12px"><button class="primary" id="dadd">Add decision</button></div></div>
+    <div class="card"><h3 style="margin-top:0">Logged (${list.length})</h3>
+    ${list.length?'':'<p class="muted">Nothing yet.</p>'}
+    ${list.map(d=>`<div class="dec ${!d.outcome&&d.review<=tdy?'due':''}">
+      <div class="row between"><b>${esc(d.title)}</b><span class="muted small">${d.date}${d.outcome?' · reviewed':` · review ${d.review}`}</span></div>
+      ${d.ctx?`<div class="small"><b>Context:</b> ${esc(d.ctx)}</div>`:''}
+      ${d.why?`<div class="small"><b>Chose:</b> ${esc(d.why)}</div>`:''}
+      ${d.exp?`<div class="small"><b>Expected:</b> ${esc(d.exp)}</div>`:''}
+      <label>What actually happened & what I learned</label>
+      <textarea class="sm" data-o="${d.id}">${esc(d.outcome)}</textarea>
+      <button class="ghost small" data-del="${d.id}" style="margin-top:6px">Delete</button></div>`).join('')}</div>`;
+  pendingDecision='';
+  document.getElementById('dadd').onclick=()=>{
+    const g=id=>document.getElementById(id).value.trim();
+    if(!g('dt')){toast('Give the decision a name');return}
+    S.decisions.push({id:Date.now().toString(36),date:tdy,title:g('dt'),ctx:g('dx'),why:g('dw'),exp:g('de'),review:g('dr'),outcome:''});
+    save();toast('Decision logged');render();
+  };
+  v.querySelectorAll('[data-o]').forEach(a=>a.oninput=()=>{const d=S.decisions.find(x=>x.id===a.dataset.o);d.outcome=a.value;save()});
+  v.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('Delete this decision?')){S.decisions=S.decisions.filter(x=>x.id!==b.dataset.del);save();render()}});
+}
+
+function rTool(v){
+  v.innerHTML=`<div class="card"><h2>Reading list</h2>
+    ${BOOKS.map((b,i)=>`<label class="check" style="font-weight:400;color:var(--ink);font-size:16px"><input type="checkbox" data-b="${i}" ${S.books[i]?'checked':''}> ${esc(b)}</label>`).join('')}</div>
+    <div class="card"><h2>My toolkit</h2>
+    <p class="muted">Your best AI prompts, workflows, insights — and in week 12, your plan for the next round.</p>
+    <textarea id="tk" style="min-height:260px" placeholder="Prompt template: …">${esc(S.toolkit)}</textarea></div>`;
+  v.querySelectorAll('[data-b]').forEach(c=>c.onchange=()=>{S.books[c.dataset.b]=c.checked;save()});
+  document.getElementById('tk').oninput=e=>{S.toolkit=e.target.value;save()};
+}
+
+function rSet(v){
+  const suggested=S.start||monday(addDays(todayIso(),(8-parse(todayIso()).getDay())%7||7));
+  v.innerHTML=`<div class="card"><h2>${S.start?'Setup':'Welcome'}</h2>
+    <p>Each weekday gives you one question and ~15 minutes of writing. The theme rotates so work and personal life both get attention:</p>
+    <ul class="tight"><li>Mon · Work</li><li>Tue · Decision</li><li>Wed · Build / 321tadaa</li><li>Thu · People</li><li>Fri · Personal</li><li>Sat · Rest</li><li>Sun · Weekly review (30 min)</li></ul>
+    <p class="muted">Missed a day? Skip it and continue. The plan never restarts.</p>
+    <label>Start date (snaps to a Monday)</label><input type="date" id="sd" value="${suggested}">
+    <div style="margin-top:12px"><button class="primary" id="ss">${S.start?'Update start date':'Start the 12 weeks'}</button></div></div>
+    <div class="card"><h2>Backup</h2>
+    <p class="muted">Everything is stored in this browser only. Export a backup now and then — especially on a phone.</p>
+    <div class="row"><button id="ex">Export backup</button><button id="im">Import backup</button>
+    <input type="file" id="imf" accept=".json,application/json" hidden></div></div>`;
+  document.getElementById('ss').onclick=()=>{
+    const val=document.getElementById('sd').value; if(!val) return;
+    S.start=monday(val);save();viewDate=diff(S.start,todayIso())<0?S.start:todayIso();tab='today';render();
+  };
+  document.getElementById('ex').onclick=()=>{
+    const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`sharper12-backup-${todayIso()}.json`;a.click();
+  };
+  const f=document.getElementById('imf');
+  document.getElementById('im').onclick=()=>f.click();
+  f.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(confirm('Replace current data with this backup?')){S=Object.assign(blank(),d);save();toast('Backup restored');tab='today';viewDate=todayIso();render()}}
+    catch(e){toast('Not a valid backup file')}};r.readAsText(f.files[0])};
+}
+
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;if(tab==='today')viewDate=todayIso();render()});
+render();
+</script>
+</body>
+</html>
